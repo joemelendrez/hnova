@@ -59,13 +59,6 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                       }}
                       className="flex h-16 w-16 items-center justify-center"
                     >
-                      <Image
-                        src="/logos/HabitHead.svg"
-                        alt="HabitNova Logo"
-                        width={64}
-                        height={64}
-                        className="h-16 w-16 object-contain"
-                      />
                     </motion.div>
                   </div>
 
