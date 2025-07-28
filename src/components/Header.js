@@ -78,11 +78,11 @@ const Header = () => {
         }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-      </motion.div>
-      <AnimatedLogo
+              <AnimatedLogo
           isMenuOpen={mobileMenuOpen}
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         />
+      </motion.div>
 
       <header
         className={`fixed left-0 right-0 top-0 transition-all duration-300 ease-in-out ${
