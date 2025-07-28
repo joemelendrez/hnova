@@ -122,7 +122,7 @@ const Header = () => {
                     alt="HabitNova Logo"
                     width={75}
                     height={75}
-                    className="h-10 w-10 mr-3 transition-all duration-200 group-hover:opacity-80"
+                    className="mr-3 transition-all duration-200 group-hover:opacity-80"
                     priority
                   />
                 </motion.div>
