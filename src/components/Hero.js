@@ -26,7 +26,7 @@ const Hero = () => {
           >
             {/* Badge */}
             <motion.div 
-              className="inline-flex items-center px-4 py-2 bg-[#DBDBDB] bg-opacity-20 rounded-full text-[#DBDBDB] text-sm font-medium mb-6"
+              className="inline-flex items-center px-4 py-2 bg-[#1a1a1a] bg-opacity-20 rounded-full text-[#DBDBDB] text-sm font-medium mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.1 }}

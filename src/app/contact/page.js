@@ -29,7 +29,7 @@ export default function ContactPage() {
   }
   
   return (
-    <div className="pt-20 lg:pt-24">
+    <div className="pt-16 lg:pt-20">
       {/* Hero Section */}
       <section className="py-20 bg-[#1a1a1a] text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
