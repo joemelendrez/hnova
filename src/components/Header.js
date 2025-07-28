@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Menu, X } from 'lucide-react';
 import Button from './Button';
+import Image from 'next/image'
 
 const Header = () => {
   // State for mobile menu
@@ -22,11 +23,15 @@ const navigation = [
         <div className="flex justify-between items-center h-16">
           {/* Logo Section */}
           <div className="flex-shrink-0">
+            <Image 
+            src="/public/logos/Habitlogo.svg"
+            priority
+            />
             <Link
               href="/"
               className="text-2xl font-bold text-[#1a1a1a] hover:text-gray-700"
             >
-              YourLogo
+              
             </Link>
           </div>
 
