@@ -77,7 +77,7 @@ const AnimatedLogo = ({ isMenuOpen, className = '', onClick }) => {
         }}
       >
         <Image
-          src="/logos/Habitlogo.svg"
+          src="/logos/HabitHead.svg"
           alt="HabitNova"
           width={48}
           height={48}
