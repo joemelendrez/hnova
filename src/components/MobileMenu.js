@@ -48,7 +48,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                   }}
                 >
                   {/* Logo Box - square box just for logo */}
-                  <div className="flex h-20 w-20 items-center justify-center bg-[#DBDBDB] shadow-lg">
+                  <div className="flex h-20 w-20 items-center justify-center bg-[#1a1a1a] shadow-lg">
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8, rotate: -45 }}
                       animate={{ opacity: 1, scale: 1, rotate: 0 }}
