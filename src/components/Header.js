@@ -27,7 +27,7 @@ const navigation = [
               <Image
                 src="/logos/Habitlogo.svg"
                 alt="HabitNova Logo"
-                width={75}
+                width={7}
                 height={50}
                 className="mr-3"
                 priority
@@ -70,7 +70,7 @@ const navigation = [
 
         {/* Mobile Navigation Menu */}
         {isMenuOpen && (
-          <div className="md:hidden border-t border-gray-200">
+          <div className="md:hidden border-t border-white">
             <div className="px-2 pt-2 pb-3 space-y-1 bg-white">
               {navigation.map((item) => (
                 <Link
