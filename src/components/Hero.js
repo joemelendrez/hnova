@@ -24,17 +24,6 @@ const Hero = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            {/* Badge */}
-            <motion.div 
-              className="inline-flex items-center px-4 py-2 bg-[#DBDBDB] bg-opacity-20 rounded-full text-[#1a1a1a] text-sm font-medium mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.1 }}
-            >
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Transform Your Life, One Habit at a Time
-            </motion.div>
-
             {/* Main Headline */}
             <motion.h1 
               className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
