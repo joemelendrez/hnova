@@ -87,7 +87,7 @@ const Header = () => {
       <header
         className={`fixed left-0 right-0 top-0 transition-all duration-300 ease-in-out ${
           scrolled
-            ? 'bg-[#1a1a1a] shadow-lg backdrop-blur-sm'
+            ? 'bg-white shadow-lg backdrop-blur-sm'
             : 'bg-[#1a1a1a]'
         } ${
           headerVisible ? 'translate-y-0' : '-translate-y-full'

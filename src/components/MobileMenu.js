@@ -60,7 +60,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                       className="flex h-16 w-16 items-center justify-center"
                     >
                       <Image
-                        src="/logos/Habit.svg"
+                        src="/logos/HabitHead.svg"
                         alt="HabitNova Logo"
                         width={64}
                         height={64}
