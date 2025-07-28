@@ -9,7 +9,7 @@ export default function AboutPage() {
     { icon: <Target className="h-8 w-8" />, number: '95%', label: 'Success Rate' },
     { icon: <Award className="h-8 w-8" />, number: '5+', label: 'Years Experience' },
   ]
-
+  
   return (
     <div className="pt-16">
       {/* Hero Section */}
@@ -24,7 +24,7 @@ export default function AboutPage() {
               About HabitNova
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
-              We're on a mission to help people understand the science behind habit formation 
+              We&apos;re on a mission to help people understand the science behind habit formation 
               and provide practical tools for lasting behavior change.
             </p>
           </motion.div>
@@ -49,7 +49,7 @@ export default function AboutPage() {
                 We translate complex research into actionable insights that anyone can apply to their daily life.
               </p>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Whether you're trying to break a bad habit, build a new routine, or understand the psychology 
+                Whether you&apos;re trying to break a bad habit, build a new routine, or understand the psychology 
                 of behavior change, we provide evidence-based strategies that actually work.
               </p>
             </motion.div>

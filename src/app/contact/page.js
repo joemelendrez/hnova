@@ -12,7 +12,7 @@ export default function ContactPage() {
     message: ''
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
-
+  
   const handleSubmit = (e) => {
     e.preventDefault()
     // Handle form submission here
@@ -20,14 +20,14 @@ export default function ContactPage() {
     setIsSubmitted(true)
     setFormData({ name: '', email: '', subject: '', message: '' })
   }
-
+  
   const handleChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     })
   }
-
+  
   return (
     <div className="pt-16">
       {/* Hero Section */}
@@ -43,7 +43,7 @@ export default function ContactPage() {
             </h1>
             <p className="text-xl text-gray-200 leading-relaxed">
               Have a question about habits, need personalized advice, or want to collaborate? 
-              We'd love to hear from you.
+              We&apos;d love to hear from you.
             </p>
           </motion.div>
         </div>
@@ -61,12 +61,12 @@ export default function ContactPage() {
               transition={{ duration: 0.6 }}
             >
               <h2 className="text-3xl font-bold text-[#1a1a1a] mb-6">
-                Let's Start a Conversation
+                Let&apos;s Start a Conversation
               </h2>
               
               <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                Whether you're struggling with a specific habit, have a success story to share, 
-                or want to suggest a topic for our blog, we're here to help.
+                Whether you&apos;re struggling with a specific habit, have a success story to share, 
+                or want to suggest a topic for our blog, we&apos;re here to help.
               </p>
 
               <div className="space-y-6">
@@ -210,7 +210,7 @@ export default function ContactPage() {
                   </h3>
                   
                   <p className="text-gray-600 mb-6">
-                    Thank you for reaching out. We'll get back to you within 24 hours.
+                    Thank you for reaching out. We&apos;ll get back to you within 24 hours.
                   </p>
 
                   <Button

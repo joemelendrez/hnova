@@ -7,9 +7,9 @@ import { Search, Clock, ArrowRight, Filter } from 'lucide-react'
 export default function BlogPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
-
+  
   const categories = ['All', 'Habit Formation', 'Digital Wellness', 'Productivity', 'Psychology', 'Mindfulness']
-
+  
   const blogPosts = [
     {
       id: 1,
@@ -40,14 +40,14 @@ export default function BlogPage() {
     },
     // Add more blog posts as needed
   ]
-
+  
   const filteredPosts = blogPosts.filter(post => {
     const matchesSearch = post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
+      post.excerpt.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesCategory = selectedCategory === 'All' || post.category === selectedCategory
     return matchesSearch && matchesCategory
   })
-
+  
   return (
     <div className="pt-16">
       {/* Hero Section */}
