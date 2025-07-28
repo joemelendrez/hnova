@@ -4,7 +4,7 @@ import Newsletter from '@/components/Newsletter'
 
 export default function HomePage() {
   return (
-    <div>
+    <div className="pt-20 lg:pt-24">
       <Hero />
       <FeaturedArticles />
       <Newsletter />
