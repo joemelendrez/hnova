@@ -122,9 +122,6 @@ const Header = () => {
                     priority
                   />
                 </motion.div>
-                <span className="text-2xl font-bold text-[#1a1a1a] hover:text-gray-700">
-                  HabitNova
-                </span>
               </Link>
             </div>
 
