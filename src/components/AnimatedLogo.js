@@ -76,13 +76,6 @@ const AnimatedLogo = ({ isMenuOpen, className = '', onClick }) => {
           delay: isMenuOpen ? 0.4 : 0,
         }}
       >
-        <Image
-          src="/logos/HabitHead.svg"
-          alt="HabitNova"
-          width={48}
-          height={48}
-          className="w-full h-full object-contain"
-        />
       </motion.div>
     </motion.button>
   )
