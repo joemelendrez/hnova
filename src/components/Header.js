@@ -24,15 +24,9 @@ const navigation = [
           {/* Logo Section */}
           <div className="flex-shrink-0">
             <Image 
-            src="/public/logos/Habitlogo.svg"
+            src="../public/logos/habitlogo.svg"
             priority
             />
-            <Link
-              href="/"
-              className="text-2xl font-bold text-[#1a1a1a] hover:text-gray-700"
-            >
-              
-            </Link>
           </div>
 
           {/* Desktop Navigation - Hidden on mobile */}
