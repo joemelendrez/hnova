@@ -68,7 +68,7 @@ const Footer = () => {
                 HabitNova
               </div>
               <div className="bg-[#DBDBDB] bg-opacity-20 px-3 py-1 rounded-full">
-                <span className="text-[#DBDBDB] text-sm font-medium">Blog</span>
+                <span className="text-[#1a1a1a] text-sm font-medium">Blog</span>
               </div>
             </div>
             
