@@ -106,10 +106,10 @@ const Footer = () => {
           {/* Newsletter Signup */}
           <div className="lg:col-span-2">
             <div className="bg-[#DBDBDB] rounded-2xl p-8 h-full flex flex-col justify-center">
-              <h3 className="text-2xl font-bold text-white mb-4">
+              <h3 className="text-2xl font-bold text-black mb-4">
                 Join 50,000+ Habit Builders
               </h3>
-              <p className="text-gray-300 mb-6 text-lg">
+              <p className="text-[#1a1a1a] mb-6 text-lg">
                 Get weekly insights, practical tips, and the latest research delivered to your inbox. 
                 No spam, just actionable habit-building content.
               </p>
@@ -122,13 +122,13 @@ const Footer = () => {
                 />
                 <button
                   type="submit"
-                  className="bg-[#DBDBDB] text-[#1a1a1a] px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-colors duration-200 whitespace-nowrap"
+                  className="bg-[#1a1a1a] text-[#dbdbdb] px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 whitespace-nowrap"
                 >
                   Subscribe Free
                 </button>
               </form>
               
-              <p className="text-sm text-gray-400 mt-3">
+              <p className="text-sm text-gray-700 mt-3">
                 ✓ Free forever  ✓ Unsubscribe anytime  ✓ No spam, ever
               </p>
             </div>
