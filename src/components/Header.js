@@ -121,13 +121,13 @@ const Header = () => {
                     src="/logos/Habitlogo.svg"
                     alt="HabitNova Logo"
                     width={75}
-                    height={50}
+                    height={75}
                     className="h-10 w-10 mr-3 transition-all duration-200 group-hover:opacity-80"
                     priority
                   />
                 </motion.div>
                 <span className="text-2xl font-bold text-[#1a1a1a] hover:text-gray-700">
-                  HabitNova
+                  Habit Nova
                 </span>
               </Link>
             </div>
