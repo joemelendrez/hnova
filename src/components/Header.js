@@ -27,8 +27,8 @@ const navigation = [
               <Image
                 src="/logos/Habitlogo.svg"
                 alt="HabitNova Logo"
-                width={50}
-                height={25}
+                width={75}
+                height={50}
                 className="mr-3"
                 priority
               />
