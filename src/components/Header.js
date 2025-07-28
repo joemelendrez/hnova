@@ -120,8 +120,8 @@ const Header = () => {
                   <Image
                     src="/logos/Habitlogo.svg"
                     alt="HabitNova Logo"
-                    width={40}
-                    height={40}
+                    width={75}
+                    height={50}
                     className="h-10 w-10 mr-3 transition-all duration-200 group-hover:opacity-80"
                     priority
                   />
