@@ -24,7 +24,7 @@ const navigation = [
           {/* Logo Section */}
           <div className="flex-shrink-0">
             <Image 
-            src="./public/logos/habitlogo.svg"
+            src="../logos/habitlogo.svg"
             priority
             />
           </div>
