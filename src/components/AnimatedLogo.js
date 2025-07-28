@@ -37,7 +37,7 @@ const AnimatedLogo = ({ isMenuOpen, className = '', onClick }) => {
         {/* Custom hamburger lines */}
         <div className="w-6 h-6 flex flex-col justify-center items-center space-y-1">
           <motion.div 
-            className="w-6 h-0.5 bg-[#1a1a1a]"
+            className="w-6 h-0.5 bg-white"
             animate={{
               rotate: isMenuOpen ? 45 : 0,
               y: isMenuOpen ? 6 : 0,
