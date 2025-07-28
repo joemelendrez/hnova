@@ -4,27 +4,27 @@ import { Facebook, Twitter, Linkedin, Mail, Phone, MapPin } from 'lucide-react';
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
-  // Footer sections data
-  const footerSections = {
-    company: [
-      { name: 'About Us', href: '/about' },
-      { name: 'Our Team', href: '/team' },
-      { name: 'Careers', href: '/careers' },
-      { name: 'Contact', href: '/contact' },
-    ],
-    services: [
-      { name: 'Web Development', href: '/services/web-development' },
-      { name: 'Mobile Apps', href: '/services/mobile-apps' },
-      { name: 'Consulting', href: '/services/consulting' },
-      { name: 'Support', href: '/services/support' },
-    ],
-    resources: [
-      { name: 'Blog', href: '/blog' },
-      { name: 'Case Studies', href: '/case-studies' },
-      { name: 'Resources', href: '/resources' },
-      { name: 'FAQ', href: '/faq' },
-    ],
-  };
+// Update the footerSections object in Footer.js
+const footerSections = {
+  explore: [
+    { name: 'Latest Articles', href: '/blog' },
+    { name: 'Popular Posts', href: '/blog?filter=popular' },
+    { name: 'Habit Tracker', href: '/habit-tracker' },
+    { name: 'Success Stories', href: '/success-stories' },
+  ],
+  topics: [
+    { name: 'Habit Formation', href: '/blog?category=habit-formation' },
+    { name: 'Digital Wellness', href: '/blog?category=digital-wellness' },
+    { name: 'Productivity', href: '/blog?category=productivity' },
+    { name: 'Psychology', href: '/blog?category=psychology' },
+  ],
+  company: [
+    { name: 'About Us', href: '/about' },
+    { name: 'Contact', href: '/contact' },
+    { name: 'Privacy Policy', href: '/privacy' },
+    { name: 'Terms of Service', href: '/terms' },
+  ],
+};
 
   return (
     <footer className="bg-[#1a1a1a] text-white">
@@ -59,56 +59,55 @@ const Footer = () => {
           </div>
 
           {/* Company Links */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Company</h3>
-            <ul className="space-y-2">
-              {footerSections.company.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className="text-gray-300 hover:text-[#DBDBDB] transition-colors duration-200"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+<div>
+  <h3 className="text-lg font-semibold mb-4">Company</h3>
+  <ul className="space-y-2">
+    {footerSections.company.map((item) => (
+      <li key={item.name}>
+        <Link
+          href={item.href}
+          className="text-gray-300 hover:text-[#DBDBDB] transition-colors duration-200"
+        >
+          {item.name}
+        </Link>
+      </li>
+    ))}
+  </ul>
+</div>
 
-          {/* Services Links */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Services</h3>
-            <ul className="space-y-2">
-              {footerSections.services.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className="text-gray-300 hover:text-blue-400 transition-colors duration-200"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {/* Topics Links */}
+<div>
+  <h3 className="text-lg font-semibold mb-4">Topics</h3>
+  <ul className="space-y-2">
+    {footerSections.topics.map((item) => (
+      <li key={item.name}>
+        <Link
+          href={item.href}
+          className="text-gray-300 hover:text-[#DBDBDB] transition-colors duration-200"
+        >
+          {item.name}
+        </Link>
+      </li>
+    ))}
+  </ul>
+</div>
 
-          {/* Resources Links */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Resources</h3>
-            <ul className="space-y-2">
-              {footerSections.resources.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className="text-gray-300 hover:text-blue-400 transition-colors duration-200"
-                  >
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+          {/* Explore Links */}
+<div>
+  <h3 className="text-lg font-semibold mb-4">Explore</h3>
+  <ul className="space-y-2">
+    {footerSections.explore.map((item) => (
+      <li key={item.name}>
+        <Link
+          href={item.href}
+          className="text-gray-300 hover:text-[#DBDBDB] transition-colors duration-200"
+        >
+          {item.name}
+        </Link>
+      </li>
+    ))}
+  </ul>
+</div>
 
         {/* Bottom Section */}
         <div className="border-t border-gray-700 pt-8 mt-8">

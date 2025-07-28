@@ -8,14 +8,13 @@ const Header = () => {
   // State for mobile menu
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Navigation items
-  const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'About', href: '/about' },
-    { name: 'Services', href: '/services' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'Contact', href: '/contact' },
-  ];
+// Update the navigation array in Header.js
+const navigation = [
+  { name: 'Home', href: '/' },
+  { name: 'Blog', href: '/blog' },
+  { name: 'About', href: '/about' },
+  { name: 'Contact', href: '/contact' },
+];
 
   return (
     <header className="bg-white shadow-lg fixed w-full top-0 z-50">
