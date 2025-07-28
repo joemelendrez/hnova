@@ -45,14 +45,14 @@ const AnimatedLogo = ({ isMenuOpen, className = '', onClick }) => {
             transition={{ duration: 0.3 }}
           />
           <motion.div 
-            className="w-6 h-0.5 bg-[#1a1a1a]"
+            className="w-6 h-0.5 bg-white"
             animate={{
               opacity: isMenuOpen ? 0 : 1,
             }}
             transition={{ duration: 0.3 }}
           />
           <motion.div 
-            className="w-6 h-0.5 bg-[#1a1a1a]"
+            className="w-6 h-0.5 bg-white"
             animate={{
               rotate: isMenuOpen ? -45 : 0,
               y: isMenuOpen ? -6 : 0,
