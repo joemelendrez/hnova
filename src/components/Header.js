@@ -78,7 +78,10 @@ const Header = () => {
         }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        
+        <AnimatedLogo
+          isMenuOpen={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        />
       </motion.div>
 
       <header
@@ -123,6 +126,9 @@ const Header = () => {
                     priority
                   />
                 </motion.div>
+                <span className="text-2xl font-bold text-[#1a1a1a] hover:text-gray-700">
+                  HabitNova
+                </span>
               </Link>
             </div>
 
