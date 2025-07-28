@@ -23,10 +23,16 @@ const navigation = [
         <div className="flex justify-between items-center h-16">
           {/* Logo Section */}
           <div className="flex-shrink-0">
-            <Image 
-            src="../logos/habitlogo.svg"
-            priority
-            />
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logos/Habitlogo.svg"
+                alt="HabitNova Logo"
+                width={250}
+                height={125}
+                className="mr-3"
+                priority
+              />
+              </Link>
           </div>
 
           {/* Desktop Navigation - Hidden on mobile */}
