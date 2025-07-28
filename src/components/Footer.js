@@ -105,7 +105,7 @@ const Footer = () => {
 
           {/* Newsletter Signup */}
           <div className="lg:col-span-2">
-            <div className="bg-gradient-to-r from-[#DBDBDB] bg-opacity-10 to-transparent rounded-2xl p-8 h-full flex flex-col justify-center">
+            <div className="bg-[#DBDBDB] rounded-2xl p-8 h-full flex flex-col justify-center">
               <h3 className="text-2xl font-bold text-white mb-4">
                 Join 50,000+ Habit Builders
               </h3>

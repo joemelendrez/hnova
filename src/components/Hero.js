@@ -5,7 +5,7 @@ import Button from './Button'
 
 const Hero = () => {
   return (
-    <section className="relative bg-gradient-to-br from-[#1a1a1a] via-gray-800 to-gray-900 text-white overflow-hidden min-h-screen flex items-center">
+    <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
       
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
