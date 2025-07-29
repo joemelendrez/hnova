@@ -9,7 +9,7 @@ const Hero = () => {
       
     { /* Background Image */ }
 <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-black/50 bg-blend-overlay"
         style={{
           backgroundImage: 'url(/HabitBackground.webp)',
         }}
