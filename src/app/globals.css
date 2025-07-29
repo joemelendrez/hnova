@@ -1,48 +1,79 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* Font family definitions */
 :root {
+  --background: #ffffff;
+  --foreground: #171717;
+  
+  /* Add font variables */
   --font-roboto: 'Roboto', sans-serif;
   --font-anton: 'Anton', sans-serif;
+  
+  /* HabitNova color scheme */
+  --color-primary: #1a1a1a;
+  --color-secondary: #DBDBDB;
+  --color-background: #ffffff;
 }
 
-/* Base typography */
-* {
-  font-family: var(--font-roboto);
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-roboto);
+  --font-mono: var(--font-geist-mono);
+  
+  /* Add custom font families */
+  --font-anton: var(--font-anton);
+  --font-roboto: var(--font-roboto);
 }
 
-/* Heading styles with Anton */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-roboto), Arial, Helvetica, sans-serif;
+}
+
+/* Typography System */
+
+/* Headings use Anton */
 h1, h2 {
   font-family: var(--font-anton) !important;
   font-weight: 400 !important;
   letter-spacing: 0.025em;
   line-height: 1.1;
+  text-transform: uppercase;
 }
 
+/* Other headings use Roboto Bold */
 h3, h4, h5, h6 {
   font-family: var(--font-roboto);
   font-weight: 700;
 }
 
-/* Anton specific adjustments */
+/* Body elements use Roboto */
+p, span, div, a, li, td, th, button, input, textarea, select {
+  font-family: var(--font-roboto);
+}
+
+/* Heading sizes */
 h1 {
   font-size: clamp(2.5rem, 5vw, 4rem);
-  text-transform: uppercase;
 }
 
 h2 {
   font-size: clamp(2rem, 4vw, 3rem);
-  text-transform: uppercase;
 }
 
-/* Body text styles */
-p, span, div, a, li, td, th {
-  font-family: var(--font-roboto);
+h3 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
 }
 
-/* Custom font utility classes */
+/* Utility classes */
 .font-anton {
   font-family: var(--font-anton) !important;
   font-weight: 400 !important;
@@ -54,7 +85,91 @@ p, span, div, a, li, td, th {
   font-family: var(--font-roboto) !important;
 }
 
-/* Existing styles */
+/* HabitNova specific styles */
+.text-primary {
+  color: var(--color-primary);
+}
+
+.text-secondary {
+  color: var(--color-secondary);
+}
+
+.bg-primary {
+  background-color: var(--color-primary);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary);
+}
+
+/* Heading hierarchy classes */
+.heading-xl { 
+  font-family: var(--font-anton);
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  line-height: 1.1;
+}
+
+.heading-lg { 
+  font-family: var(--font-anton);
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  line-height: 1.1;
+}
+
+.heading-md { 
+  font-family: var(--font-anton);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  line-height: 1.1;
+}
+
+.heading-sm { 
+  font-family: var(--font-anton);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  line-height: 1.1;
+}
+
+/* Body text hierarchy */
+.text-body-xl {
+  font-family: var(--font-roboto);
+  font-size: 1.25rem;
+  line-height: 1.6;
+}
+
+.text-body-lg {
+  font-family: var(--font-roboto);
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.text-body {
+  font-family: var(--font-roboto);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.text-body-sm {
+  font-family: var(--font-roboto);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -72,18 +187,76 @@ p, span, div, a, li, td, th {
   background: #94a3b8;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
+/* Focus styles for accessibility */
 .focus-visible {
-  @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary);
 }
 
+/* Button styles */
 .btn-primary {
-  @apply bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-blue-700 hover:shadow-lg transform hover:-translate-y-0.5;
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-family: var(--font-roboto);
+}
+
+.btn-primary:hover {
+  background-color: #333333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(26, 26, 26, 0.15);
 }
 
 .btn-secondary {
-  @apply border-2 border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:bg-blue-600 hover:text-white;
+  background-color: var(--color-secondary);
+  color: var(--color-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  font-family: var(--font-roboto);
+}
+
+.btn-secondary:hover {
+  background-color: #c5c5c5;
+  transform: translateY(-1px);
+}
+
+/* Card styles */
+.card {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  transition: box-shadow 0.3s;
+}
+
+.card:hover {
+  box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+}
+
+/* Link styles */
+a {
+  font-family: var(--font-roboto);
+  transition: color 0.2s;
+}
+
+/* Form elements */
+input, textarea, select {
+  font-family: var(--font-roboto);
+}
+
+/* Navigation specific styles */
+nav a {
+  font-family: var(--font-roboto);
+  font-weight: 500;
+}
+
+/* Logo text override */
+.logo-text {
+  font-family: var(--font-anton) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
 }
