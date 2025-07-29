@@ -39,7 +39,7 @@ const Footer = () => {
       { name: 'Habit Journal Template', href: '/templates/habit-journal' }
     ],
     company: [
-      { name: 'About HabitNova', href: '/about' },
+      { name: 'About Habit Nova', href: '/about' },
       { name: 'Our Mission', href: '/about#mission' },
       { name: 'Contact Us', href: '/contact' },
       { name: 'Write for Us', href: '/write-for-us' },
@@ -64,8 +64,8 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="lg:col-span-1">
             <div className="flex items-center mb-6">
-              <div className="text-3xl font-bold text-[#DBDBDB] mr-3">
-                HabitNova
+              <div className="text-3xl font-anton text-[#DBDBDB] mr-3">
+                Habit Nova
               </div>
               <div className="bg-[#DBDBDB] bg-opacity-20 px-3 py-1 rounded-full">
                 <span className="text-[#1a1a1a] text-sm font-medium">Blog</span>
@@ -94,7 +94,7 @@ const Footer = () => {
             <div className="space-y-3">
               <div className="flex items-center">
                 <Mail className="h-5 w-5 text-[#DBDBDB] mr-3 flex-shrink-0" />
-                <span className="text-gray-300">hello@habitnova.com</span>
+                <span className="text-gray-300">contact@habitnova.com</span>
               </div>
               <div className="flex items-center">
                 <MapPin className="h-5 w-5 text-[#DBDBDB] mr-3 flex-shrink-0" />
@@ -228,7 +228,7 @@ const Footer = () => {
             {/* Copyright & Legal */}
             <div className="flex flex-col md:flex-row items-center gap-4 text-sm text-gray-400">
               <div>
-                © {currentYear} HabitNova. All rights reserved.
+                © {currentYear} Habit Nova. All rights reserved.
               </div>
               <div className="flex items-center gap-4">
                 <Link href="/privacy" className="hover:text-[#DBDBDB] transition-colors">
