@@ -66,26 +66,7 @@ const Hero = () => {
               </Button>
             </motion.div>
 
-            {/* Stats Section */}
-            <motion.div 
-              className="grid grid-cols-3 gap-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8 }}
-            >
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[#DBDBDB] mb-1">50K+</div>
-                <div className="text-gray-300 text-sm">Monthly Readers</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[#DBDBDB] mb-1">200+</div>
-                <div className="text-gray-300 text-sm">Articles Published</div>
-              </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-[#DBDBDB] mb-1">95%</div>
-                <div className="text-gray-300 text-sm">Success Rate</div>
-              </div>
-            </motion.div>
+          
           </motion.div>
 
           {/* Right Column - Visual */}
