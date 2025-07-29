@@ -68,63 +68,6 @@ const Hero = () => {
 
           
           </motion.div>
-
-          {/* Right Column - Visual */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative hidden lg:block"
-          >
-            <div className="relative">
-              {/* Habit Loop Visualization */}
-              <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-8">
-                <div className="text-center">
-                  <h3 className="text-2xl font-bold text-[#DBDBDB] mb-6">The Habit Loop</h3>
-                  
-                  {/* Circular habit loop */}
-                  <div className="relative w-64 h-64 mx-auto">
-                    <motion.div 
-                      className="absolute inset-0 border-4 border-[#DBDBDB] rounded-full"
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ duration: 1, delay: 0.8 }}
-                    />
-                    
-                    {/* Cue */}
-                    <motion.div 
-                      className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4 bg-[#DBDBDB] text-[#1a1a1a] px-4 py-2 rounded-lg font-semibold"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 1.2 }}
-                    >
-                      Cue
-                    </motion.div>
-                    
-                    {/* Routine */}
-                    <motion.div 
-                      className="absolute right-0 top-1/2 transform translate-x-4 -translate-y-1/2 bg-[#DBDBDB] text-[#1a1a1a] px-4 py-2 rounded-lg font-semibold"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.6, delay: 1.4 }}
-                    >
-                      Routine
-                    </motion.div>
-                    
-                    {/* Reward */}
-                    <motion.div 
-                      className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-4 bg-[#DBDBDB] text-[#1a1a1a] px-4 py-2 rounded-lg font-semibold"
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.6, delay: 1.6 }}
-                    >
-                      Reward
-                    </motion.div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </div>
       </div>
 
