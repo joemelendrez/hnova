@@ -7,12 +7,13 @@ const Hero = () => {
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
       
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-        }}></div>
-      </div>
+    { /* Background Image */ }
+<div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: 'url(/HabitBackground.webp)',
+        }}
+      />
 
       {/* Main Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -33,7 +34,8 @@ const Hero = () => {
             >
               Discover the{' '}
               <span className="font-anton text-[#DBDBDB]">Science</span> Behind{' '}
-              <span className=" font-anton text-stroke-red">Breaking Bad Habits</span>
+              <span className=" font-anton text-[#fe0000
+]">Breaking Bad Habits</span>
             </motion.h1>
             
             {/* Subtitle */}
