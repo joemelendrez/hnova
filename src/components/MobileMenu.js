@@ -81,7 +81,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           transition={{ delay: 0.3, duration: 0.4, ease: 'easeOut' }}
                         >
                           <h2 className="text-2xl font-anton text-[#1a1a1a]">Habit Nova</h2>
-                          <p className="text-sm text-gray-700 font-medium">Transform Your Habits</p>
+                          <p className="text-sm text-gray-600 font-medium">Transform Your Habits</p>
                         </motion.div>
                         <button
                           onClick={onClose}
@@ -122,9 +122,9 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.8 }}
-                          className="mt-8 border-t border-gray-200 pt-8"
+                          className="mt-8 border-t border-gray-500 pt-8"
                         >
-                          <h3 className="mb-4 px-4 text-xs font-semibold uppercase tracking-wider text-gray-500">
+                          <h3 className="mb-4 px-4 text-xs font-semibold uppercase tracking-wider text-[#1a1a1a]">
                             Quick Links
                           </h3>
                           <ul className="space-y-1">
