@@ -16,7 +16,7 @@ const Button = ({
     accent: 'bg-[#fe0000] text-white hover:bg-[#cd1718] shadow-lg hover:shadow-xl',
     ghost: 'text-[#fe0000] hover:bg-[#fe0000] hover:bg-opacity-10',
     outline: 'border-2 border-[#fe0000] text-[#fe0000] hover:bg-[#fe0000] hover:text-white',
-    dark: 'bg-[#1a1a1a] text-white hover:bg-gray-800'
+    dark: 'bg-[#1a1a1a] text-white hover:bg-[#cd1718]'
   }
   
   const sizes = {
