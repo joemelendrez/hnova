@@ -1,44 +1,122 @@
+// src/components/FeaturedArticles.js
 'use client'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Clock, ArrowRight, TrendingUp } from 'lucide-react'
+import { Clock, ArrowRight, TrendingUp, Loader2 } from 'lucide-react'
+import { getFeaturedPosts, getAllPosts, formatPostData } from '@/lib/wordpress'
 
 const FeaturedArticles = () => {
-  const featuredPosts = [
-    {
-      id: 1,
-      title: "The 2-Minute Rule: Why Starting Small Leads to Big Changes",
-      excerpt: "Discover how breaking habits down into 2-minute actions can create lasting transformation in your life.",
-      category: "Habit Formation",
-      readTime: "5 min read",
-      image: "/images/blog/two-minute-rule.jpg",
-      featured: true
-    },
-    {
-      id: 2,
-      title: "Breaking the Dopamine Loop: Understanding Digital Addiction",
-      excerpt: "Learn the neuroscience behind social media addiction and proven strategies to reclaim your attention.",
-      category: "Digital Wellness",
-      readTime: "8 min read",
-      image: "/images/blog/dopamine-loop.jpg"
-    },
-    {
-      id: 3,
-      title: "The Habit Stacking Method: Building New Routines That Stick",
-      excerpt: "How to link new habits to existing ones for automatic behavior change.",
-      category: "Productivity",
-      readTime: "6 min read",
-      image: "/images/blog/habit-stacking.jpg"
-    },
-    {
-      id: 4,
-      title: "Why Willpower Fails (And What Actually Works)",
-      excerpt: "The surprising science behind why relying on willpower alone sabotages your habit change efforts.",
-      category: "Psychology",
-      readTime: "7 min read",
-      image: "/images/blog/willpower-fails.jpg"
+  const [featuredPosts, setFeaturedPosts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchFeaturedPosts = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        
+        // First try to get posts marked as featured in ACF
+        let posts = await getFeaturedPosts()
+        
+        // If no featured posts found, get the 4 most recent posts
+        if (!posts || posts.length === 0) {
+          const allPosts = await getAllPosts(4)
+          posts = allPosts.edges || []
+        }
+        
+        // Format the posts data
+        const formattedPosts = posts.map(edge => {
+          const post = edge.node || edge
+          return formatPostData(post)
+        })
+        
+        setFeaturedPosts(formattedPosts)
+      } catch (err) {
+        console.error('Error fetching featured posts:', err)
+        setError('Failed to load featured articles')
+        
+        // Fallback to static data if WordPress fails
+        setFeaturedPosts([
+          {
+            id: 'fallback-1',
+            title: "The 2-Minute Rule: Why Starting Small Leads to Big Changes",
+            excerpt: "Discover how breaking habits down into 2-minute actions can create lasting transformation in your life.",
+            category: "Habit Formation",
+            readTime: "5 min read",
+            image: "/images/blog/two-minute-rule.jpg",
+            slug: "the-2-minute-rule-why-starting-small-leads-to-big-changes",
+            featured: true
+          },
+          {
+            id: 'fallback-2',
+            title: "Breaking the Dopamine Loop: Understanding Digital Addiction",
+            excerpt: "Learn the neuroscience behind social media addiction and proven strategies to reclaim your attention.",
+            category: "Digital Wellness",
+            readTime: "8 min read",
+            image: "/images/blog/dopamine-loop.jpg",
+            slug: "breaking-the-dopamine-loop-understanding-digital-addiction"
+          },
+          {
+            id: 'fallback-3',
+            title: "The Habit Stacking Method: Building New Routines That Stick",
+            excerpt: "How to link new habits to existing ones for automatic behavior change.",
+            category: "Productivity",
+            readTime: "6 min read",
+            image: "/images/blog/habit-stacking.jpg",
+            slug: "the-habit-stacking-method-building-new-routines-that-stick"
+          },
+          {
+            id: 'fallback-4',
+            title: "Why Willpower Fails (And What Actually Works)",
+            excerpt: "The surprising science behind why relying on willpower alone sabotages your habit change efforts.",
+            category: "Psychology",
+            readTime: "7 min read",
+            image: "/images/blog/willpower-fails.jpg",
+            slug: "why-willpower-fails-and-what-actually-works"
+          }
+        ])
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+
+    fetchFeaturedPosts()
+  }, [])
+
+  if (loading) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 text-[#1a1a1a] animate-spin" />
+            <span className="ml-2 text-gray-600">Loading featured articles...</span>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (error && featuredPosts.length === 0) {
+    return (
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-12">
+            <h3 className="text-2xl font-bold text-[#1a1a1a] mb-4">Unable to Load Articles</h3>
+            <p className="text-gray-600">Please check back later or visit our blog directly.</p>
+            <Link
+              href="/blog"
+              className="inline-flex items-center mt-4 px-6 py-3 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors duration-200"
+            >
+              View Blog
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="py-20 bg-white">
@@ -64,96 +142,106 @@ const FeaturedArticles = () => {
           </p>
         </motion.div>
 
-        {/* Featured Article (Large) */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-12"
-        >
-          <Link href={`/blog/the-2-minute-rule`} className="group">
-            <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-              <div className="grid grid-cols-1 lg:grid-cols-2">
-                <div className="relative h-64 lg:h-auto">
-                  <img
-                    src={featuredPosts[0].image}
-                    alt={featuredPosts[0].title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 bg-[#DBDBDB] text-[#1a1a1a] text-sm font-medium rounded-full">
-                      Featured
-                    </span>
+        {/* Featured Article (Large) - First post if it exists */}
+        {featuredPosts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="mb-12"
+          >
+            <Link href={`/blog/${featuredPosts[0].slug}`} className="group">
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <div className="grid grid-cols-1 lg:grid-cols-2">
+                  <div className="relative h-64 lg:h-auto">
+                    <img
+                      src={featuredPosts[0].image}
+                      alt={featuredPosts[0].imageAlt || featuredPosts[0].title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        e.target.src = '/images/blog/default.jpg'
+                      }}
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 bg-[#DBDBDB] text-[#1a1a1a] text-sm font-medium rounded-full">
+                        Featured
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="p-8 lg:p-12 flex flex-col justify-center">
-                  <div className="flex items-center text-sm text-gray-500 mb-4">
-                    <span className="bg-[#1a1a1a] text-white px-3 py-1 rounded-full text-xs font-medium mr-3">
-                      {featuredPosts[0].category}
-                    </span>
-                    <Clock className="h-4 w-4 mr-1" />
-                    {featuredPosts[0].readTime}
-                  </div>
-                  <h3 className="text-2xl lg:text-3xl font-bold text-[#1a1a1a] mb-4 group-hover:text-gray-700 transition-colors">
-                    {featuredPosts[0].title}
-                  </h3>
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    {featuredPosts[0].excerpt}
-                  </p>
-                  <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700">
-                    Read Article
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
+                  <div className="p-8 lg:p-12 flex flex-col justify-center">
+                    <div className="flex items-center text-sm text-gray-500 mb-4">
+                      <span className="bg-[#1a1a1a] text-white px-3 py-1 rounded-full text-xs font-medium mr-3">
+                        {featuredPosts[0].category}
+                      </span>
+                      <Clock className="h-4 w-4 mr-1" />
+                      {featuredPosts[0].readTime}
+                    </div>
+                    <h3 className="text-2xl lg:text-3xl font-bold text-[#1a1a1a] mb-4 group-hover:text-gray-700 transition-colors">
+                      {featuredPosts[0].title}
+                    </h3>
+                    <p className="text-gray-600 mb-6 leading-relaxed">
+                      {featuredPosts[0].excerpt}
+                    </p>
+                    <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700">
+                      Read Article
+                      <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </Link>
-        </motion.div>
+            </Link>
+          </motion.div>
+        )}
 
         {/* Other Articles Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {featuredPosts.slice(1).map((post, index) => (
-            <motion.div
-              key={post.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-            >
-              <Link href={`/blog/${post.title.toLowerCase().replace(/\s+/g, '-')}`} className="group">
-                <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                  <div className="relative h-48">
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                  </div>
-                  <div className="p-6">
-                    <div className="flex items-center text-sm text-gray-500 mb-3">
-                      <span className="bg-[#1a1a1a] text-white px-2 py-1 rounded text-xs font-medium mr-3">
-                        {post.category}
-                      </span>
-                      <Clock className="h-4 w-4 mr-1" />
-                      {post.readTime}
+        {featuredPosts.length > 1 && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredPosts.slice(1).map((post, index) => (
+              <motion.div
+                key={post.id}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <Link href={`/blog/${post.slug}`} className="group">
+                  <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                    <div className="relative h-48">
+                      <img
+                        src={post.image}
+                        alt={post.imageAlt || post.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onError={(e) => {
+                          e.target.src = '/images/blog/default.jpg'
+                        }}
+                      />
                     </div>
-                    <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors leading-tight">
-                      {post.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4 leading-relaxed">
-                      {post.excerpt}
-                    </p>
-                    <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700">
-                      Read More
-                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                    <div className="p-6">
+                      <div className="flex items-center text-sm text-gray-500 mb-3">
+                        <span className="bg-[#1a1a1a] text-white px-2 py-1 rounded text-xs font-medium mr-3">
+                          {post.category}
+                        </span>
+                        <Clock className="h-4 w-4 mr-1" />
+                        {post.readTime}
+                      </div>
+                      <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors leading-tight">
+                        {post.title}
+                      </h3>
+                      <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">
+                        {post.excerpt}
+                      </p>
+                      <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700">
+                        Read More
+                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                      </div>
                     </div>
-                  </div>
-                </article>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                  </article>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* View All Button */}
         <motion.div
@@ -171,6 +259,15 @@ const FeaturedArticles = () => {
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </motion.div>
+
+        {/* Error message for fallback data */}
+        {error && (
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-500">
+              * Currently showing sample articles. WordPress connection needed for live content.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   )
