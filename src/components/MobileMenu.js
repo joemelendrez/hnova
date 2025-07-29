@@ -1,11 +1,49 @@
 'use client'
-import { Fragment } from 'react'
+import { Fragment, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Mail, Target, BookOpen, TrendingUp } from 'lucide-react'
 
 const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (open) {
+      // Store current scroll position
+      const scrollY = window.scrollY
+      
+      // Prevent scrolling on body
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+      
+      // Clean up function
+      return () => {
+        // Restore scrolling
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.width = ''
+        
+        // Restore scroll position
+        window.scrollTo(0, scrollY)
+      }
+    }
+  }, [open])
+
+  // Handle escape key to close menu
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && open) {
+        onClose()
+      }
+    }
+
+    if (open) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [open, onClose])
+
   const isActiveLink = (href) => {
     if (href === '/') {
       return currentPath === '/'
@@ -23,7 +61,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop - Click to close */}
           <motion.div
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
             initial={{ opacity: 0 }}
@@ -31,12 +69,13 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
             onClick={onClose}
+            aria-label="Close menu"
           />
 
           {/* Menu Panel Container */}
-          <div className="fixed inset-0 overflow-hidden z-40 lg:hidden">
+          <div className="fixed inset-0 overflow-hidden z-50 lg:hidden pointer-events-none">
             <div className="absolute inset-0 overflow-hidden">
-              <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full">
+              <div className="fixed inset-y-0 right-0 flex max-w-full pointer-events-none">
                 <motion.div
                   className="pointer-events-auto relative flex h-full"
                   initial={{ x: '100%' }}
@@ -46,6 +85,8 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                     duration: 0.5, 
                     ease: [0.25, 0.46, 0.45, 0.94] 
                   }}
+                  // Prevent menu close when clicking inside the menu
+                  onClick={(e) => e.stopPropagation()}
                 >
                   {/* Logo Box - square box just for logo */}
                   <div className="flex h-20 w-20 items-center justify-center bg-[#1a1a1a] shadow-lg">
@@ -85,14 +126,14 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                         </motion.div>
                         <button
                           onClick={onClose}
-                          className="p-2 text-gray-500 transition-colors hover:text-[#1a1a1a] rounded-lg"
+                          className="p-2 text-gray-500 transition-colors hover:text-[#1a1a1a] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1a1a1a] focus:ring-offset-2"
                           aria-label="Close menu"
                         >
                           <X className="h-6 w-6" />
                         </button>
                       </div>
 
-                      {/* Navigation */}
+                      {/* Navigation - Scrollable area */}
                       <nav className="flex-1 overflow-y-auto px-6 py-8">
                         <ul className="space-y-2">
                           {navigation.map((item, index) => (
@@ -104,7 +145,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                             >
                               <Link
                                 href={item.href}
-                                className={`block rounded-lg px-4 py-3 text-lg font-medium transition-all duration-200 hover:bg-gray-50 ${
+                                className={`block rounded-lg px-4 py-3 text-lg font-medium transition-all duration-200 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#1a1a1a] focus:ring-offset-2 ${
                                   isActiveLink(item.href)
                                     ? 'border-l-4 border-[#1a1a1a] bg-[#DBDBDB] bg-opacity-20 text-[#1a1a1a]'
                                     : 'text-gray-700 hover:text-[#1a1a1a]'
@@ -122,7 +163,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: 0.8 }}
-                          className="mt-8 border-t border-gray-500 pt-8"
+                          className="mt-8 border-t border-gray-200 pt-8"
                         >
                           <h3 className="mb-4 px-4 text-xs font-semibold uppercase tracking-wider text-[#1a1a1a]">
                             Quick Links
@@ -137,7 +178,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                               >
                                 <Link
                                   href={item.href}
-                                  className="flex items-center space-x-3 rounded-lg px-4 py-2 text-sm text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-[#1a1a1a]"
+                                  className="flex items-center space-x-3 rounded-lg px-4 py-2 text-sm text-gray-600 transition-all duration-200 hover:bg-gray-50 hover:text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#1a1a1a] focus:ring-offset-2"
                                   onClick={onClose}
                                 >
                                   {item.icon}
@@ -159,7 +200,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                         <div className="space-y-4">
                           <a
                             href="mailto:contact@habitnova.com"
-                            className="group flex items-center space-x-3 text-gray-700 transition-colors hover:text-[#1a1a1a]"
+                            className="group flex items-center space-x-3 text-gray-700 transition-colors hover:text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#1a1a1a] focus:ring-offset-2 rounded-lg p-1"
                           >
                             <div className="flex-shrink-0 rounded-lg bg-white p-2 transition-colors group-hover:bg-[#DBDBDB] group-hover:bg-opacity-20">
                               <Mail className="h-5 w-5" />
@@ -173,7 +214,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           <div className="pt-4">
                             <Link
                               href="/contact"
-                              className="flex w-full items-center justify-center rounded-lg bg-[#1a1a1a] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gray-800"
+                              className="flex w-full items-center justify-center rounded-lg bg-[#1a1a1a] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-[#1a1a1a] focus:ring-offset-2"
                               onClick={onClose}
                             >
                               Get In Touch
