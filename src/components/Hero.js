@@ -32,8 +32,8 @@ const Hero = () => {
               transition={{ duration: 0.8, delay: 0.2 }}
             >
               Discover the{' '}
-              <span className="text-[#DBDBDB]">Science</span> Behind{' '}
-              <span className="text-[#DBDBDB]">Breaking Bad Habits</span>
+              <span className="font-anton text-[#DBDBDB]">Science</span> Behind{' '}
+              <span className=" font-anton text-[#DBDBDB]">Breaking Bad Habits</span>
             </motion.h1>
             
             {/* Subtitle */}
