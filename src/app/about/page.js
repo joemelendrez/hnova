@@ -21,7 +21,7 @@ export default function AboutPage() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-6">
-              About HabitNova
+              About Habit Nova
             </h1>
             <p className="text-xl text-gray-600 leading-relaxed">
               We&apos;re on a mission to help people understand the science behind habit formation 
@@ -45,7 +45,7 @@ export default function AboutPage() {
                 Our Mission
               </h2>
               <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-                At HabitNova, we believe that understanding the science behind habits is the key to lasting change. 
+                At Habit Nova, we believe that understanding the science behind habits is the key to lasting change. 
                 We translate complex research into actionable insights that anyone can apply to their daily life.
               </p>
               <p className="text-lg text-gray-600 leading-relaxed">

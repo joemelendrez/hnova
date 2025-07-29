@@ -80,7 +80,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.3, duration: 0.4, ease: 'easeOut' }}
                         >
-                          <h2 className="text-lg font-semibold text-[#1a1a1a]">HabitNova</h2>
+                          <h2 className="text-lg font-semibold text-[#1a1a1a]">Habit Nova</h2>
                           <p className="text-sm text-[#DBDBDB] font-medium">Transform Your Habits</p>
                         </motion.div>
                         <button
@@ -158,7 +158,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                       >
                         <div className="space-y-4">
                           <a
-                            href="mailto:hello@habitnova.com"
+                            href="mailto:contact@habitnova.com"
                             className="group flex items-center space-x-3 text-gray-700 transition-colors hover:text-[#1a1a1a]"
                           >
                             <div className="flex-shrink-0 rounded-lg bg-white p-2 transition-colors group-hover:bg-[#DBDBDB] group-hover:bg-opacity-20">
@@ -166,7 +166,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                             </div>
                             <div>
                               <p className="text-sm font-medium">Email Us</p>
-                              <p className="text-sm">hello@habitnova.com</p>
+                              <p className="text-sm">contact@habitnova.com</p>
                             </div>
                           </a>
 

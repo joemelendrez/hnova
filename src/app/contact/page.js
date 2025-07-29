@@ -76,7 +76,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-[#1a1a1a] mb-1">Email Us</h3>
-                    <p className="text-gray-600">hello@habitnova.com</p>
+                    <p className="text-gray-600">contact@habitnova.com</p>
                     <p className="text-sm text-gray-500">We typically respond within 24 hours</p>
                   </div>
                 </div>
@@ -87,7 +87,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-[#1a1a1a] mb-1">Collaboration</h3>
-                    <p className="text-gray-600">partnerships@habitnova.com</p>
+                    <p className="text-gray-600">contact@habitnova.com</p>
                     <p className="text-sm text-gray-500">For guest posts, partnerships, and media inquiries</p>
                   </div>
                 </div>

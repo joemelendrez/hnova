@@ -59,7 +59,7 @@ export default function BlogPage() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              The HabitNova Blog
+              The Habit Nova Blog
             </h1>
             <p className="text-xl text-gray-200 leading-relaxed mb-8">
               Evidence-based insights, practical strategies, and the latest research 
