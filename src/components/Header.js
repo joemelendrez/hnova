@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Mail, Phone } from 'lucide-react'
+import { Mail } from 'lucide-react'
 import Button from './Button'
 import MobileMenu from './MobileMenu'
 import AnimatedLogo from './AnimatedLogo'
@@ -55,6 +55,71 @@ const Header = () => {
   useEffect(() => {
     setMobileMenuOpen(false)
   }, [pathname])
+
+  // Handle mobile menu scroll lock
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      // Store current scroll position
+      const scrollY = window.scrollY
+      
+      // Prevent scrolling on body
+      document.body.style.position = 'fixed'
+      document.body.style.top = `-${scrollY}px`
+      document.body.style.width = '100%'
+      document.body.classList.add('menu-open')
+      
+      // Clean up function
+      return () => {
+        // Restore scrolling
+        document.body.style.position = ''
+        document.body.style.top = ''
+        document.body.style.width = ''
+        document.body.classList.remove('menu-open')
+        
+        // Restore scroll position
+        window.scrollTo(0, scrollY)
+      }
+    }
+  }, [mobileMenuOpen])
+
+  // Handle escape key to close menu
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false)
+      }
+    }
+
+    if (mobileMenuOpen) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [mobileMenuOpen])
+
+  // Handle click outside to close menu
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (mobileMenuOpen) {
+        // Check if click is outside the menu area
+        const menuPanel = document.querySelector('[data-mobile-menu]')
+        const animatedLogo = document.querySelector('[data-animated-logo]')
+        
+        if (menuPanel && !menuPanel.contains(e.target) && 
+            animatedLogo && !animatedLogo.contains(e.target)) {
+          setMobileMenuOpen(false)
+        }
+      }
+    }
+
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('touchstart', handleClickOutside)
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside)
+        document.removeEventListener('touchstart', handleClickOutside)
+      }
+    }
+  }, [mobileMenuOpen])
   
   const isActiveLink = (href) => {
     if (href === '/') {
@@ -62,9 +127,22 @@ const Header = () => {
     }
     return pathname.startsWith(href)
   }
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false)
+  }
   
   return (
     <>
+      {/* Mobile Menu Backdrop */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={closeMobileMenu}
+          aria-label="Close menu"
+        />
+      )}
+
       {/* Animated Logo for Mobile - Positioned outside header */}
       <motion.div
         className="fixed z-50 lg:hidden"
@@ -77,6 +155,7 @@ const Header = () => {
           x: mobileMenuOpen ? -340 : 0, // Slide left when menu opens
         }}
         transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        data-animated-logo // Add data attribute for click detection
       >
         <AnimatedLogo
           isMenuOpen={mobileMenuOpen}
@@ -87,8 +166,8 @@ const Header = () => {
       <header
         className={`fixed left-0 right-0 top-0 transition-all duration-300 ease-in-out ${
           scrolled
-            ? 'bg-[#1a1a1a] shadow-lg backdrop-blur-sm'
-            : 'bg-[#1a1a1a]'
+            ? 'bg-white shadow-sm backdrop-blur-sm'
+            : 'bg-white'
         } ${
           headerVisible ? 'translate-y-0' : '-translate-y-full'
         } ${
@@ -120,13 +199,13 @@ const Header = () => {
                   <Image
                     src="/logos/Habitlogo.svg"
                     alt="HabitNova Logo"
-                    width={100}
-                    height={100}
-                    className="mr-3 transition-all duration-200 group-hover:opacity-80"
+                    width={50}
+                    height={50}
+                    className="h-12 w-12 mr-3 transition-all duration-200 group-hover:opacity-80"
                     priority
                   />
                 </motion.div>
-                <span className="text-2xl font-bold text-[#1a1a1a] hover:text-gray-700">
+                <span className="font-anton text-2xl text-[#1a1a1a] hover:text-gray-700 transition-colors duration-200 uppercase">
                   Habit Nova
                 </span>
               </Link>
@@ -145,8 +224,8 @@ const Header = () => {
                     href={item.href}
                     className={`relative px-3 py-2 text-sm font-medium transition-colors duration-200 ${
                       isActiveLink(item.href)
-                        ? 'text-[#1a1a1a]'
-                        : 'text-gray-700 hover:text-[#1a1a1a]'
+                        ? 'text-[#fe0000]'
+                        : 'text-[#1a1a1a] hover:text-[#fe0000]'
                     }`}
                   >
                     {item.name}
@@ -154,7 +233,7 @@ const Header = () => {
                     {/* Active Link Underline */}
                     {isActiveLink(item.href) && (
                       <motion.span
-                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left rounded-full bg-[#1a1a1a]"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left rounded-full bg-[#fe0000]"
                         layoutId="activeLink"
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
@@ -169,7 +248,7 @@ const Header = () => {
                     {/* Hover Underline */}
                     {!isActiveLink(item.href) && (
                       <motion.span
-                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left rounded-full bg-[#1a1a1a]"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left rounded-full bg-[#fe0000]"
                         initial={{ scaleX: 0 }}
                         variants={{
                           hover: {
@@ -186,22 +265,18 @@ const Header = () => {
                 </motion.div>
               ))}
               
-              {/* Desktop Contact Info */}
-              <a
-                href="mailto:hello@habitnova.com"
-                className="flex items-center space-x-2 text-sm text-gray-700 transition-colors hover:text-[#1a1a1a]"
-              >
-                <Mail className="h-4 w-4" />
-                <span className="font-medium">hello@habitnova.com</span>
-              </a>
+              {/* Desktop CTA Button */}
+              <Button href="/contact" size="small" variant="accent">
+                Get Started
+              </Button>
             </nav>
 
             {/* Mobile - Email icon and space for external animated logo */}
             <div className="flex items-center space-x-3 lg:hidden">
               {/* Mobile Email Button */}
               <motion.a
-                href="mailto:hello@habitnova.com"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#DBDBDB] text-[#1a1a1a] shadow-sm transition-colors hover:bg-gray-300"
+                href="mailto:contact@habitnova.com"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#fe0000] text-white shadow-sm transition-colors hover:bg-[#cd1718]"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 transition={{ duration: 0.2 }}
@@ -220,13 +295,10 @@ const Header = () => {
       {/* Mobile Menu */}
       <MobileMenu
         open={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
+        onClose={closeMobileMenu}
         currentPath={pathname}
         navigation={navigation}
       />
-
-      {/* Spacer to prevent content overlap */}
-      {/*<div className="h-20 lg:h-24" />*/}
     </>
   )
 }
