@@ -10,11 +10,13 @@ module.exports = {
       fontFamily: {
         'anton': ['var(--font-anton)', 'sans-serif'],
         'roboto': ['var(--font-roboto)', 'sans-serif'],
-        'sans': ['var(--font-roboto)', 'sans-serif'], // Default sans-serif
+        'sans': ['var(--font-roboto)', 'sans-serif'],
       },
       colors: {
         'primary': '#1a1a1a',
         'secondary': '#DBDBDB',
+        'accent': '#fe0000',
+        'accent-hover': '#cd1718',
         'background': 'var(--background)',
         'foreground': 'var(--foreground)',
       },
