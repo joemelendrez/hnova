@@ -33,7 +33,7 @@ const Hero = () => {
             >
               Discover the{' '}
               <span className="font-anton text-[#DBDBDB]">Science</span> Behind{' '}
-              <span className=" font-anton text-[#DBDBDB]">Breaking Bad Habits</span>
+              <span className=" font-anton text-[#cd1718]">Breaking Bad Habits</span>
             </motion.h1>
             
             {/* Subtitle */}
