@@ -65,16 +65,6 @@ const Hero = () => {
                 Start Reading
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
               </Button>
-              
-              <Button 
-                href="/habit-tracker"
-                variant="secondary" 
-                size="large"
-                className="border-white text-white hover:bg-white hover:text-[#1a1a1a]"
-              >
-                <Target className="mr-2 h-5 w-5" />
-                Free Habit Tracker
-              </Button>
             </motion.div>
 
             {/* Stats Section */}
