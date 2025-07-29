@@ -80,8 +80,8 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: 0.3, duration: 0.4, ease: 'easeOut' }}
                         >
-                          <h2 className="text-lg font-semibold text-[#1a1a1a]">Habit Nova</h2>
-                          <p className="text-sm text-[#DBDBDB] font-medium">Transform Your Habits</p>
+                          <h2 className="text-2xl font-anton text-[#1a1a1a]">Habit Nova</h2>
+                          <p className="text-sm text-gray-700 font-medium">Transform Your Habits</p>
                         </motion.div>
                         <button
                           onClick={onClose}
