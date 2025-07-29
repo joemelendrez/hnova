@@ -1,7 +1,7 @@
 // lib/wordpress.js
 // GraphQL client for WordPress API
 
-const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://your-wordpress-site.com/graphql'
+const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://habitnova.com/graphql'
 
 async function fetchAPI(query, { variables } = {}) {
   const headers = { 'Content-Type': 'application/json' }
