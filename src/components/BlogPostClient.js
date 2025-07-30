@@ -126,33 +126,17 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Format content for display with HTML entity decoding and heading IDs
+  // Format content for display with HTML entity decoding
   const formatContent = (content) => {
     if (!content) return '';
     
     // First decode HTML entities, then clean up WordPress specific content
     let decodedContent = decodeHtmlEntities(content);
     
-    // Clean up WordPress content
-    decodedContent = decodedContent
+    return decodedContent
       .replace(/<!--.*?-->/g, '') // Remove comments
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts
       .replace(/\[.*?\]/g, ''); // Remove shortcodes
-
-    // Add IDs to headings for TOC navigation
-    let headingCounter = 0;
-    decodedContent = decodedContent.replace(/<(h[2-4])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attributes, content) => {
-      const id = `heading-${headingCounter}`;
-      headingCounter++;
-      
-      // Check if ID already exists in attributes
-      if (!attributes.includes('id=')) {
-        return `<${tag} id="${id}" ${attributes} style="scroll-margin-top: 120px;">${content}</${tag}>`;
-      }
-      return match;
-    });
-
-    return decodedContent;
   };
 
   const formattedContent = formatContent(post.content);
@@ -305,23 +289,6 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
 
         {/* Fixed Desktop Table of Contents */}
         <TableOfContents content={formattedContent} />
-
-        {/* Debug Button - Remove in production */}
-        {process.env.NODE_ENV === 'development' && (
-          <button
-            onClick={() => {
-              console.log('=== TOC DEBUG INFO ===');
-              const headings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
-              console.log('Found headings:', headings.length);
-              headings.forEach((h, i) => {
-                console.log(`${i}: ${h.tagName} - ID: ${h.id} - Text: ${h.textContent}`);
-              });
-            }}
-            className="fixed bottom-20 right-8 bg-red-500 text-white px-3 py-1 rounded text-sm z-50"
-          >
-            Debug TOC
-          </button>
-        )}
 
         {/* Article Footer */}
         <footer className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
