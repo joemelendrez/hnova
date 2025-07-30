@@ -8,16 +8,15 @@ const TableOfContents = ({ content }) => {
   const [headings, setHeadings] = useState([]);
   const [activeId, setActiveId] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  
+
   // Extract headings from HTML content
   useEffect(() => {
     if (!content) return;
-    
+
     // Create a temporary div to parse the HTML
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = content;
-    
+
     // Extract headings (h2, h3, h4)
     const headingElements = tempDiv.querySelectorAll('h2, h3, h4');
     const headingsData = Array.from(headingElements).map((heading, index) => {
@@ -31,145 +30,64 @@ const TableOfContents = ({ content }) => {
         level,
       };
     });
-    
+
     setHeadings(headingsData);
   }, [content]);
-  
+
   // Add IDs to actual headings in the DOM and set up intersection observer
   useEffect(() => {
     if (headings.length === 0) return;
-    
-    // Small delay to ensure DOM is fully rendered
-    const timeoutId = setTimeout(() => {
-      // Add IDs to actual headings in the rendered content
-      const actualHeadings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
-      
-      actualHeadings.forEach((heading, index) => {
-        if (headings[index]) {
-          heading.id = headings[index].id;
-          heading.style.scrollMarginTop = '120px'; // Offset for fixed header
-          
-          // Add a subtle highlight effect when heading is targeted
-          heading.style.transition = 'background-color 0.3s ease';
-        }
-      });
-      
-      // Set up intersection observer for active heading tracking
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              setActiveId(entry.target.id);
-            }
-          });
-        },
-        {
-          rootMargin: '-120px 0px -60% 0px',
-          threshold: 0.1,
-        }
-      );
-      
-      actualHeadings.forEach((heading) => {
-        observer.observe(heading);
-      });
-      
-      // Show/hide TOC based on article content visibility
-      const articleContent = document.getElementById('article-content');
-      if (articleContent) {
-        const articleObserver = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              setIsVisible(entry.isIntersecting);
-            });
-          },
-          {
-            rootMargin: '-100px 0px -100px 0px',
-            threshold: 0.1,
-          }
-        );
-        articleObserver.observe(articleContent);
-        
-        return () => {
-          actualHeadings.forEach((heading) => {
-            observer.unobserve(heading);
-          });
-          articleObserver.unobserve(articleContent);
-        };
+
+    // Add IDs to actual headings in the rendered content
+    const actualHeadings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
+    actualHeadings.forEach((heading, index) => {
+      if (headings[index]) {
+        heading.id = headings[index].id;
+        heading.scrollMarginTop = '100px'; // Offset for fixed header
       }
-      
-      return () => {
-        actualHeadings.forEach((heading) => {
-          observer.unobserve(heading);
+    });
+
+    // Set up intersection observer for active heading tracking
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
         });
-      };
-    }, 100); // Small delay to ensure content is rendered
-    
+      },
+      {
+        rootMargin: '-100px 0px -60% 0px',
+        threshold: 0.1,
+      }
+    );
+
+    actualHeadings.forEach((heading) => {
+      observer.observe(heading);
+    });
+
     return () => {
-      clearTimeout(timeoutId);
+      actualHeadings.forEach((heading) => {
+        observer.unobserve(heading);
+      });
     };
   }, [headings]);
-  
+
   // Scroll to heading
   const scrollToHeading = (id) => {
-    console.log('Clicking heading:', id); // Debug log
-    
     const element = document.getElementById(id);
     if (element) {
-      console.log('Found element:', element); // Debug log
-      
-      // Highlight the target heading briefly
-      element.style.backgroundColor = '#f3f4f6';
-      setTimeout(() => {
-        element.style.backgroundColor = '';
-      }, 1000);
-      
-      // Calculate scroll position with offset
-      const yOffset = -100; // Offset for fixed header
-      const elementTop = element.getBoundingClientRect().top;
-      const absoluteElementTop = elementTop + window.pageYOffset;
-      const middle = absoluteElementTop + yOffset;
-      
-      // Scroll to the element
-      window.scrollTo({
-        top: middle,
-        behavior: 'smooth'
-      });
-      
-      // Alternative method if the above doesn't work
-      // element.scrollIntoView({ 
-      //   behavior: 'smooth', 
-      //   block: 'start',
-      //   inline: 'nearest'
-      // });
-      
-    } else {
-      console.log('Element not found:', id); // Debug log
-      
-      // Fallback: try to find heading by text content
-      const allHeadings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
-      const targetHeading = headings.find(h => h.id === id);
-      
-      if (targetHeading) {
-        const matchingElement = Array.from(allHeadings).find(h =>
-          h.textContent.trim() === targetHeading.text
-        );
-        
-        if (matchingElement) {
-          console.log('Found by text match:', matchingElement);
-          matchingElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }
-      }
+      const yOffset = -80; // Offset for fixed header
+      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
     }
   };
-  
-  // Don't render if no headings or not visible
-  if (headings.length === 0 || !isVisible) return null;
-  
+
+  // Don't render if no headings
+  if (headings.length === 0) return null;
+
   return (
-    <div className="fixed right-8 top-1/2 transform -translate-y-1/2 w-80 max-h-[70vh] overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg p-6 z-30 hidden xl:block">
+    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-8 sticky top-24 z-10">
       {/* Header */}
       <div 
         className="flex items-center justify-between cursor-pointer mb-4"
@@ -206,7 +124,7 @@ const TableOfContents = ({ content }) => {
                       onClick={() => scrollToHeading(heading.id)}
                       className={`text-left w-full py-2 px-3 rounded-lg transition-all duration-200 hover:bg-gray-200 ${
                         activeId === heading.id
-                          ? 'bg-[#1a1a1a] text-white font-medium shadow-md'
+                          ? 'bg-[#1a1a1a] text-white font-medium'
                           : 'text-gray-700 hover:text-[#1a1a1a]'
                       } ${
                         heading.level === 2 ? 'text-base font-medium' :
