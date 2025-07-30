@@ -253,51 +253,75 @@ html {
 }
 
 .blog-content p {
-  @apply mb-6 text-lg leading-relaxed text-gray-700;
+  @apply mb-6 text-xl leading-relaxed text-gray-700;
 }
 
 .blog-content h1 {
-  @apply text-3xl md:text-4xl font-bold text-[#1a1a1a] mt-12 mb-6 leading-tight;
+  @apply text-4xl md:text-5xl font-bold text-[#1a1a1a] mt-12 mb-6 leading-tight;
 }
 
 .blog-content h2 {
-  @apply text-2xl md:text-3xl font-bold text-[#1a1a1a] mt-10 mb-5 leading-tight;
+  @apply text-3xl md:text-4xl font-bold text-[#1a1a1a] mt-10 mb-5 leading-tight;
 }
 
 .blog-content h3 {
-  @apply text-xl md:text-2xl font-bold text-[#1a1a1a] mt-8 mb-4 leading-tight;
+  @apply text-2xl md:text-3xl font-bold text-[#1a1a1a] mt-8 mb-4 leading-tight;
 }
 
 .blog-content h4 {
-  @apply text-lg md:text-xl font-semibold text-[#1a1a1a] mt-6 mb-3;
+  @apply text-xl md:text-2xl font-semibold text-[#1a1a1a] mt-6 mb-3;
 }
 
 .blog-content h5 {
-  @apply text-base md:text-lg font-semibold text-[#1a1a1a] mt-6 mb-3;
+  @apply text-lg md:text-xl font-semibold text-[#1a1a1a] mt-6 mb-3;
 }
 
 .blog-content h6 {
-  @apply text-sm md:text-base font-semibold text-[#1a1a1a] mt-6 mb-3 uppercase tracking-wide;
+  @apply text-base md:text-lg font-semibold text-[#1a1a1a] mt-6 mb-3 uppercase tracking-wide;
 }
 
 .blog-content ul {
-  @apply mb-6 space-y-3 pl-6;
+  @apply mb-6 space-y-3 pl-8 list-disc;
 }
 
 .blog-content ol {
-  @apply mb-6 space-y-3 pl-6;
+  @apply mb-6 space-y-3 pl-8 list-decimal;
 }
 
 .blog-content li {
-  @apply text-lg text-gray-700 leading-relaxed;
+  @apply text-xl text-gray-700 leading-relaxed;
+}
+
+.blog-content ul li {
+  @apply marker:text-gray-400;
+}
+
+.blog-content ol li {
+  @apply marker:text-gray-400 marker:font-medium;
+}
+
+/* Nested lists */
+.blog-content ul ul,
+.blog-content ol ol,
+.blog-content ul ol,
+.blog-content ol ul {
+  @apply mt-2 mb-2 pl-6;
+}
+
+.blog-content ul ul {
+  @apply list-[circle];
+}
+
+.blog-content ul ul ul {
+  @apply list-[square];
 }
 
 .blog-content blockquote {
-  @apply border-l-4 border-[#DBDBDB] pl-6 py-4 my-8 bg-gray-50 italic text-gray-600 rounded-r-lg text-lg;
+  @apply border-l-4 border-[#DBDBDB] pl-6 py-4 my-8 bg-gray-50 italic text-gray-600 rounded-r-lg text-xl;
 }
 
 .blog-content blockquote p {
-  @apply mb-0 text-gray-600 text-lg;
+  @apply mb-0 text-gray-600 text-xl;
 }
 
 .blog-content a {
@@ -321,7 +345,7 @@ html {
 }
 
 .blog-content code {
-  @apply bg-gray-100 px-2 py-1 rounded text-base text-[#1a1a1a] font-mono;
+  @apply bg-gray-100 px-2 py-1 rounded text-lg text-[#1a1a1a] font-mono;
 }
 
 .blog-content pre {
@@ -333,15 +357,15 @@ html {
 }
 
 .blog-content table {
-  @apply w-full border-collapse border border-gray-200 my-6 text-base;
+  @apply w-full border-collapse border border-gray-200 my-6 text-lg;
 }
 
 .blog-content th {
-  @apply bg-gray-50 border border-gray-200 px-4 py-3 text-left font-semibold text-[#1a1a1a] text-base;
+  @apply bg-gray-50 border border-gray-200 px-4 py-3 text-left font-semibold text-[#1a1a1a] text-lg;
 }
 
 .blog-content td {
-  @apply border border-gray-200 px-4 py-3 text-gray-700 text-base leading-relaxed;
+  @apply border border-gray-200 px-4 py-3 text-gray-700 text-lg leading-relaxed;
 }
 
 /* WordPress specific content cleanup */
@@ -350,7 +374,7 @@ html {
 }
 
 .blog-content .wp-block-quote {
-  @apply border-l-4 border-[#DBDBDB] pl-6 py-4 my-8 bg-gray-50 italic text-lg;
+  @apply border-l-4 border-[#DBDBDB] pl-6 py-4 my-8 bg-gray-50 italic text-xl;
 }
 
 .blog-content .wp-block-separator {
@@ -360,43 +384,35 @@ html {
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .blog-content h1 {
-    @apply text-2xl mt-8 mb-4;
+    @apply text-3xl mt-8 mb-4;
   }
   
   .blog-content h2 {
-    @apply text-xl mt-6 mb-4;
+    @apply text-2xl mt-6 mb-4;
   }
   
   .blog-content h3 {
-    @apply text-lg mt-6 mb-3;
+    @apply text-xl mt-6 mb-3;
   }
   
   .blog-content p {
-    @apply mb-5 text-base leading-relaxed;
+    @apply mb-5 text-lg leading-relaxed;
   }
   
   .blog-content li {
-    @apply text-base;
+    @apply text-lg;
   }
   
   .blog-content blockquote {
-    @apply pl-4 py-3 my-6 text-base;
+    @apply pl-4 py-3 my-6 text-lg;
   }
   
   .blog-content blockquote p {
-    @apply text-base;
+    @apply text-lg;
   }
   
   .blog-content code {
-    @apply text-sm;
-  }
-  
-  .blog-content pre {
-    @apply text-sm;
-  }
-  
-  .blog-content pre code {
-    @apply text-sm;
+    @apply text-base;
   }
 }
 
