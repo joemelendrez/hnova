@@ -1,77 +1,102 @@
 // src/components/BlogPostClient.js
-'use client'
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { 
-  ArrowLeft, 
-  Clock, 
-  Calendar, 
-  Share2, 
-  Facebook, 
-  Twitter, 
+'use client';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  Clock,
+  Calendar,
+  Share2,
+  Facebook,
+  Twitter,
   Linkedin,
   Copy,
   Check,
   ArrowRight,
-  ChevronUp
-} from 'lucide-react'
-import Button from '@/components/Button'
+  ChevronUp,
+} from 'lucide-react';
+import Button from '@/components/Button';
 
 const BlogPostClient = ({ post, relatedPosts = [] }) => {
-  const [copied, setCopied] = useState(false)
-  const [readingProgress, setReadingProgress] = useState(0)
-  const [showScrollTop, setShowScrollTop] = useState(false)
+  const [copied, setCopied] = useState(false);
+  const [readingProgress, setReadingProgress] = useState(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Track reading progress
   useEffect(() => {
     const updateReadingProgress = () => {
-      const article = document.getElementById('article-content')
-      if (!article) return
+      // Only track progress if we're on a blog post page
+      const article = document.getElementById('article-content');
+      if (!article) return;
 
-      const scrollTop = window.scrollY
-      const docHeight = article.offsetHeight
-      const winHeight = window.innerHeight
-      const scrollPercent = scrollTop / (docHeight - winHeight)
-      const readingPercent = Math.min(100, Math.max(0, scrollPercent * 100))
-      
-      setReadingProgress(readingPercent)
-      setShowScrollTop(scrollTop > 400)
-    }
+      const articleTop = article.offsetTop;
+      const articleHeight = article.offsetHeight;
+      const articleBottom = articleTop + articleHeight;
+      const scrollTop = window.scrollY;
+      const windowHeight = window.innerHeight;
 
-    window.addEventListener('scroll', updateReadingProgress)
-    return () => window.removeEventListener('scroll', updateReadingProgress)
-  }, [])
+      // Start tracking when article comes into view
+      const startReading = articleTop - windowHeight * 0.3;
+      const finishReading = articleBottom - windowHeight * 0.7;
+
+      if (scrollTop < startReading) {
+        setReadingProgress(0);
+      } else if (scrollTop > finishReading) {
+        setReadingProgress(100);
+      } else {
+        const progress =
+          ((scrollTop - startReading) / (finishReading - startReading)) * 100;
+        setReadingProgress(Math.min(100, Math.max(0, progress)));
+      }
+
+      setShowScrollTop(scrollTop > 400);
+    };
+
+    window.addEventListener('scroll', updateReadingProgress, { passive: true });
+    updateReadingProgress(); // Call once to set initial state
+
+    return () => window.removeEventListener('scroll', updateReadingProgress);
+  }, []);
 
   // Share functions
-  const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
-  const shareTitle = post.title
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareTitle = post.title;
 
   const shareToFacebook = () => {
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`, '_blank')
-  }
+    window.open(
+      `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`,
+      '_blank'
+    );
+  };
 
   const shareToTwitter = () => {
-    window.open(`https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`, '_blank')
-  }
+    window.open(
+      `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`,
+      '_blank'
+    );
+  };
 
   const shareToLinkedIn = () => {
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`, '_blank')
-  }
+    window.open(
+      `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`,
+      '_blank'
+    );
+  };
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(shareUrl)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy link:', err)
+      console.error('Failed to copy link:', err);
     }
-  }
+  };
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Format content for display
   const formatContent = (content) => {
@@ -79,19 +104,11 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
     return content
       .replace(/<!--.*?-->/g, '') // Remove comments
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts
-      .replace(/\[.*?\]/g, '') // Remove shortcodes
-  }
+      .replace(/\[.*?\]/g, ''); // Remove shortcodes
+  };
 
   return (
     <>
-      {/* Reading Progress Bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-[#DBDBDB] origin-left z-50"
-        style={{ scaleX: readingProgress / 100 }}
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: readingProgress / 100 }}
-      />
-
       <article className="pt-16 lg:pt-20">
         {/* Back Button */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -177,7 +194,11 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                 className="p-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 rounded-lg hover:bg-gray-100"
                 aria-label="Copy link"
               >
-                {copied ? <Check className="h-5 w-5 text-green-600" /> : <Copy className="h-5 w-5" />}
+                {copied ? (
+                  <Check className="h-5 w-5 text-green-600" />
+                ) : (
+                  <Copy className="h-5 w-5" />
+                )}
               </button>
             </div>
           </motion.div>
@@ -197,7 +218,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                 alt={post.imageAlt || post.title}
                 className="w-full h-64 md:h-96 lg:h-[500px] object-cover rounded-2xl shadow-lg"
                 onError={(e) => {
-                  e.target.style.display = 'none'
+                  e.target.style.display = 'none';
                 }}
               />
             </div>
@@ -212,8 +233,8 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16"
         >
-          <div 
-            className="prose prose-lg max-w-none prose-headings:text-[#1a1a1a] prose-headings:font-bold prose-a:text-[#1a1a1a] prose-a:no-underline hover:prose-a:underline prose-strong:text-[#1a1a1a] prose-blockquote:border-l-[#DBDBDB] prose-blockquote:text-gray-700"
+          <div
+            className="blog-content prose prose-lg max-w-none"
             dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
           />
         </motion.div>
@@ -228,7 +249,9 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
           >
             {/* Tags */}
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-[#1a1a1a] mb-4">Filed Under:</h3>
+              <h3 className="text-lg font-semibold text-[#1a1a1a] mb-4">
+                Filed Under:
+              </h3>
               <div className="flex flex-wrap gap-2">
                 <Link
                   href={`/blog?category=${post.categorySlug}`}
@@ -242,7 +265,9 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
             {/* Share Again */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <span className="text-gray-700 font-medium">Share this article:</span>
+                <span className="text-gray-700 font-medium">
+                  Share this article:
+                </span>
                 <div className="flex gap-2">
                   <button
                     onClick={shareToFacebook}
@@ -264,7 +289,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                   </button>
                 </div>
               </div>
-              
+
               <Link
                 href="/blog"
                 className="text-[#1a1a1a] font-semibold hover:underline"
@@ -288,7 +313,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                 <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 text-center">
                   Related Articles
                 </h2>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {relatedPosts.map((relatedPost, index) => (
                     <motion.div
@@ -298,7 +323,10 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                       viewport={{ once: true }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
                     >
-                      <Link href={`/blog/${relatedPost.slug}`} className="group">
+                      <Link
+                        href={`/blog/${relatedPost.slug}`}
+                        className="group"
+                      >
                         <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                           <div className="relative h-48">
                             <img
@@ -306,7 +334,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                               alt={relatedPost.imageAlt || relatedPost.title}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               onError={(e) => {
-                                e.target.src = '/images/blog/default.jpg'
+                                e.target.src = '/images/blog/default.jpg';
                               }}
                             />
                           </div>
@@ -354,7 +382,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
         </motion.button>
       )}
     </>
-  )
-}
+  );
+};
 
-export default BlogPostClient
+export default BlogPostClient;
