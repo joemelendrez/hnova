@@ -35,12 +35,52 @@ const MobileTableOfContents = ({ content }) => {
   
   // Scroll to heading
   const scrollToHeading = (id) => {
+    console.log('Mobile TOC - Clicking heading:', id); // Debug log
+    
     const element = document.getElementById(id);
     if (element) {
+      console.log('Mobile TOC - Found element:', element); // Debug log
+      
+      // Highlight the target heading briefly
+      element.style.backgroundColor = '#f3f4f6';
+      setTimeout(() => {
+        element.style.backgroundColor = '';
+      }, 1000);
+      
+      // Calculate scroll position with offset
       const yOffset = -100; // Offset for fixed header
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      const elementTop = element.getBoundingClientRect().top;
+      const absoluteElementTop = elementTop + window.pageYOffset;
+      const middle = absoluteElementTop + yOffset;
+      
+      // Scroll to the element
+      window.scrollTo({
+        top: middle,
+        behavior: 'smooth'
+      });
+      
       setIsCollapsed(true); // Collapse after clicking
+    } else {
+      console.log('Mobile TOC - Element not found:', id); // Debug log
+      
+      // Fallback: try to find heading by text content
+      const allHeadings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
+      const targetHeading = headings.find(h => h.id === id);
+      
+      if (targetHeading) {
+        const matchingElement = Array.from(allHeadings).find(h =>
+          h.textContent.trim() === targetHeading.text
+        );
+        
+        if (matchingElement) {
+          console.log('Mobile TOC - Found by text match:', matchingElement);
+          matchingElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+          setIsCollapsed(true); // Collapse after clicking
+        }
+      }
     }
   };
   
