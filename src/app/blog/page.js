@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Search, Clock, ArrowRight, Filter } from 'lucide-react'
+import { Search, Clock, ArrowRight, Filter, Loader} from 'lucide-react'
 import { 
   getAllPosts, 
   searchPosts, 
@@ -277,7 +277,7 @@ export default function BlogPage() {
                   >
                     {loadingMore ? (
                       <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Loader className="mr-2 h-5 w-5 animate-spin" />
                         Loading...
                       </>
                     ) : (
