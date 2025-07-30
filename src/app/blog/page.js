@@ -263,11 +263,11 @@ export default function BlogPage() {
           
           {/* Selected Categories */}
           {selectedCategories.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
               {selectedCategories.map((category) => (
                 <span
                   key={category}
-                  className="inline-flex items-center px-3 py-1 bg-[#1a1a1a] text-white text-sm font-medium rounded-full"
+                  className="inline-flex items-center px-3 py-1 bg-[#1a1a1a] text-white text-sm font-medium rounded-full whitespace-nowrap flex-shrink-0"
                 >
                   {category}
                   <button
@@ -281,14 +281,14 @@ export default function BlogPage() {
             </div>
           )}
           
-          {/* Category Buttons */}
-          <div className="flex flex-wrap gap-2">
+          {/* Category Buttons - Scrollable */}
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {categories.map((category) => (
               <button
                 key={category.name}
                 onClick={() => toggleCategory(category.name)}
                 disabled={searching || loading}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap disabled:opacity-50 ${
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 disabled:opacity-50 ${
                   selectedCategories.includes(category.name)
                     ? 'bg-[#1a1a1a] text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -298,6 +298,13 @@ export default function BlogPage() {
               </button>
             ))}
           </div>
+          
+          {/* Scroll indicator */}
+          {categories.length > 4 && (
+            <div className="text-xs text-gray-400 mt-2 text-center">
+              ← Scroll to see more categories →
+            </div>
+          )}
         </div>
       </section>
 
