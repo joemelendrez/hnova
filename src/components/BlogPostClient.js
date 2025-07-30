@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import Button from '@/components/Button';
 import TableOfContents from '@/components/TableOfContents';
+import MobileTableOfContents from '@/components/MobileTableOfContents';
 
 const BlogPostClient = ({ post, relatedPosts = [] }) => {
   const [copied, setCopied] = useState(false);
@@ -274,8 +275,8 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            {/* Table of Contents */}
-            <TableOfContents content={formattedContent} />
+            {/* Mobile Table of Contents */}
+            <MobileTableOfContents content={formattedContent} />
 
             {/* Article Content */}
             <div
@@ -285,6 +286,9 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
             />
           </motion.div>
         </div>
+
+        {/* Fixed Desktop Table of Contents */}
+        <TableOfContents content={formattedContent} />
 
         {/* Article Footer */}
         <footer className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">

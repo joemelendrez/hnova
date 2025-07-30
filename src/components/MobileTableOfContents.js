@@ -1,23 +1,21 @@
-// src/components/TableOfContents.js
+// src/components/MobileTableOfContents.js
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { List, ChevronDown, ChevronUp } from 'lucide-react';
 
-const TableOfContents = ({ content }) => {
+const MobileTableOfContents = ({ content }) => {
   const [headings, setHeadings] = useState([]);
-  const [activeId, setActiveId] = useState('');
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  
+  const [isCollapsed, setIsCollapsed] = useState(true);
+
   // Extract headings from HTML content
   useEffect(() => {
     if (!content) return;
-    
+
     // Create a temporary div to parse the HTML
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = content;
-    
+
     // Extract headings (h2, h3, h4)
     const headingElements = tempDiv.querySelectorAll('h2, h3, h4');
     const headingsData = Array.from(headingElements).map((heading, index) => {
@@ -31,73 +29,10 @@ const TableOfContents = ({ content }) => {
         level,
       };
     });
-    
+
     setHeadings(headingsData);
   }, [content]);
-  
-  // Add IDs to actual headings in the DOM and set up intersection observer
-  useEffect(() => {
-    if (headings.length === 0) return;
-    
-    // Add IDs to actual headings in the rendered content
-    const actualHeadings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
-    actualHeadings.forEach((heading, index) => {
-      if (headings[index]) {
-        heading.id = headings[index].id;
-        heading.style.scrollMarginTop = '120px'; // Offset for fixed header
-      }
-    });
-    
-    // Set up intersection observer for active heading tracking
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
-        });
-      },
-      {
-        rootMargin: '-120px 0px -60% 0px',
-        threshold: 0.1,
-      }
-    );
-    
-    actualHeadings.forEach((heading) => {
-      observer.observe(heading);
-    });
-    
-    // Show/hide TOC based on article content visibility
-    const articleContent = document.getElementById('article-content');
-    if (articleContent) {
-      const articleObserver = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            setIsVisible(entry.isIntersecting);
-          });
-        },
-        {
-          rootMargin: '-100px 0px -100px 0px',
-          threshold: 0.1,
-        }
-      );
-      articleObserver.observe(articleContent);
-      
-      return () => {
-        actualHeadings.forEach((heading) => {
-          observer.unobserve(heading);
-        });
-        articleObserver.unobserve(articleContent);
-      };
-    }
-    
-    return () => {
-      actualHeadings.forEach((heading) => {
-        observer.unobserve(heading);
-      });
-    };
-  }, [headings]);
-  
+
   // Scroll to heading
   const scrollToHeading = (id) => {
     const element = document.getElementById(id);
@@ -105,14 +40,15 @@ const TableOfContents = ({ content }) => {
       const yOffset = -100; // Offset for fixed header
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
       window.scrollTo({ top: y, behavior: 'smooth' });
+      setIsCollapsed(true); // Collapse after clicking
     }
   };
-  
-  // Don't render if no headings or not visible
-  if (headings.length === 0 || !isVisible) return null;
-  
+
+  // Don't render if no headings
+  if (headings.length === 0) return null;
+
   return (
-    <div className="fixed right-8 top-1/2 transform -translate-y-1/2 w-80 max-h-[70vh] overflow-y-auto bg-white border border-gray-200 rounded-xl shadow-lg p-6 z-30 hidden xl:block">
+    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-8 xl:hidden">
       {/* Header */}
       <div 
         className="flex items-center justify-between cursor-pointer mb-4"
@@ -147,11 +83,7 @@ const TableOfContents = ({ content }) => {
                   <li key={heading.id}>
                     <button
                       onClick={() => scrollToHeading(heading.id)}
-                      className={`text-left w-full py-2 px-3 rounded-lg transition-all duration-200 hover:bg-gray-200 ${
-                        activeId === heading.id
-                          ? 'bg-[#1a1a1a] text-white font-medium'
-                          : 'text-gray-700 hover:text-[#1a1a1a]'
-                      } ${
+                      className={`text-left w-full py-2 px-3 rounded-lg transition-all duration-200 hover:bg-gray-200 text-gray-700 hover:text-[#1a1a1a] ${
                         heading.level === 2 ? 'text-base font-medium' :
                         heading.level === 3 ? 'text-sm ml-4' :
                         'text-sm ml-8'
@@ -170,4 +102,4 @@ const TableOfContents = ({ content }) => {
   );
 };
 
-export default TableOfContents;
+export default MobileTableOfContents;
