@@ -206,7 +206,7 @@ const TableOfContents = ({ content }) => {
                       onClick={() => scrollToHeading(heading.id)}
                       className={`text-left w-full py-2 px-3 rounded-lg transition-all duration-200 hover:bg-gray-200 ${
                         activeId === heading.id
-                          ? 'bg-[#1a1a1a] text-white font-medium shadow-md'
+                          ? 'bg-[#1a1a1a] text-white font-medium'
                           : 'text-gray-700 hover:text-[#1a1a1a]'
                       } ${
                         heading.level === 2 ? 'text-base font-medium' :
