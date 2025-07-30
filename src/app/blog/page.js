@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Search, Clock, ArrowRight, Filter, Loader} from 'lucide-react'
+import { Search, Clock, ArrowRight, Filter, Loader, X } from 'lucide-react'
 import { 
   getAllPosts, 
   searchPosts, 
@@ -15,9 +15,9 @@ import BlogPageSkeleton from '@/components/BlogPageSkeleton'
 
 export default function BlogPage() {
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedCategories, setSelectedCategories] = useState([]) // Changed to array
   const [posts, setPosts] = useState([])
-  const [categories, setCategories] = useState(['All'])
+  const [categories, setCategories] = useState([]) // Store category objects
   const [loading, setLoading] = useState(true)
   const [searching, setSearching] = useState(false)
   const [hasNextPage, setHasNextPage] = useState(false)
@@ -42,13 +42,15 @@ export default function BlogPage() {
         setHasNextPage(postsData.pageInfo.hasNextPage)
         setEndCursor(postsData.pageInfo.endCursor)
         
-        // Set up categories
-        const categoryNames = ['All', ...categoriesData.map(edge => edge.node.name)]
-        setCategories(categoryNames)
+        // Set up categories with both name and slug
+        const categoryList = categoriesData.map(edge => ({
+          name: edge.node.name,
+          slug: edge.node.slug
+        }))
+        setCategories(categoryList)
         
       } catch (error) {
         console.error('Error fetching blog data:', error)
-        // Fallback to empty state
         setPosts([])
       } finally {
         setLoading(false)
@@ -61,9 +63,11 @@ export default function BlogPage() {
   // Handle search
   useEffect(() => {
     if (!searchTerm) {
-      // Reset to all posts when search is cleared
-      if (selectedCategory === 'All') {
-        handleCategoryChange('All')
+      // Reset to category filter when search is cleared
+      if (selectedCategories.length === 0) {
+        fetchAllPosts()
+      } else {
+        handleCategoryFilter()
       }
       return
     }
@@ -85,31 +89,71 @@ export default function BlogPage() {
     }, 500)
     
     return () => clearTimeout(searchDebounce)
-  }, [searchTerm, selectedCategory])
-  
-  // Handle category change
-  const handleCategoryChange = async (category) => {
-    setSelectedCategory(category)
-    setSearchTerm('') // Clear search when changing category
-    
+  }, [searchTerm])
+
+  // Handle category filtering when categories change
+  useEffect(() => {
+    if (!searchTerm) {
+      handleCategoryFilter()
+    }
+  }, [selectedCategories])
+
+  // Fetch all posts
+  const fetchAllPosts = async () => {
     try {
       setLoading(true)
-      let postsData
-      
-      if (category === 'All') {
-        postsData = await getAllPosts(12)
-      } else {
-        const categoryMapping = getCategoryMapping()
-        const categorySlug = Object.keys(categoryMapping).find(
-          key => categoryMapping[key] === category
-        ) || category.toLowerCase().replace(/\s+/g, '-')
-        postsData = await getPostsByCategory(categorySlug, 12)
-      }
-      
+      const postsData = await getAllPosts(12)
       const formattedPosts = postsData.edges.map(edge => formatPostData(edge.node))
       setPosts(formattedPosts)
-      setHasNextPage(postsData.pageInfo?.hasNextPage || false)
-      setEndCursor(postsData.pageInfo?.endCursor || null)
+      setHasNextPage(postsData.pageInfo.hasNextPage)
+      setEndCursor(postsData.pageInfo.endCursor)
+    } catch (error) {
+      console.error('Error fetching all posts:', error)
+      setPosts([])
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  // Handle category filtering
+  const handleCategoryFilter = async () => {
+    if (selectedCategories.length === 0) {
+      // No categories selected, show all posts
+      fetchAllPosts()
+      return
+    }
+
+    try {
+      setLoading(true)
+      
+      // Fetch posts for each selected category
+      const categoryPromises = selectedCategories.map(categoryName => {
+        const category = categories.find(cat => cat.name === categoryName)
+        const categorySlug = category?.slug || categoryName.toLowerCase().replace(/\s+/g, '-')
+        return getPostsByCategory(categorySlug, 50) // Get more posts to avoid duplicates
+      })
+      
+      const categoryResults = await Promise.all(categoryPromises)
+      
+      // Combine and deduplicate posts
+      const allPosts = []
+      const seenIds = new Set()
+      
+      categoryResults.forEach(result => {
+        result.edges.forEach(edge => {
+          if (!seenIds.has(edge.node.id)) {
+            seenIds.add(edge.node.id)
+            allPosts.push(formatPostData(edge.node))
+          }
+        })
+      })
+      
+      // Sort by date (newest first)
+      allPosts.sort((a, b) => new Date(b.date) - new Date(a.date))
+      
+      setPosts(allPosts)
+      setHasNextPage(false) // Disable load more for filtered results
+      setEndCursor(null)
       
     } catch (error) {
       console.error('Error fetching category posts:', error)
@@ -118,10 +162,29 @@ export default function BlogPage() {
       setLoading(false)
     }
   }
+
+  // Toggle category selection
+  const toggleCategory = (categoryName) => {
+    setSearchTerm('') // Clear search when changing categories
+    setSelectedCategories(prev => {
+      if (prev.includes(categoryName)) {
+        // Remove category
+        return prev.filter(cat => cat !== categoryName)
+      } else {
+        // Add category
+        return [...prev, categoryName]
+      }
+    })
+  }
+
+  // Clear all category filters
+  const clearAllCategories = () => {
+    setSelectedCategories([])
+  }
   
-  // Load more posts
+  // Load more posts (only works when no filters are applied)
   const loadMorePosts = async () => {
-    if (!hasNextPage || loadingMore) return
+    if (!hasNextPage || loadingMore || selectedCategories.length > 0) return
     
     try {
       setLoadingMore(true)
@@ -139,10 +202,8 @@ export default function BlogPage() {
     }
   }
   
-  const isLoading = loading || searching
-  
   // Show skeleton while loading
-  if (loading) {
+  if (loading && posts.length === 0) {
     return <BlogPageSkeleton />
   }
   
@@ -187,20 +248,53 @@ export default function BlogPage() {
       {/* Categories Filter */}
       <section className="py-8 bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4 overflow-x-auto">
+          <div className="flex items-center gap-4 mb-4">
             <Filter className="h-5 w-5 text-gray-500 flex-shrink-0" />
+            <span className="text-sm font-medium text-gray-700">Filter by categories:</span>
+            {selectedCategories.length > 0 && (
+              <button
+                onClick={clearAllCategories}
+                className="text-sm text-red-600 hover:text-red-800 font-medium"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+          
+          {/* Selected Categories */}
+          {selectedCategories.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {selectedCategories.map((category) => (
+                <span
+                  key={category}
+                  className="inline-flex items-center px-3 py-1 bg-[#1a1a1a] text-white text-sm font-medium rounded-full"
+                >
+                  {category}
+                  <button
+                    onClick={() => toggleCategory(category)}
+                    className="ml-2 hover:bg-gray-700 rounded-full p-0.5"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+          
+          {/* Category Buttons */}
+          <div className="flex flex-wrap gap-2">
             {categories.map((category) => (
               <button
-                key={category}
-                onClick={() => handleCategoryChange(category)}
-                disabled={searching}
+                key={category.name}
+                onClick={() => toggleCategory(category.name)}
+                disabled={searching || loading}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap disabled:opacity-50 ${
-                  selectedCategory === category
+                  selectedCategories.includes(category.name)
                     ? 'bg-[#1a1a1a] text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
-                {category}
+                {category.name}
               </button>
             ))}
           </div>
@@ -210,7 +304,22 @@ export default function BlogPage() {
       {/* Blog Posts Grid */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {searching ? (
+          {/* Filter Summary */}
+          {selectedCategories.length > 0 && !searchTerm && (
+            <div className="mb-8">
+              <p className="text-gray-600">
+                Showing articles from: <span className="font-semibold">{selectedCategories.join(', ')}</span>
+              </p>
+            </div>
+          )}
+
+          {loading && posts.length === 0 ? (
+            // Loading State
+            <div className="flex items-center justify-center py-12">
+              <Loader className="w-8 h-8 animate-spin text-[#1a1a1a]" />
+              <span className="ml-2 text-gray-600">Loading articles...</span>
+            </div>
+          ) : searching ? (
             // Searching State
             <div className="flex items-center justify-center py-12">
               <div className="w-8 h-8 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin"></div>
@@ -267,8 +376,8 @@ export default function BlogPage() {
                 ))}
               </div>
               
-              {/* Load More Button */}
-              {hasNextPage && !searchTerm && (
+              {/* Load More Button - Only show when no filters are applied */}
+              {hasNextPage && !searchTerm && selectedCategories.length === 0 && (
                 <div className="text-center mt-12">
                   <button
                     onClick={loadMorePosts}
@@ -297,16 +406,30 @@ export default function BlogPage() {
               <p className="text-gray-600 mb-6">
                 {searchTerm 
                   ? `No results for "${searchTerm}". Try adjusting your search terms.`
-                  : 'No articles available in this category.'
+                  : selectedCategories.length > 0 
+                    ? `No articles found in the selected categories: ${selectedCategories.join(', ')}`
+                    : 'No articles available.'
                 }
               </p>
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm('')}
-                  className="text-[#1a1a1a] font-semibold hover:underline"
-                >
-                  Clear search
-                </button>
+              {(searchTerm || selectedCategories.length > 0) && (
+                <div className="space-x-4">
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm('')}
+                      className="text-[#1a1a1a] font-semibold hover:underline"
+                    >
+                      Clear search
+                    </button>
+                  )}
+                  {selectedCategories.length > 0 && (
+                    <button
+                      onClick={clearAllCategories}
+                      className="text-[#1a1a1a] font-semibold hover:underline"
+                    >
+                      Clear filters
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           )}
