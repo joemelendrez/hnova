@@ -7,15 +7,15 @@ import { List, ChevronDown, ChevronUp } from 'lucide-react';
 const MobileTableOfContents = ({ content }) => {
   const [headings, setHeadings] = useState([]);
   const [isCollapsed, setIsCollapsed] = useState(true);
-
+  
   // Extract headings from HTML content
   useEffect(() => {
     if (!content) return;
-
+    
     // Create a temporary div to parse the HTML
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = content;
-
+    
     // Extract headings (h2, h3, h4)
     const headingElements = tempDiv.querySelectorAll('h2, h3, h4');
     const headingsData = Array.from(headingElements).map((heading, index) => {
@@ -29,24 +29,64 @@ const MobileTableOfContents = ({ content }) => {
         level,
       };
     });
-
+    
     setHeadings(headingsData);
   }, [content]);
-
+  
   // Scroll to heading
   const scrollToHeading = (id) => {
+    console.log('Mobile TOC - Clicking heading:', id); // Debug log
+    
     const element = document.getElementById(id);
     if (element) {
+      console.log('Mobile TOC - Found element:', element); // Debug log
+      
+      // Highlight the target heading briefly
+      element.style.backgroundColor = '#f3f4f6';
+      setTimeout(() => {
+        element.style.backgroundColor = '';
+      }, 1000);
+      
+      // Calculate scroll position with offset
       const yOffset = -100; // Offset for fixed header
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      const elementTop = element.getBoundingClientRect().top;
+      const absoluteElementTop = elementTop + window.pageYOffset;
+      const middle = absoluteElementTop + yOffset;
+      
+      // Scroll to the element
+      window.scrollTo({
+        top: middle,
+        behavior: 'smooth'
+      });
+      
       setIsCollapsed(true); // Collapse after clicking
+    } else {
+      console.log('Mobile TOC - Element not found:', id); // Debug log
+      
+      // Fallback: try to find heading by text content
+      const allHeadings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
+      const targetHeading = headings.find(h => h.id === id);
+      
+      if (targetHeading) {
+        const matchingElement = Array.from(allHeadings).find(h =>
+          h.textContent.trim() === targetHeading.text
+        );
+        
+        if (matchingElement) {
+          console.log('Mobile TOC - Found by text match:', matchingElement);
+          matchingElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+          setIsCollapsed(true); // Collapse after clicking
+        }
+      }
     }
   };
-
+  
   // Don't render if no headings
   if (headings.length === 0) return null;
-
+  
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-8 xl:hidden">
       {/* Header */}

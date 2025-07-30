@@ -39,72 +39,129 @@ const TableOfContents = ({ content }) => {
   useEffect(() => {
     if (headings.length === 0) return;
     
-    // Add IDs to actual headings in the rendered content
-    const actualHeadings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
-    actualHeadings.forEach((heading, index) => {
-      if (headings[index]) {
-        heading.id = headings[index].id;
-        heading.style.scrollMarginTop = '120px'; // Offset for fixed header
-      }
-    });
-    
-    // Set up intersection observer for active heading tracking
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
-        });
-      },
-      {
-        rootMargin: '-120px 0px -60% 0px',
-        threshold: 0.1,
-      }
-    );
-    
-    actualHeadings.forEach((heading) => {
-      observer.observe(heading);
-    });
-    
-    // Show/hide TOC based on article content visibility
-    const articleContent = document.getElementById('article-content');
-    if (articleContent) {
-      const articleObserver = new IntersectionObserver(
+    // Small delay to ensure DOM is fully rendered
+    const timeoutId = setTimeout(() => {
+      // Add IDs to actual headings in the rendered content
+      const actualHeadings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
+      
+      actualHeadings.forEach((heading, index) => {
+        if (headings[index]) {
+          heading.id = headings[index].id;
+          heading.style.scrollMarginTop = '120px'; // Offset for fixed header
+          
+          // Add a subtle highlight effect when heading is targeted
+          heading.style.transition = 'background-color 0.3s ease';
+        }
+      });
+      
+      // Set up intersection observer for active heading tracking
+      const observer = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            setIsVisible(entry.isIntersecting);
+            if (entry.isIntersecting) {
+              setActiveId(entry.target.id);
+            }
           });
         },
         {
-          rootMargin: '-100px 0px -100px 0px',
+          rootMargin: '-120px 0px -60% 0px',
           threshold: 0.1,
         }
       );
-      articleObserver.observe(articleContent);
+      
+      actualHeadings.forEach((heading) => {
+        observer.observe(heading);
+      });
+      
+      // Show/hide TOC based on article content visibility
+      const articleContent = document.getElementById('article-content');
+      if (articleContent) {
+        const articleObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              setIsVisible(entry.isIntersecting);
+            });
+          },
+          {
+            rootMargin: '-100px 0px -100px 0px',
+            threshold: 0.1,
+          }
+        );
+        articleObserver.observe(articleContent);
+        
+        return () => {
+          actualHeadings.forEach((heading) => {
+            observer.unobserve(heading);
+          });
+          articleObserver.unobserve(articleContent);
+        };
+      }
       
       return () => {
         actualHeadings.forEach((heading) => {
           observer.unobserve(heading);
         });
-        articleObserver.unobserve(articleContent);
       };
-    }
+    }, 100); // Small delay to ensure content is rendered
     
     return () => {
-      actualHeadings.forEach((heading) => {
-        observer.unobserve(heading);
-      });
+      clearTimeout(timeoutId);
     };
   }, [headings]);
   
   // Scroll to heading
   const scrollToHeading = (id) => {
+    console.log('Clicking heading:', id); // Debug log
+    
     const element = document.getElementById(id);
     if (element) {
+      console.log('Found element:', element); // Debug log
+      
+      // Highlight the target heading briefly
+      element.style.backgroundColor = '#f3f4f6';
+      setTimeout(() => {
+        element.style.backgroundColor = '';
+      }, 1000);
+      
+      // Calculate scroll position with offset
       const yOffset = -100; // Offset for fixed header
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: 'smooth' });
+      const elementTop = element.getBoundingClientRect().top;
+      const absoluteElementTop = elementTop + window.pageYOffset;
+      const middle = absoluteElementTop + yOffset;
+      
+      // Scroll to the element
+      window.scrollTo({
+        top: middle,
+        behavior: 'smooth'
+      });
+      
+      // Alternative method if the above doesn't work
+      // element.scrollIntoView({ 
+      //   behavior: 'smooth', 
+      //   block: 'start',
+      //   inline: 'nearest'
+      // });
+      
+    } else {
+      console.log('Element not found:', id); // Debug log
+      
+      // Fallback: try to find heading by text content
+      const allHeadings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
+      const targetHeading = headings.find(h => h.id === id);
+      
+      if (targetHeading) {
+        const matchingElement = Array.from(allHeadings).find(h =>
+          h.textContent.trim() === targetHeading.text
+        );
+        
+        if (matchingElement) {
+          console.log('Found by text match:', matchingElement);
+          matchingElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }
     }
   };
   
