@@ -1,146 +1,154 @@
 // src/app/blog/page.js
-'use client'
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { Search, Clock, ArrowRight, Filter, Loader2 } from 'lucide-react'
-import { 
-  getAllPosts, 
-  searchPosts, 
-  getPostsByCategory, 
+'use client';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { Search, Clock, ArrowRight, Filter, Loader2 } from 'lucide-react';
+import {
+  getAllPosts,
+  searchPosts,
+  getPostsByCategory,
   getCategories,
   formatPostData,
-  getCategoryMapping 
-} from '@/lib/wordpress'
+} from '@/lib/wordpress';
 
 export default function BlogPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('All')
-  const [posts, setPosts] = useState([])
-  const [categories, setCategories] = useState(['All'])
-  const [loading, setLoading] = useState(true)
-  const [searching, setSearching] = useState(false)
-  const [hasNextPage, setHasNextPage] = useState(false)
-  const [endCursor, setEndCursor] = useState(null)
-  const [loadingMore, setLoadingMore] = useState(false)
-  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [posts, setPosts] = useState([]);
+  const [categories, setCategories] = useState(['All']);
+  const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [endCursor, setEndCursor] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+
   // Fetch initial data
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        setLoading(true)
-        
+        setLoading(true);
+
         // Fetch posts and categories in parallel
         const [postsData, categoriesData] = await Promise.all([
           getAllPosts(12),
-          getCategories()
-        ])
-        
+          getCategories(),
+        ]);
+
         // Format posts
-        const formattedPosts = postsData.edges.map(edge => formatPostData(edge.node))
-        setPosts(formattedPosts)
-        setHasNextPage(postsData.pageInfo.hasNextPage)
-        setEndCursor(postsData.pageInfo.endCursor)
-        
+        const formattedPosts = postsData.edges.map((edge) =>
+          formatPostData(edge.node)
+        );
+        setPosts(formattedPosts);
+        setHasNextPage(postsData.pageInfo.hasNextPage);
+        setEndCursor(postsData.pageInfo.endCursor);
+
         // Set up categories
-        const categoryNames = ['All', ...categoriesData.map(edge => edge.node.name)]
-        setCategories(categoryNames)
-        
+        const categoryNames = [
+          'All',
+          ...categoriesData.map((edge) => edge.node.name),
+        ];
+        setCategories(categoryNames);
       } catch (error) {
-        console.error('Error fetching blog data:', error)
+        console.error('Error fetching blog data:', error);
         // Fallback to empty state
-        setPosts([])
+        setPosts([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    
-    fetchInitialData()
-  }, [])
-  
+    };
+
+    fetchInitialData();
+  }, []);
+
   // Handle search
   useEffect(() => {
     if (!searchTerm) {
       // Reset to all posts when search is cleared
       if (selectedCategory === 'All') {
-        handleCategoryChange('All')
+        handleCategoryChange('All');
       }
-      return
+      return;
     }
-    
+
     const searchDebounce = setTimeout(async () => {
       try {
-        setSearching(true)
-        const searchData = await searchPosts(searchTerm, 12)
-        const formattedPosts = searchData.edges.map(edge => formatPostData(edge.node))
-        setPosts(formattedPosts)
-        setHasNextPage(false) // Disable load more for search results
-        setEndCursor(null)
+        setSearching(true);
+        const searchData = await searchPosts(searchTerm, 12);
+        const formattedPosts = searchData.edges.map((edge) =>
+          formatPostData(edge.node)
+        );
+        setPosts(formattedPosts);
+        setHasNextPage(false); // Disable load more for search results
+        setEndCursor(null);
       } catch (error) {
-        console.error('Error searching posts:', error)
-        setPosts([])
+        console.error('Error searching posts:', error);
+        setPosts([]);
       } finally {
-        setSearching(false)
+        setSearching(false);
       }
-    }, 500)
-    
-    return () => clearTimeout(searchDebounce)
-  }, [searchTerm, selectedCategory])
-  
+    }, 500);
+
+    return () => clearTimeout(searchDebounce);
+  }, [searchTerm, selectedCategory]);
+
   // Handle category change
   const handleCategoryChange = async (category) => {
-    setSelectedCategory(category)
-    setSearchTerm('') // Clear search when changing category
-    
+    setSelectedCategory(category);
+    setSearchTerm(''); // Clear search when changing category
+
     try {
-      setLoading(true)
-      let postsData
-      
+      setLoading(true);
+      let postsData;
+
       if (category === 'All') {
-        postsData = await getAllPosts(12)
+        postsData = await getAllPosts(12);
       } else {
-        const categoryMapping = getCategoryMapping()
-        const categorySlug = Object.keys(categoryMapping).find(
-          key => categoryMapping[key] === category
-        ) || category.toLowerCase().replace(/\s+/g, '-')
-        postsData = await getPostsByCategory(categorySlug, 12)
+        const categoryMapping = getCategoryMapping();
+        const categorySlug =
+          Object.keys(categoryMapping).find(
+            (key) => categoryMapping[key] === category
+          ) || category.toLowerCase().replace(/\s+/g, '-');
+        postsData = await getPostsByCategory(categorySlug, 12);
       }
-      
-      const formattedPosts = postsData.edges.map(edge => formatPostData(edge.node))
-      setPosts(formattedPosts)
-      setHasNextPage(postsData.pageInfo?.hasNextPage || false)
-      setEndCursor(postsData.pageInfo?.endCursor || null)
-      
+
+      const formattedPosts = postsData.edges.map((edge) =>
+        formatPostData(edge.node)
+      );
+      setPosts(formattedPosts);
+      setHasNextPage(postsData.pageInfo?.hasNextPage || false);
+      setEndCursor(postsData.pageInfo?.endCursor || null);
     } catch (error) {
-      console.error('Error fetching category posts:', error)
-      setPosts([])
+      console.error('Error fetching category posts:', error);
+      setPosts([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-  
+  };
+
   // Load more posts
   const loadMorePosts = async () => {
-    if (!hasNextPage || loadingMore) return
-    
+    if (!hasNextPage || loadingMore) return;
+
     try {
-      setLoadingMore(true)
-      const postsData = await getAllPosts(12, endCursor)
-      const formattedPosts = postsData.edges.map(edge => formatPostData(edge.node))
-      
-      setPosts(prevPosts => [...prevPosts, ...formattedPosts])
-      setHasNextPage(postsData.pageInfo.hasNextPage)
-      setEndCursor(postsData.pageInfo.endCursor)
-      
+      setLoadingMore(true);
+      const postsData = await getAllPosts(12, endCursor);
+      const formattedPosts = postsData.edges.map((edge) =>
+        formatPostData(edge.node)
+      );
+
+      setPosts((prevPosts) => [...prevPosts, ...formattedPosts]);
+      setHasNextPage(postsData.pageInfo.hasNextPage);
+      setEndCursor(postsData.pageInfo.endCursor);
     } catch (error) {
-      console.error('Error loading more posts:', error)
+      console.error('Error loading more posts:', error);
     } finally {
-      setLoadingMore(false)
+      setLoadingMore(false);
     }
-  }
-  
-  const isLoading = loading || searching
-  
+  };
+
+  const isLoading = loading || searching;
+
   return (
     <div className="pt-16 lg:pt-20">
       {/* Hero Section */}
@@ -155,10 +163,10 @@ export default function BlogPage() {
               The Habit Nova Blog
             </h1>
             <p className="text-xl text-gray-200 leading-relaxed mb-8">
-              Evidence-based insights, practical strategies, and the latest research 
-              on habit formation and behavior change.
+              Evidence-based insights, practical strategies, and the latest
+              research on habit formation and behavior change.
             </p>
-            
+
             {/* Search Bar */}
             <div className="max-w-md mx-auto relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -229,7 +237,7 @@ export default function BlogPage() {
                             alt={post.imageAlt}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={(e) => {
-                              e.target.src = '/images/blog/default.jpg'
+                              e.target.src = '/images/blog/default.jpg';
                             }}
                           />
                           <div className="absolute top-4 left-4">
@@ -261,7 +269,7 @@ export default function BlogPage() {
                   </motion.div>
                 ))}
               </div>
-              
+
               {/* Load More Button */}
               {hasNextPage && !searchTerm && (
                 <div className="text-center mt-12">
@@ -288,12 +296,13 @@ export default function BlogPage() {
           ) : (
             // Empty State
             <div className="text-center py-12">
-              <h3 className="text-2xl font-bold text-[#1a1a1a] mb-4">No articles found</h3>
+              <h3 className="text-2xl font-bold text-[#1a1a1a] mb-4">
+                No articles found
+              </h3>
               <p className="text-gray-600 mb-6">
-                {searchTerm 
+                {searchTerm
                   ? `No results for "${searchTerm}". Try adjusting your search terms.`
-                  : 'No articles available in this category.'
-                }
+                  : 'No articles available in this category.'}
               </p>
               {searchTerm && (
                 <button
@@ -308,5 +317,5 @@ export default function BlogPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }

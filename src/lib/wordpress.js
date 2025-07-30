@@ -1,7 +1,6 @@
 // src/lib/wordpress.js
 // GraphQL client for WordPress API with improved error handling
 
-<<<<<<< HEAD
 const WORDPRESS_API_URL =
   process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
   'https://your-wordpress-site.com/graphql';
@@ -20,18 +19,6 @@ async function fetchAPI(query, { variables } = {}) {
   }
 
   const headers = { 'Content-Type': 'application/json' };
-=======
-const WORDPRESS_API_URL = process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'https://your-wordpress-site.com/graphql'
-
-async function fetchAPI(query, { variables } = {}) {
-  // Check if WordPress URL is configured
-  if (!process.env.NEXT_PUBLIC_WORDPRESS_API_URL || process.env.NEXT_PUBLIC_WORDPRESS_API_URL === 'https://your-wordpress-site.com/graphql') {
-    console.warn('WordPress API URL not configured. Please set NEXT_PUBLIC_WORDPRESS_API_URL in .env.local')
-    throw new Error('WordPress API URL not configured')
-  }
-
-  const headers = { 'Content-Type': 'application/json' }
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
 
   if (process.env.WORDPRESS_AUTH_REFRESH_TOKEN) {
     headers[
@@ -47,7 +34,6 @@ async function fetchAPI(query, { variables } = {}) {
         query,
         variables,
       }),
-<<<<<<< HEAD
       next: { revalidate: 60 },
     });
 
@@ -67,25 +53,6 @@ async function fetchAPI(query, { variables } = {}) {
   } catch (error) {
     console.error('WordPress API Error:', error.message);
     throw error;
-=======
-      next: { revalidate: 60 }
-    })
-
-    if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status} - ${res.statusText}`)
-    }
-
-    const json = await res.json()
-    if (json.errors) {
-      console.error('GraphQL errors:', json.errors)
-      throw new Error(`GraphQL error: ${json.errors[0]?.message || 'Unknown error'}`)
-    }
-
-    return json.data
-  } catch (error) {
-    console.error('WordPress API Error:', error.message)
-    throw error
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
   }
 }
 
@@ -117,7 +84,7 @@ export const GET_ALL_POSTS = `
           }
           acfBlogFields {
             readTime
-            featured
+            featuredPost
             customExcerpt
           }
         }
@@ -132,7 +99,7 @@ export const GET_ALL_POSTS = `
 
 export const GET_FEATURED_POSTS = `
   query GetFeaturedPosts {
-    posts(first: 4, where: { status: PUBLISH, metaQuery: { metaArray: [{ key: "featured", value: "1", compare: EQUAL }] } }) {
+    posts(first: 4, where: { status: PUBLISH }) {
       edges {
         node {
           id
@@ -156,7 +123,7 @@ export const GET_FEATURED_POSTS = `
           }
           acfBlogFields {
             readTime
-            featured
+            featuredPost
             customExcerpt
           }
         }
@@ -191,7 +158,7 @@ export const GET_POST_BY_SLUG = `
       }
       acfBlogFields {
         readTime
-        featured
+        featuredPost
         customExcerpt
       }
     }
@@ -224,7 +191,7 @@ export const SEARCH_POSTS = `
           }
           acfBlogFields {
             readTime
-            featured
+            featuredPost
             customExcerpt
           }
         }
@@ -259,7 +226,7 @@ export const GET_POSTS_BY_CATEGORY = `
           }
           acfBlogFields {
             readTime
-            featured
+            featuredPost
             customExcerpt
           }
         }
@@ -281,17 +248,12 @@ export const GET_CATEGORIES = `
       }
     }
   }
-<<<<<<< HEAD
 `;
-=======
-`
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
 
 // API Functions with fallback data
 export async function getAllPosts(first = 20, after = null) {
   try {
     const data = await fetchAPI(GET_ALL_POSTS, {
-<<<<<<< HEAD
       variables: { first, after },
     });
     return data?.posts || { edges: [], pageInfo: {} };
@@ -299,127 +261,78 @@ export async function getAllPosts(first = 20, after = null) {
     console.error('Error fetching all posts:', error.message);
     // Return fallback data for development
     return getFallbackPosts(first);
-=======
-      variables: { first, after }
-    })
-    return data?.posts || { edges: [], pageInfo: {} }
-  } catch (error) {
-    console.error('Error fetching all posts:', error.message)
-    // Return fallback data for development
-    return getFallbackPosts(first)
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
   }
 }
 
 export async function getFeaturedPosts() {
   try {
-<<<<<<< HEAD
     const data = await fetchAPI(GET_FEATURED_POSTS);
-    return data?.posts?.edges || [];
+    const allPosts = data?.posts?.edges || [];
+
+    // Filter for featured posts in JavaScript since GraphQL meta query might not work
+    const featuredPosts = allPosts.filter(
+      (edge) => edge.node.acfBlogFields?.featuredPost === true
+    );
+
+    // If no featured posts found, return the first 4 posts
+    return featuredPosts.length > 0 ? featuredPosts : allPosts.slice(0, 4);
   } catch (error) {
     console.error('Error fetching featured posts:', error.message);
     // Return fallback data for development
     return getFallbackPosts(4).edges;
-=======
-    const data = await fetchAPI(GET_FEATURED_POSTS)
-    return data?.posts?.edges || []
-  } catch (error) {
-    console.error('Error fetching featured posts:', error.message)
-    // Return fallback data for development
-    return getFallbackPosts(4).edges
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
   }
 }
 
 export async function getPostBySlug(slug) {
   try {
     const data = await fetchAPI(GET_POST_BY_SLUG, {
-<<<<<<< HEAD
       variables: { slug },
     });
     return data?.postBy;
   } catch (error) {
     console.error('Error fetching post by slug:', error.message);
     return null;
-=======
-      variables: { slug }
-    })
-    return data?.postBy
-  } catch (error) {
-    console.error('Error fetching post by slug:', error.message)
-    return null
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
   }
 }
 
 export async function searchPosts(searchTerm, first = 20) {
   try {
     const data = await fetchAPI(SEARCH_POSTS, {
-<<<<<<< HEAD
       variables: { search: searchTerm, first },
     });
     return data?.posts || { edges: [] };
   } catch (error) {
     console.error('Error searching posts:', error.message);
     return { edges: [] };
-=======
-      variables: { search: searchTerm, first }
-    })
-    return data?.posts || { edges: [] }
-  } catch (error) {
-    console.error('Error searching posts:', error.message)
-    return { edges: [] }
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
   }
 }
 
 export async function getPostsByCategory(categoryName, first = 20) {
   try {
     const data = await fetchAPI(GET_POSTS_BY_CATEGORY, {
-<<<<<<< HEAD
       variables: { categoryName, first },
     });
     return data?.posts || { edges: [] };
   } catch (error) {
     console.error('Error fetching posts by category:', error.message);
     return { edges: [] };
-=======
-      variables: { categoryName, first }
-    })
-    return data?.posts || { edges: [] }
-  } catch (error) {
-    console.error('Error fetching posts by category:', error.message)
-    return { edges: [] }
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
   }
 }
 
 export async function getCategories() {
   try {
-<<<<<<< HEAD
     const data = await fetchAPI(GET_CATEGORIES);
     return data?.categories?.edges || [];
   } catch (error) {
     console.error('Error fetching categories:', error.message);
-=======
-    const data = await fetchAPI(GET_CATEGORIES)
-    return data?.categories?.edges || []
-  } catch (error) {
-    console.error('Error fetching categories:', error.message)
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
     // Return fallback categories
     return [
       { node: { name: 'Habit Formation', slug: 'habit-formation' } },
       { node: { name: 'Digital Wellness', slug: 'digital-wellness' } },
       { node: { name: 'Productivity', slug: 'productivity' } },
       { node: { name: 'Psychology', slug: 'psychology' } },
-<<<<<<< HEAD
       { node: { name: 'Mindfulness', slug: 'mindfulness' } },
     ];
-=======
-      { node: { name: 'Mindfulness', slug: 'mindfulness' } }
-    ]
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
   }
 }
 
@@ -442,15 +355,11 @@ export function formatPostData(post) {
       year: 'numeric',
     }),
     // Use placeholder image service for development
-<<<<<<< HEAD
     image:
       post.featuredImage?.node?.sourceUrl ||
       'https://images.unsplash.com/photo-1488998427799-e3362cec87c3?w=600&h=400&fit=crop&crop=center',
-=======
-    image: post.featuredImage?.node?.sourceUrl || 'https://images.unsplash.com/photo-1488998427799-e3362cec87c3?w=600&h=400&fit=crop&crop=center',
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
     imageAlt: post.featuredImage?.node?.altText || post.title,
-    featured: post.acfBlogFields?.featured || false,
+    featured: post.acfBlogFields?.featuredPost || false,
     content: post.content || '',
   };
 }
@@ -461,7 +370,6 @@ function getFallbackPosts(count = 20) {
     {
       node: {
         id: 'fallback-1',
-<<<<<<< HEAD
         title: 'The 2-Minute Rule: Why Starting Small Leads to Big Changes',
         slug: 'the-2-minute-rule-why-starting-small-leads-to-big-changes',
         excerpt:
@@ -481,28 +389,16 @@ function getFallbackPosts(count = 20) {
         },
         acfBlogFields: {
           readTime: '5 min read',
-          featured: true,
+          featuredPost: true,
           customExcerpt: '',
         },
         content:
           '<p>This is fallback content for development. Connect to WordPress to see real content.</p>',
       },
-=======
-        title: "The 2-Minute Rule: Why Starting Small Leads to Big Changes",
-        slug: "the-2-minute-rule-why-starting-small-leads-to-big-changes",
-        excerpt: "Discover how breaking habits down into 2-minute actions can create lasting transformation in your life.",
-        date: "2024-12-15T00:00:00",
-        categories: { edges: [{ node: { name: "Habit Formation", slug: "habit-formation" } }] },
-        featuredImage: { node: { sourceUrl: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&h=400&fit=crop", altText: "Person writing in journal" } },
-        acfBlogFields: { readTime: "5 min read", featured: true, customExcerpt: "" },
-        content: "<p>This is fallback content for development. Connect to WordPress to see real content.</p>"
-      }
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
     },
     {
       node: {
         id: 'fallback-2',
-<<<<<<< HEAD
         title: 'Breaking the Dopamine Loop: Understanding Digital Addiction',
         slug: 'breaking-the-dopamine-loop-understanding-digital-addiction',
         excerpt:
@@ -522,28 +418,16 @@ function getFallbackPosts(count = 20) {
         },
         acfBlogFields: {
           readTime: '8 min read',
-          featured: false,
+          featuredPost: false,
           customExcerpt: '',
         },
         content:
           '<p>This is fallback content for development. Connect to WordPress to see real content.</p>',
       },
-=======
-        title: "Breaking the Dopamine Loop: Understanding Digital Addiction",
-        slug: "breaking-the-dopamine-loop-understanding-digital-addiction",
-        excerpt: "Learn the neuroscience behind social media addiction and proven strategies to reclaim your attention.",
-        date: "2024-12-12T00:00:00",
-        categories: { edges: [{ node: { name: "Digital Wellness", slug: "digital-wellness" } }] },
-        featuredImage: { node: { sourceUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=400&fit=crop", altText: "Smartphone and laptop" } },
-        acfBlogFields: { readTime: "8 min read", featured: false, customExcerpt: "" },
-        content: "<p>This is fallback content for development. Connect to WordPress to see real content.</p>"
-      }
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
     },
     {
       node: {
         id: 'fallback-3',
-<<<<<<< HEAD
         title: 'The Habit Stacking Method: Building New Routines That Stick',
         slug: 'the-habit-stacking-method-building-new-routines-that-stick',
         excerpt:
@@ -561,28 +445,16 @@ function getFallbackPosts(count = 20) {
         },
         acfBlogFields: {
           readTime: '6 min read',
-          featured: false,
+          featuredPost: false,
           customExcerpt: '',
         },
         content:
           '<p>This is fallback content for development. Connect to WordPress to see real content.</p>',
       },
-=======
-        title: "The Habit Stacking Method: Building New Routines That Stick",
-        slug: "the-habit-stacking-method-building-new-routines-that-stick",
-        excerpt: "How to link new habits to existing ones for automatic behavior change.",
-        date: "2024-12-10T00:00:00",
-        categories: { edges: [{ node: { name: "Productivity", slug: "productivity" } }] },
-        featuredImage: { node: { sourceUrl: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&h=400&fit=crop", altText: "Stack of books" } },
-        acfBlogFields: { readTime: "6 min read", featured: false, customExcerpt: "" },
-        content: "<p>This is fallback content for development. Connect to WordPress to see real content.</p>"
-      }
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f
     },
     {
       node: {
         id: 'fallback-4',
-<<<<<<< HEAD
         title: 'Why Willpower Fails (And What Actually Works)',
         slug: 'why-willpower-fails-and-what-actually-works',
         excerpt:
@@ -600,7 +472,7 @@ function getFallbackPosts(count = 20) {
         },
         acfBlogFields: {
           readTime: '7 min read',
-          featured: false,
+          featuredPost: false,
           customExcerpt: '',
         },
         content:
@@ -614,22 +486,3 @@ function getFallbackPosts(count = 20) {
     pageInfo: { hasNextPage: false, endCursor: null },
   };
 }
-=======
-        title: "Why Willpower Fails (And What Actually Works)",
-        slug: "why-willpower-fails-and-what-actually-works",
-        excerpt: "The surprising science behind why relying on willpower alone sabotages your habit change efforts.",
-        date: "2024-12-08T00:00:00",
-        categories: { edges: [{ node: { name: "Psychology", slug: "psychology" } }] },
-        featuredImage: { node: { sourceUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop", altText: "Brain illustration" } },
-        acfBlogFields: { readTime: "7 min read", featured: false, customExcerpt: "" },
-        content: "<p>This is fallback content for development. Connect to WordPress to see real content.</p>"
-      }
-    }
-  ]
-
-  return {
-    edges: fallbackPosts.slice(0, count),
-    pageInfo: { hasNextPage: false, endCursor: null }
-  }
-}
->>>>>>> b01b67f360df8d308de24b5f3ca02eafd65ee57f

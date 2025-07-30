@@ -145,8 +145,8 @@ const Header = () => {
                     href={item.href}
                     className={`relative px-3 py-2 text-sm font-medium transition-colors duration-200 ${
                       isActiveLink(item.href)
-                        ? 'text-[#1a1a1a]'
-                        : 'text-gray-700 hover:text-[#1a1a1a]'
+                        ? 'text-white hover:text-[#fe0000]'
+                        : 'text-white hover:text-[#dbdbdb]'
                     }`}
                   >
                     {item.name}
@@ -154,7 +154,7 @@ const Header = () => {
                     {/* Active Link Underline */}
                     {isActiveLink(item.href) && (
                       <motion.span
-                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left rounded-full bg-[#1a1a1a]"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left rounded-full bg-[#fe0000]"
                         layoutId="activeLink"
                         initial={{ scaleX: 0 }}
                         animate={{ scaleX: 1 }}
@@ -169,7 +169,7 @@ const Header = () => {
                     {/* Hover Underline */}
                     {!isActiveLink(item.href) && (
                       <motion.span
-                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left rounded-full bg-[#1a1a1a]"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left rounded-full bg-white"
                         initial={{ scaleX: 0 }}
                         variants={{
                           hover: {
@@ -188,11 +188,11 @@ const Header = () => {
               
               {/* Desktop Contact Info */}
               <a
-                href="mailto:hello@habitnova.com"
-                className="flex items-center space-x-2 text-sm text-gray-700 transition-colors hover:text-[#1a1a1a]"
+                href="mailto:contact@habitnova.com"
+                className="flex items-center space-x-2 text-sm text-white transition-colors hover:text-[#fe0000]"
               >
                 <Mail className="h-4 w-4" />
-                <span className="font-medium">hello@habitnova.com</span>
+                <span className="font-medium">contact@habitnova.com</span>
               </a>
             </nav>
 
