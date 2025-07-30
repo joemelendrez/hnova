@@ -17,11 +17,38 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import Button from '@/components/Button';
+import TableOfContents from '@/components/TableOfContents';
 
 const BlogPostClient = ({ post, relatedPosts = [] }) => {
   const [copied, setCopied] = useState(false);
   const [readingProgress, setReadingProgress] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
+
+  // HTML entity decoder function
+  const decodeHtmlEntities = (text) => {
+    if (!text) return '';
+    
+    if (typeof window !== 'undefined') {
+      // Client-side decoding using DOM
+      const textArea = document.createElement('textarea');
+      textArea.innerHTML = text;
+      return textArea.value;
+    } else {
+      // Server-side decoding using common replacements
+      return text
+        .replace(/&#8217;/g, "'")
+        .replace(/&#8216;/g, "'")
+        .replace(/&#8220;/g, '"')
+        .replace(/&#8221;/g, '"')
+        .replace(/&#8211;/g, '–')
+        .replace(/&#8212;/g, '—')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+    }
+  };
 
   // Track reading progress
   useEffect(() => {
@@ -61,7 +88,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
 
   // Share functions
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const shareTitle = post.title;
+  const shareTitle = decodeHtmlEntities(post.title);
 
   const shareToFacebook = () => {
     window.open(
@@ -98,17 +125,32 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Format content for display
+  // Format content for display with HTML entity decoding
   const formatContent = (content) => {
-    // Remove WordPress specific tags and format for display
-    return content
+    if (!content) return '';
+    
+    // First decode HTML entities, then clean up WordPress specific content
+    let decodedContent = decodeHtmlEntities(content);
+    
+    return decodedContent
       .replace(/<!--.*?-->/g, '') // Remove comments
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove scripts
       .replace(/\[.*?\]/g, ''); // Remove shortcodes
   };
 
+  const formattedContent = formatContent(post.content);
+
   return (
     <>
+      {/* Reading Progress Bar */}
+      <div className="fixed top-0 left-0 w-full h-1 bg-gray-200 z-50">
+        <motion.div
+          className="h-full bg-[#1a1a1a]"
+          style={{ width: `${readingProgress}%` }}
+          transition={{ duration: 0.1 }}
+        />
+      </div>
+
       <article className="pt-16 lg:pt-20">
         {/* Back Button */}
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -137,19 +179,19 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
             {/* Category Badge */}
             <div className="mb-6">
               <span className="inline-block bg-[#1a1a1a] text-white px-4 py-2 rounded-full text-sm font-medium">
-                {post.category}
+                {decodeHtmlEntities(post.category)}
               </span>
             </div>
 
             {/* Title */}
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-[#1a1a1a] mb-6 leading-tight">
-              {post.title}
+              {decodeHtmlEntities(post.title)}
             </h1>
 
             {/* Excerpt */}
             {post.excerpt && (
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                {post.excerpt}
+                {decodeHtmlEntities(post.excerpt)}
               </p>
             )}
 
@@ -215,7 +257,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
               <img
                 src={post.image}
-                alt={post.imageAlt || post.title}
+                alt={decodeHtmlEntities(post.imageAlt || post.title)}
                 className="w-full h-64 md:h-96 lg:h-[500px] object-cover rounded-2xl shadow-lg"
                 onError={(e) => {
                   e.target.style.display = 'none';
@@ -225,19 +267,24 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
           </motion.div>
         )}
 
-        {/* Article Content */}
-        <motion.div
-          id="article-content"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16"
-        >
-          <div
-            className="blog-content prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: formatContent(post.content) }}
-          />
-        </motion.div>
+        {/* Main Content Container */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+          >
+            {/* Table of Contents */}
+            <TableOfContents content={formattedContent} />
+
+            {/* Article Content */}
+            <div
+              id="article-content"
+              className="blog-content prose prose-lg max-w-none prose-headings:text-[#1a1a1a] prose-a:text-[#1a1a1a] prose-a:no-underline hover:prose-a:underline prose-strong:text-[#1a1a1a] prose-blockquote:border-l-[#1a1a1a] prose-blockquote:text-gray-700"
+              dangerouslySetInnerHTML={{ __html: formattedContent }}
+            />
+          </motion.div>
+        </div>
 
         {/* Article Footer */}
         <footer className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
@@ -257,13 +304,13 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                   href={`/blog?category=${post.categorySlug}`}
                   className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-[#DBDBDB] transition-colors duration-200"
                 >
-                  {post.category}
+                  {decodeHtmlEntities(post.category)}
                 </Link>
               </div>
             </div>
 
             {/* Share Again */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
                 <span className="text-gray-700 font-medium">
                   Share this article:
@@ -331,7 +378,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                           <div className="relative h-48">
                             <img
                               src={relatedPost.image}
-                              alt={relatedPost.imageAlt || relatedPost.title}
+                              alt={decodeHtmlEntities(relatedPost.imageAlt || relatedPost.title)}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               onError={(e) => {
                                 e.target.src = '/images/blog/default.jpg';
@@ -341,16 +388,16 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                           <div className="p-6">
                             <div className="flex items-center text-sm text-gray-500 mb-3">
                               <span className="bg-[#1a1a1a] text-white px-2 py-1 rounded text-xs font-medium mr-3">
-                                {relatedPost.category}
+                                {decodeHtmlEntities(relatedPost.category)}
                               </span>
                               <Clock className="h-4 w-4 mr-1" />
                               {relatedPost.readTime}
                             </div>
                             <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors leading-tight">
-                              {relatedPost.title}
+                              {decodeHtmlEntities(relatedPost.title)}
                             </h3>
                             <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">
-                              {relatedPost.excerpt}
+                              {decodeHtmlEntities(relatedPost.excerpt)}
                             </p>
                             <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700">
                               Read More

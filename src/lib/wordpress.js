@@ -56,6 +56,32 @@ async function fetchAPI(query, { variables } = {}) {
   }
 }
 
+// HTML entity decoder function
+const decodeHtmlEntities = (text) => {
+  if (!text) return '';
+  
+  if (typeof window !== 'undefined') {
+    // Client-side decoding using DOM
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = text;
+    return textArea.value;
+  } else {
+    // Server-side decoding using common replacements
+    return text
+      .replace(/&#8217;/g, "'")
+      .replace(/&#8216;/g, "'")
+      .replace(/&#8220;/g, '"')
+      .replace(/&#8221;/g, '"')
+      .replace(/&#8211;/g, '–')
+      .replace(/&#8212;/g, '—')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'");
+  }
+};
+
 // GraphQL Queries
 export const GET_ALL_POSTS = `
   query GetAllPosts($first: Int = 20, $after: String) {
@@ -231,6 +257,10 @@ export const GET_POSTS_BY_CATEGORY = `
           }
         }
       }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
     }
   }
 `;
@@ -312,10 +342,10 @@ export async function getPostsByCategory(categoryName, first = 20) {
     const data = await fetchAPI(GET_POSTS_BY_CATEGORY, {
       variables: { categoryName, first },
     });
-    return data?.posts || { edges: [] };
+    return data?.posts || { edges: [], pageInfo: {} };
   } catch (error) {
     console.error('Error fetching posts by category:', error.message);
-    return { edges: [] };
+    return { edges: [], pageInfo: {} };
   }
 }
 
@@ -338,30 +368,57 @@ export async function getCategories() {
 
 // Utility Functions
 export function formatPostData(post) {
+  // Clean and decode excerpt
+  const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
+  
   return {
     id: post.id,
-    title: post.title,
+    title: decodeHtmlEntities(post.title || ''),
     slug: post.slug,
-    excerpt:
-      post.acfBlogFields?.customExcerpt ||
-      post.excerpt?.replace(/<[^>]*>/g, '') ||
-      '',
-    category: post.categories?.edges?.[0]?.node?.name || 'Uncategorized',
+    excerpt: decodeHtmlEntities(
+      post.acfBlogFields?.customExcerpt || cleanExcerpt || ''
+    ),
+    category: decodeHtmlEntities(post.categories?.edges?.[0]?.node?.name || 'Uncategorized'),
     categorySlug: post.categories?.edges?.[0]?.node?.slug || 'uncategorized',
-    readTime: post.acfBlogFields?.readTime || '5 min read',
-    date: new Date(post.date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    }),
+    readTime: post.acfBlogFields?.readTime || calculateReadTime(post.content || cleanExcerpt),
+    date: formatDate(post.date),
     // Use placeholder image service for development
     image:
       post.featuredImage?.node?.sourceUrl ||
       'https://images.unsplash.com/photo-1488998427799-e3362cec87c3?w=600&h=400&fit=crop&crop=center',
-    imageAlt: post.featuredImage?.node?.altText || post.title,
+    imageAlt: decodeHtmlEntities(post.featuredImage?.node?.altText || post.title || ''),
     featured: post.acfBlogFields?.featuredPost || false,
-    content: post.content || '',
+    content: decodeHtmlEntities(post.content || ''),
   };
+}
+
+// Helper function to format dates consistently
+export function formatDate(dateString) {
+  try {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return 'Invalid Date';
+  }
+}
+
+// Helper function to calculate read time
+export function calculateReadTime(content) {
+  if (!content) return '1 min read';
+  
+  // Remove HTML tags and count words
+  const cleanContent = content.replace(/<[^>]*>/g, '');
+  const wordCount = cleanContent.split(/\s+/).filter(word => word.length > 0).length;
+  
+  // Average reading speed is 200-250 words per minute
+  const wordsPerMinute = 225;
+  const readTimeMinutes = Math.ceil(wordCount / wordsPerMinute);
+  
+  return `${readTimeMinutes} min read`;
 }
 
 // Fallback data for development when WordPress is not available
@@ -472,6 +529,33 @@ function getFallbackPosts(count = 20) {
         },
         acfBlogFields: {
           readTime: '7 min read',
+          featuredPost: false,
+          customExcerpt: '',
+        },
+        content:
+          '<p>This is fallback content for development. Connect to WordPress to see real content.</p>',
+      },
+    },
+    {
+      node: {
+        id: 'fallback-5',
+        title: 'Sleeping Smarter, Not Longer: The New Rules of Productivity',
+        slug: 'sleeping-smarter-not-longer-the-new-rules-of-productivity',
+        excerpt:
+          'Smart sleep isn\'t about sleeping longer; it\'s about optimizing sleep quality for peak productivity.',
+        date: '2024-12-05T00:00:00',
+        categories: {
+          edges: [{ node: { name: 'Productivity', slug: 'productivity' } }],
+        },
+        featuredImage: {
+          node: {
+            sourceUrl:
+              'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=600&h=400&fit=crop',
+            altText: 'Person sleeping peacefully',
+          },
+        },
+        acfBlogFields: {
+          readTime: '5 min read',
           featuredPost: false,
           customExcerpt: '',
         },
