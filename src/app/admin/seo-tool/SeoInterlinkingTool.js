@@ -2,8 +2,7 @@
 
 // src/app/admin/seo-tool/SEOInterlinkingTool.js
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, Link, Target, TrendingUp, FileText, ArrowRight, Copy, CheckCircle, Bot, Lightbulb, Zap, MessageSquare, AlertCircle, RefreshCw } from 'lucide-react';
-import { getAllPostsForSEO } from '../../../lib/wordpress';
+import { Search, Link, Target, TrendingUp, FileText, ArrowRight, Copy, CheckCircle, Bot, Lightbulb, Zap, MessageSquare, AlertCircle, RefreshCw, Bug } from 'lucide-react';
 
 const SeoInterlinkingTool = () => {
   const [posts, setPosts] = useState([]);
@@ -19,26 +18,174 @@ const SeoInterlinkingTool = () => {
   const [chatInput, setChatInput] = useState('');
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiError, setAiError] = useState(null);
-  const [apiKeyConfigured] = useState(true); // Always true now since we use server-side
+  const [debugInfo, setDebugInfo] = useState(null);
+  const [showDebug, setShowDebug] = useState(false);
 
-  // Fetch posts from WordPress
-  const fetchWordPressPosts = useCallback(async () => {
+  // Direct WordPress fetch for debugging
+  const debugWordPressConnection = async () => {
     setPostsLoading(true);
+    setDebugInfo(null);
+    
     try {
-      const wordpressPosts = await getAllPostsForSEO();
-      setPosts(wordpressPosts);
+      const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
+      console.log('🔍 WordPress URL:', wpUrl);
+      
+      if (!wpUrl || wpUrl === 'https://your-wordpress-site.com/graphql') {
+        throw new Error('WordPress URL not configured');
+      }
+      
+      // Test basic connection first
+      const testQuery = `
+        query TestConnection {
+          posts(first: 5, where: { status: PUBLISH }) {
+            edges {
+              node {
+                id
+                title
+                slug
+                excerpt
+                date
+                categories {
+                  edges {
+                    node {
+                      name
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      `;
+      
+      console.log('🚀 Sending test query...');
+      
+      const response = await fetch(wpUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: testQuery })
+      });
+      
+      console.log('📡 Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      console.log('📦 Full response:', result);
+      
+      if (result.errors) {
+        setDebugInfo({
+          status: 'error',
+          message: 'GraphQL Errors',
+          details: result.errors,
+          url: wpUrl
+        });
+        throw new Error(`GraphQL error: ${result.errors[0]?.message}`);
+      }
+      
+      if (!result.data?.posts?.edges) {
+        setDebugInfo({
+          status: 'error',
+          message: 'No posts found in response',
+          details: result.data,
+          url: wpUrl
+        });
+        throw new Error('No posts found');
+      }
+      
+      // Transform the posts
+      const transformedPosts = result.data.posts.edges.map(edge => {
+        const post = edge.node;
+        
+        // Clean content
+        const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
+        
+        // Generate keywords from title and categories
+        const categoryKeywords = post.categories.edges.map(edge => edge.node.name.toLowerCase());
+        const titleWords = post.title.toLowerCase()
+          .split(' ')
+          .filter(word => word.length > 3 && !['the', 'and', 'for', 'with', 'your', 'this', 'that'].includes(word));
+        
+        const keywords = [...new Set([...categoryKeywords, ...titleWords])];
+        
+        return {
+          id: parseInt(post.id.replace('post:', '')) || Math.random(),
+          title: post.title,
+          slug: post.slug,
+          excerpt: cleanExcerpt,
+          content: cleanExcerpt, // Using excerpt as content for now
+          categories: post.categories.edges.map(edge => edge.node.name),
+          publishedDate: new Date(post.date).toLocaleDateString(),
+          readTime: '5 min read', // Default for now
+          keywords: keywords
+        };
+      });
+      
+      setDebugInfo({
+        status: 'success',
+        message: `Successfully loaded ${transformedPosts.length} posts`,
+        details: {
+          postsCount: transformedPosts.length,
+          firstPost: transformedPosts[0],
+          url: wpUrl
+        }
+      });
+      
+      setPosts(transformedPosts);
+      console.log('✅ Posts loaded successfully:', transformedPosts);
+      
     } catch (error) {
-      console.error('Error loading WordPress posts:', error);
-      // Fallback will be handled by the getAllPostsForSEO function
+      console.error('❌ WordPress connection failed:', error);
+      
+      setDebugInfo({
+        status: 'error',
+        message: error.message,
+        details: {
+          url: process.env.NEXT_PUBLIC_WORDPRESS_API_URL,
+          error: error.message
+        }
+      });
+      
+      // Use fallback data
+      const fallbackPosts = [
+        {
+          id: 1,
+          title: "Fallback: The Science Behind Habit Formation",
+          slug: "fallback-habit-formation",
+          excerpt: "This is fallback data because WordPress connection failed.",
+          content: "Fallback content for testing the SEO tool when WordPress is not available.",
+          categories: ["Habit Formation", "Psychology"],
+          publishedDate: "Dec 15, 2024",
+          readTime: "5 min read",
+          keywords: ["habit formation", "psychology", "fallback"]
+        },
+        {
+          id: 2,
+          title: "Fallback: Breaking Bad Habits",
+          slug: "fallback-breaking-habits",
+          excerpt: "This is fallback data for testing purposes.",
+          content: "Fallback content about breaking bad habits and behavior change.",
+          categories: ["Breaking Bad Habits"],
+          publishedDate: "Dec 12, 2024",
+          readTime: "6 min read",
+          keywords: ["breaking habits", "behavior change", "fallback"]
+        }
+      ];
+      
+      setPosts(fallbackPosts);
     } finally {
       setPostsLoading(false);
     }
-  }, []);
+  };
 
-  // Load WordPress posts on component mount
+  // Load posts on component mount
   useEffect(() => {
-    fetchWordPressPosts();
-  }, [fetchWordPressPosts]);
+    debugWordPressConnection();
+  }, []);
 
   // Server-side AI Analysis Function
   const generateAIInsights = useCallback(async (post, suggestions) => {
@@ -62,7 +209,6 @@ const SeoInterlinkingTool = () => {
 
       if (!response.ok) {
         if (data.fallback) {
-          // Use fallback data when AI is unavailable
           setAiInsights(data.fallback);
           setAiError(`AI temporarily unavailable: ${data.error}`);
         } else {
@@ -107,71 +253,6 @@ const SeoInterlinkingTool = () => {
     }
   }, []);
 
-  // Server-side Chat functionality
-  const sendChatMessage = useCallback(async () => {
-    if (!chatInput.trim()) return;
-
-    const userMessage = {
-      id: Date.now(),
-      type: 'user',
-      content: chatInput,
-      timestamp: new Date()
-    };
-
-    setChatMessages(prev => [...prev, userMessage]);
-    const currentInput = chatInput;
-    setChatInput('');
-
-    try {
-      const context = selectedPost ? `
-      - Selected Post: "${selectedPost.title}"
-      - Post Categories: ${selectedPost.categories.join(', ')}
-      - Available Link Suggestions: ${suggestions.length} opportunities
-      ` : "No post currently selected.";
-
-      const response = await fetch('/api/ai-insights', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message: currentInput,
-          context,
-          chatHistory: chatMessages.slice(-5).map(msg => ({
-            role: msg.type === 'user' ? 'user' : 'assistant',
-            content: msg.content
-          })),
-          type: 'chat'
-        })
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Chat service error');
-      }
-      
-      const aiResponse = {
-        id: Date.now() + 1,
-        type: 'ai',
-        content: data.content,
-        timestamp: new Date()
-      };
-
-      setChatMessages(prev => [...prev, aiResponse]);
-      
-    } catch (error) {
-      console.error('Chat Error:', error);
-      const errorResponse = {
-        id: Date.now() + 1,
-        type: 'ai',
-        content: `I am sorry, I encountered an error: ${error.message}. Please try again or check your API configuration.`,
-        timestamp: new Date()
-      };
-      setChatMessages(prev => [...prev, errorResponse]);
-    }
-  }, [chatInput, selectedPost, suggestions, chatMessages]);
-
   // Find interlinking opportunities
   const findInterlinkingSuggestions = useCallback((currentPost) => {
     if (!currentPost) return [];
@@ -200,41 +281,16 @@ const SeoInterlinkingTool = () => {
       );
       relevanceScore += categoryOverlap.length * 5;
 
-      // Find specific phrases that could be linked
-      const linkablePhrasesInContent = [];
-      post.keywords.forEach(keyword => {
-        const regex = new RegExp(`\\b${keyword.toLowerCase()}\\b`, 'gi');
-        const matches = currentContent.match(regex);
-        if (matches) {
-          linkablePhrasesInContent.push({
-            phrase: keyword,
-            occurrences: matches.length
-          });
-        }
-      });
-
-      // Check for title matches in content
-      const titleWords = post.title.toLowerCase().split(' ').filter(word => 
-        word.length > 3 && !['the', 'and', 'for', 'with', 'your'].includes(word)
-      );
-      
-      titleWords.forEach(word => {
-        if (currentContent.includes(word)) {
-          relevanceScore += 3;
-          contextualMatches.push(word);
-        }
-      });
-
       if (relevanceScore > 5) {
         suggestionsResults.push({
           post,
           relevanceScore,
           matchedKeywords,
           contextualMatches,
-          linkablePhrasesInContent,
+          linkablePhrasesInContent: [],
           categoryOverlap,
           recommendedAnchorText: post.title,
-          linkingOpportunities: linkablePhrasesInContent.length + contextualMatches.length
+          linkingOpportunities: matchedKeywords.length
         });
       }
     });
@@ -248,7 +304,6 @@ const SeoInterlinkingTool = () => {
     setAiInsights(null);
     setAiError(null);
     
-    // Simulate processing time
     setTimeout(() => {
       const interlinkingSuggestions = findInterlinkingSuggestions(post);
       setSuggestions(interlinkingSuggestions);
@@ -297,12 +352,6 @@ const SeoInterlinkingTool = () => {
     return 'Low Priority';
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      sendChatMessage();
-    }
-  };
-
   return (
     <div className="max-w-7xl mx-auto p-6 bg-white">
       {/* Header */}
@@ -318,6 +367,13 @@ const SeoInterlinkingTool = () => {
           </div>
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setShowDebug(!showDebug)}
+              className="flex items-center gap-2 px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors"
+            >
+              <Bug className="h-4 w-4" />
+              Debug
+            </button>
+            <button
               onClick={() => setShowAiPanel(!showAiPanel)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                 showAiPanel 
@@ -332,16 +388,61 @@ const SeoInterlinkingTool = () => {
         </div>
       </div>
 
+      {/* Debug Panel */}
+      {showDebug && (
+        <div className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Bug className="h-5 w-5 text-yellow-600" />
+            <h3 className="text-lg font-bold text-yellow-900 font-[Anton] uppercase">
+              Debug Information
+            </h3>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold text-yellow-800 mb-2 font-[Roboto]">Environment Check:</h4>
+              <div className="bg-yellow-100 p-3 rounded text-sm font-mono">
+                <div>WordPress URL: {process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'NOT SET'}</div>
+                <div>Posts loaded: {posts.length}</div>
+                <div>Loading state: {postsLoading ? 'Loading...' : 'Complete'}</div>
+              </div>
+            </div>
+            
+            {debugInfo && (
+              <div>
+                <h4 className="font-semibold text-yellow-800 mb-2 font-[Roboto]">Connection Status:</h4>
+                <div className={`p-3 rounded text-sm ${
+                  debugInfo.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                }`}>
+                  <div className="font-semibold">{debugInfo.message}</div>
+                  <pre className="mt-2 text-xs overflow-auto">
+                    {JSON.stringify(debugInfo.details, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            )}
+            
+            <button
+              onClick={debugWordPressConnection}
+              className="flex items-center gap-2 px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Test WordPress Connection
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Panel - Post Selection */}
-        <div className={`space-y-6 ${showAiPanel ? 'lg:col-span-1' : 'lg:col-span-1'}`}>
+        <div className="space-y-6">
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900 font-[Anton] uppercase">
                 Select a Blog Post
               </h2>
               <button
-                onClick={fetchWordPressPosts}
+                onClick={debugWordPressConnection}
                 disabled={postsLoading}
                 className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
                 title="Refresh posts from WordPress"
@@ -487,36 +588,7 @@ const SeoInterlinkingTool = () => {
                       <TrendingUp className="h-5 w-5 text-green-500 mt-1" />
                     </div>
 
-                    {/* Matching Details */}
-                    <div className="space-y-2 mb-4">
-                      {suggestion.matchedKeywords.length > 0 && (
-                        <div>
-                          <span className="text-xs font-medium text-gray-700">Keyword Matches:</span>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {suggestion.matchedKeywords.map(keyword => (
-                              <span key={keyword} className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
-                                {keyword}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {suggestion.categoryOverlap.length > 0 && (
-                        <div>
-                          <span className="text-xs font-medium text-gray-700">Shared Categories:</span>
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {suggestion.categoryOverlap.map(category => (
-                              <span key={category} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
-                                {category}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Suggested Link - Fixed character escaping */}
+                    {/* Suggested Link */}
                     <div className="bg-gray-50 rounded p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
@@ -538,16 +610,6 @@ const SeoInterlinkingTool = () => {
                         </button>
                       </div>
                     </div>
-
-                    {/* Link Preview */}
-                    <div className="mt-3 pt-3 border-t border-gray-100">
-                      <div className="flex items-center text-sm text-gray-600">
-                        <ArrowRight className="h-4 w-4 mr-2" />
-                        <span className="font-[Roboto]">
-                          {suggestion.linkingOpportunities} potential linking opportunities in content
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 ))
               )}
@@ -555,225 +617,37 @@ const SeoInterlinkingTool = () => {
           )}
         </div>
 
-        {/* Right Panel - AI Insights & Chat */}
+        {/* AI Panel - Simplified for debugging */}
         {showAiPanel && (
-          <div className="lg:col-span-1 space-y-6">
-            {/* AI Error Display */}
-            {aiError && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertCircle className="h-5 w-5 text-yellow-600" />
-                  <h4 className="font-semibold text-yellow-800 font-[Roboto]">AI Notice</h4>
-                </div>
-                <p className="text-sm text-yellow-700 font-[Roboto]">{aiError}</p>
-              </div>
-            )}
-
-            {/* AI Insights */}
-            {selectedPost && (
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Bot className="h-5 w-5 text-blue-600" />
-                  <h3 className="text-lg font-bold text-blue-900 font-[Anton] uppercase">
-                    AI Insights
-                  </h3>
-                </div>
-
-                {aiLoading ? (
-                  <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-3"></div>
-                    <p className="text-blue-700 text-sm font-[Roboto]">Analyzing content with AI...</p>
-                  </div>
-                ) : aiInsights ? (
-                  <div className="space-y-4">
-                    {/* Strategic Insights */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Lightbulb className="h-4 w-4 text-yellow-600" />
-                        <h4 className="font-semibold text-gray-800 font-[Roboto]">Strategic Insights</h4>
-                      </div>
-                      <ul className="space-y-1 text-sm text-gray-700">
-                        {aiInsights.strategicInsights.map((insight, idx) => (
-                          <li key={idx} className="font-[Roboto] text-xs leading-relaxed">• {insight}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Content Gaps */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Target className="h-4 w-4 text-orange-600" />
-                        <h4 className="font-semibold text-gray-800 font-[Roboto]">Content Gaps</h4>
-                      </div>
-                      <ul className="space-y-1 text-sm text-gray-700">
-                        {aiInsights.contentGaps.map((gap, idx) => (
-                          <li key={idx} className="font-[Roboto] text-xs leading-relaxed">• {gap}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* SEO Opportunities */}
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="h-4 w-4 text-green-600" />
-                        <h4 className="font-semibold text-gray-800 font-[Roboto]">SEO Opportunities</h4>
-                      </div>
-                      <ul className="space-y-1 text-sm text-gray-700">
-                        {aiInsights.seoOpportunities.map((opportunity, idx) => (
-                          <li key={idx} className="font-[Roboto] text-xs leading-relaxed">• {opportunity}</li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Quick Stats */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="bg-white rounded p-3 text-center">
-                        <div className="text-lg font-bold text-blue-600">{aiInsights.readabilityScore}</div>
-                        <div className="text-xs text-gray-600 font-[Roboto]">Readability</div>
-                      </div>
-                      <div className="bg-white rounded p-3 text-center">
-                        <div className="text-lg font-bold text-green-600">{aiInsights.linkingPotential}</div>
-                        <div className="text-xs text-gray-600 font-[Roboto]">Link Potential</div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-blue-700 text-sm font-[Roboto]">Select a post to get AI-powered insights</p>
-                )}
-              </div>
-            )}
-
-            {/* AI Chat Interface */}
-            <div className="bg-white border border-gray-200 rounded-lg">
-              <div className="flex items-center gap-2 p-4 border-b border-gray-200">
-                <MessageSquare className="h-5 w-5 text-gray-600" />
-                <h3 className="font-bold text-gray-900 font-[Anton] uppercase">Ask AI Assistant</h3>
-              </div>
-
-              <div className="p-4">
-                {/* Chat Messages */}
-                <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-                  {chatMessages.length === 0 ? (
-                    <div className="text-center py-4 text-gray-500">
-                      <Bot className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                      <p className="text-sm font-[Roboto]">
-                        Ask me about SEO strategy, linking best practices, or content optimization!
-                      </p>
-                    </div>
-                  ) : (
-                    chatMessages.map(message => (
-                      <div key={message.id} className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-xs p-3 rounded-lg ${
-                          message.type === 'user' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-100 text-gray-900'
-                        }`}>
-                          <p className="text-sm font-[Roboto] whitespace-pre-line">{message.content}</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Chat Input */}
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={chatInput}
-                    onChange={(e) => setChatInput(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Ask about SEO, linking strategy..."
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-[Roboto]"
-                  />
-                  <button
-                    onClick={sendChatMessage}
-                    disabled={!chatInput.trim()}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
+          <div className="lg:col-span-1">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 font-[Anton] uppercase">AI Assistant</h3>
+            <p className="text-gray-600 font-[Roboto]">AI features available once WordPress connection is working properly.</p>
           </div>
         )}
       </div>
 
-      {/* AI-Powered Action Recommendations */}
-      {selectedPost && aiInsights && (
-        <div className="mt-8 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Zap className="h-5 w-5 text-purple-600" />
-            <h3 className="text-lg font-bold text-purple-900 font-[Anton] uppercase">
-              Recommended Actions
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {aiInsights.recommendedActions.map((action, idx) => (
-              <div key={idx} className="flex items-start gap-3 p-3 bg-white rounded-lg">
-                <div className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">
-                  {idx + 1}
-                </div>
-                <p className="text-sm text-gray-700 font-[Roboto]">{action}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Instructions */}
-      <div className="mt-12 bg-gray-50 rounded-lg p-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4 font-[Anton] uppercase">
-          How to Use This AI-Enhanced Tool
+      {/* WordPress Connection Status */}
+      <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
+        <h3 className="text-lg font-bold text-blue-900 mb-4 font-[Anton] uppercase">
+          WordPress Connection Status
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">1. Select &amp; Analyze</h4>
-            <p className="text-sm text-gray-600 font-[Roboto]">
-              Choose your post and let AI analyze content relationships, SEO opportunities, and strategic insights.
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">2. Review AI Insights</h4>
-            <p className="text-sm text-gray-600 font-[Roboto]">
-              Get strategic insights about content gaps, linking strategies, and optimization opportunities.
-            </p>
-          </div>
-          <div>
-            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">3. Chat for Custom Advice</h4>
-            <p className="text-sm text-gray-600 font-[Roboto]">
-              Ask the AI assistant specific questions about SEO strategy, content optimization, and best practices.
-            </p>
-          </div>
-        </div>
-        
-        <div className="mt-6 space-y-4">
-          {/* WordPress Connection Status */}
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h4 className="font-semibold text-blue-900 mb-3 font-[Roboto]">🔗 WordPress Integration</h4>
-            <div className="text-sm text-blue-800 space-y-2 font-[Roboto]">
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${posts.length > 0 ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                <span>
-                  {posts.length > 0 ? `Connected - ${posts.length} posts loaded` : 'Loading posts...'}
-                </span>
-              </div>
-              <p className="text-xs">
-                Posts are automatically fetched from your WordPress GraphQL endpoint. 
-                Use the refresh button to reload if you&apos;ve added new content.
-              </p>
+            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">Current Settings</h4>
+            <div className="text-sm text-gray-600 space-y-1 font-[Roboto]">
+              <div>URL: {process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'Not configured'}</div>
+              <div>Posts loaded: {posts.length}</div>
+              <div>Status: {postsLoading ? 'Loading...' : posts.length > 0 ? 'Connected' : 'Failed'}</div>
             </div>
           </div>
-
-          {/* AI Setup Status */}
-          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-            <h4 className="font-semibold text-green-900 mb-2 font-[Roboto]">✅ Server-Side AI Integration</h4>
-            <ul className="text-sm text-green-800 space-y-1 font-[Roboto]">
-              <li>• Your OpenAI API key is secure on the server</li>
-              <li>• Real WordPress content analysis</li>
-              <li>• Production-ready deployment</li>
-              <li>• Automatic keyword extraction from ACF fields</li>
-            </ul>
+          <div>
+            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">Troubleshooting</h4>
+            <div className="text-sm text-gray-600 space-y-1 font-[Roboto]">
+              <div>1. Check your .env.local file</div>
+              <div>2. Verify WordPress is accessible</div>
+              <div>3. Check browser console for errors</div>
+              <div>4. Click the Debug button above</div>
+            </div>
           </div>
         </div>
       </div>
