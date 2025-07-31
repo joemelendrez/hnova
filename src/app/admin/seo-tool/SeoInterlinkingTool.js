@@ -34,9 +34,9 @@ const SeoInterlinkingTool = () => {
         throw new Error('WordPress URL not configured');
       }
       
-      // Enhanced query to load more posts for SEO analysis
-      const postsQuery = `
-        query GetAllPostsForSEO {
+      // Test basic connection first
+      const testQuery = `
+        query TestConnection {
           posts(first: 100, where: { status: PUBLISH }) {
             edges {
               node {
@@ -44,39 +44,28 @@ const SeoInterlinkingTool = () => {
                 title
                 slug
                 excerpt
-                content
                 date
                 categories {
                   edges {
                     node {
                       name
-                      slug
                     }
                   }
                 }
-                acfBlogFields {
-                  readTime
-                  keywords
-                  metaDescription
-                }
               }
-            }
-            pageInfo {
-              hasNextPage
-              endCursor
             }
           }
         }
       `;
       
-      console.log('🚀 Fetching posts for SEO analysis...');
+      console.log('🚀 Sending test query...');
       
       const response = await fetch(wpUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: postsQuery })
+        body: JSON.stringify({ query: testQuery })
       });
       
       console.log('📡 Response status:', response.status);
@@ -86,7 +75,7 @@ const SeoInterlinkingTool = () => {
       }
       
       const result = await response.json();
-      console.log('📦 Posts found:', result.data?.posts?.edges?.length || 0);
+      console.log('📦 Full response:', result);
       
       if (result.errors) {
         setDebugInfo({
@@ -108,46 +97,30 @@ const SeoInterlinkingTool = () => {
         throw new Error('No posts found');
       }
       
-      // Transform the posts with enhanced data
+      // Transform the posts
       const transformedPosts = result.data.posts.edges.map(edge => {
         const post = edge.node;
         
-        // Clean content by removing HTML tags
+        // Clean content
         const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
-        const cleanContent = post.content?.replace(/<[^>]*>/g, '') || cleanExcerpt;
         
-        // Extract keywords from ACF field or generate from content
-        let keywords = [];
-        if (post.acfBlogFields?.keywords) {
-          // If keywords are stored as comma-separated string
-          keywords = post.acfBlogFields.keywords
-            .split(',')
-            .map(k => k.trim())
-            .filter(k => k.length > 0);
-        } else {
-          // Generate keywords from categories and title
-          const categoryKeywords = post.categories.edges.map(edge => edge.node.name.toLowerCase());
-          const titleWords = post.title.toLowerCase()
-            .split(' ')
-            .filter(word => word.length > 3 && !['the', 'and', 'for', 'with', 'your', 'this', 'that'].includes(word));
-          
-          keywords = [...new Set([...categoryKeywords, ...titleWords])];
-        }
+        // Generate keywords from title and categories
+        const categoryKeywords = post.categories.edges.map(edge => edge.node.name.toLowerCase());
+        const titleWords = post.title.toLowerCase()
+          .split(' ')
+          .filter(word => word.length > 3 && !['the', 'and', 'for', 'with', 'your', 'this', 'that'].includes(word));
         
-        // Calculate read time from content
-        const wordCount = cleanContent.split(/\s+/).filter(word => word.length > 0).length;
-        const readTimeMinutes = Math.ceil(wordCount / 225); // 225 words per minute
-        const readTime = post.acfBlogFields?.readTime || `${readTimeMinutes} min read`;
+        const keywords = [...new Set([...categoryKeywords, ...titleWords])];
         
         return {
           id: parseInt(post.id.replace('post:', '')) || Math.random(),
           title: post.title,
           slug: post.slug,
           excerpt: cleanExcerpt,
-          content: cleanContent,
+          content: cleanExcerpt, // Using excerpt as content for now
           categories: post.categories.edges.map(edge => edge.node.name),
           publishedDate: new Date(post.date).toLocaleDateString(),
-          readTime: readTime,
+          readTime: '5 min read', // Default for now
           keywords: keywords
         };
       });
@@ -157,14 +130,13 @@ const SeoInterlinkingTool = () => {
         message: `Successfully loaded ${transformedPosts.length} posts`,
         details: {
           postsCount: transformedPosts.length,
-          hasMorePages: result.data.posts.pageInfo.hasNextPage,
-          samplePost: transformedPosts[0],
+          firstPost: transformedPosts[0],
           url: wpUrl
         }
       });
       
       setPosts(transformedPosts);
-      console.log('✅ Posts loaded successfully:', transformedPosts.length);
+      console.log('✅ Posts loaded successfully:', transformedPosts);
       
     } catch (error) {
       console.error('❌ WordPress connection failed:', error);
@@ -178,95 +150,29 @@ const SeoInterlinkingTool = () => {
         }
       });
       
-      // Use fallback data with more posts for testing
+      // Use fallback data
       const fallbackPosts = [
         {
           id: 1,
           title: "Fallback: The Science Behind Habit Formation",
           slug: "fallback-habit-formation",
-          excerpt: "This is fallback data because WordPress connection failed. Understanding the neurological processes that drive habit formation.",
-          content: "Fallback content for testing the SEO tool when WordPress is not available. Habit formation is a complex neurological process involving the basal ganglia, which plays a crucial role in automatic behaviors. When we repeat actions, our brain creates neural pathways that make these behaviors easier over time. Research shows that it takes an average of 66 days to form a new habit, though this varies significantly based on complexity. The habit loop consists of three parts: cue, routine, and reward. Understanding this cycle is essential for both building good habits and breaking bad ones.",
+          excerpt: "This is fallback data because WordPress connection failed.",
+          content: "Fallback content for testing the SEO tool when WordPress is not available.",
           categories: ["Habit Formation", "Psychology"],
           publishedDate: "Dec 15, 2024",
-          readTime: "8 min read",
-          keywords: ["habit formation", "neuroscience", "basal ganglia", "habit loop", "neural pathways", "behavior change"]
+          readTime: "5 min read",
+          keywords: ["habit formation", "psychology", "fallback"]
         },
         {
           id: 2,
-          title: "Fallback: Breaking Bad Habits - A Step-by-Step Guide",
+          title: "Fallback: Breaking Bad Habits",
           slug: "fallback-breaking-habits",
-          excerpt: "This is fallback data for testing purposes. Learn evidence-based strategies to eliminate unwanted behaviors.",
-          content: "Fallback content about breaking bad habits and behavior change. Breaking bad habits requires understanding the psychology behind automatic behaviors. The key is not just stopping the bad habit, but replacing it with something beneficial. Habit stacking is a powerful technique where you attach new behaviors to existing routines. Environmental design plays a crucial role - changing your surroundings can disrupt negative patterns. Mindfulness and awareness are the first steps to recognizing trigger situations.",
-          categories: ["Breaking Bad Habits", "Psychology"],
+          excerpt: "This is fallback data for testing purposes.",
+          content: "Fallback content about breaking bad habits and behavior change.",
+          categories: ["Breaking Bad Habits"],
           publishedDate: "Dec 12, 2024",
           readTime: "6 min read",
-          keywords: ["breaking habits", "habit stacking", "environmental design", "mindfulness", "behavior change"]
-        },
-        {
-          id: 3,
-          title: "Fallback: Digital Wellness in the Smartphone Age",
-          slug: "fallback-digital-wellness",
-          excerpt: "Practical strategies to reduce screen time and manage social media addiction.",
-          content: "Digital wellness has become essential in our hyper-connected world. Screen time addiction follows the same psychological patterns as other habits - cue, routine, reward. Social media platforms are designed to trigger dopamine responses, making them inherently addictive. To improve digital wellness, start by auditing your current usage patterns. Set specific times for checking emails and social media. Create phone-free zones in your home, especially the bedroom.",
-          categories: ["Digital Wellness", "Productivity"],
-          publishedDate: "Dec 10, 2024",
-          readTime: "7 min read",
-          keywords: ["digital wellness", "screen time", "social media addiction", "dopamine", "productivity"]
-        },
-        {
-          id: 4,
-          title: "Fallback: The Psychology of Habit Stacking",
-          slug: "fallback-habit-stacking",
-          excerpt: "How to link new habits to existing ones for automatic behavior change.",
-          content: "Habit stacking is a strategy that leverages existing neural pathways to build new habits. By linking a new behavior to an established routine, you increase the likelihood of consistency. The formula is simple: After I [existing habit], I will [new habit]. This technique works because it takes advantage of the neural networks already established in your brain.",
-          categories: ["Habit Formation", "Productivity"],
-          publishedDate: "Dec 8, 2024",
-          readTime: "5 min read",
-          keywords: ["habit stacking", "neural pathways", "routine", "consistency", "productivity"]
-        },
-        {
-          id: 5,
-          title: "Fallback: Mindfulness and Habit Change",
-          slug: "fallback-mindfulness-habits",
-          excerpt: "The role of awareness in building and breaking habits.",
-          content: "Mindfulness is a cornerstone of successful habit change. By developing awareness of your thoughts, feelings, and behaviors, you can identify the cues that trigger unwanted habits and the rewards that reinforce them. This awareness creates space between stimulus and response, allowing you to make conscious choices rather than acting on autopilot.",
-          categories: ["Mindfulness", "Psychology"],
-          publishedDate: "Dec 5, 2024",
-          readTime: "6 min read",
-          keywords: ["mindfulness", "awareness", "habit change", "psychology", "consciousness"]
-        },
-        {
-          id: 6,
-          title: "Fallback: The Neuroscience of Willpower",
-          slug: "fallback-neuroscience-willpower",
-          excerpt: "Understanding why willpower fails and what actually works.",
-          content: "Willpower is like a muscle that can become fatigued with overuse. Research in neuroscience shows that relying solely on willpower for habit change is a recipe for failure. Instead, successful habit change involves modifying your environment, creating systems, and leveraging the brain's natural tendency toward automation.",
-          categories: ["Psychology", "Neuroscience"],
-          publishedDate: "Dec 3, 2024",
-          readTime: "7 min read",
-          keywords: ["willpower", "neuroscience", "psychology", "self-control", "brain science"]
-        },
-        {
-          id: 7,
-          title: "Fallback: Environmental Design for Better Habits",
-          slug: "fallback-environmental-design",
-          excerpt: "How your surroundings shape your behavior and habits.",
-          content: "Your environment plays a crucial role in shaping your habits. By designing your surroundings to make good habits easier and bad habits harder, you can dramatically improve your success rate. This involves everything from organizing your physical space to managing your digital environment and social influences.",
-          categories: ["Habit Formation", "Environmental Design"],
-          publishedDate: "Dec 1, 2024",
-          readTime: "6 min read",
-          keywords: ["environmental design", "habit formation", "behavior modification", "surroundings", "habit cues"]
-        },
-        {
-          id: 8,
-          title: "Fallback: Sleep Habits for Peak Performance",
-          slug: "fallback-sleep-habits",
-          excerpt: "The foundation of all other habits starts with quality sleep.",
-          content: "Sleep is the foundation upon which all other habits are built. Poor sleep undermines willpower, decision-making, and emotional regulation - all crucial components of habit change. Creating a consistent sleep routine involves optimizing your sleep environment, managing light exposure, and establishing pre-sleep rituals that signal to your brain that it's time to wind down.",
-          categories: ["Sleep", "Health", "Productivity"],
-          publishedDate: "Nov 28, 2024",
-          readTime: "8 min read",
-          keywords: ["sleep habits", "sleep hygiene", "performance", "health", "productivity", "circadian rhythm"]
+          keywords: ["breaking habits", "behavior change", "fallback"]
         }
       ];
       
@@ -704,34 +610,6 @@ const SeoInterlinkingTool = () => {
                         </button>
                       </div>
                     </div>
-
-                    {/* Match Details */}
-                    {suggestion.matchedKeywords.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-gray-100">
-                        <span className="text-xs font-medium text-gray-700 block mb-2">Matched Keywords:</span>
-                        <div className="flex flex-wrap gap-1">
-                          {suggestion.matchedKeywords.map(keyword => (
-                            <span key={keyword} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
-                              {keyword}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Category Overlap */}
-                    {suggestion.categoryOverlap && suggestion.categoryOverlap.length > 0 && (
-                      <div className="mt-2">
-                        <span className="text-xs font-medium text-gray-700 block mb-1">Shared Categories:</span>
-                        <div className="flex flex-wrap gap-1">
-                          {suggestion.categoryOverlap.map(category => (
-                            <span key={category} className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
-                              {category}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 ))
               )}
@@ -739,124 +617,11 @@ const SeoInterlinkingTool = () => {
           )}
         </div>
 
-        {/* AI Panel - Enhanced */}
+        {/* AI Panel - Simplified for debugging */}
         {showAiPanel && (
           <div className="lg:col-span-1">
-            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
-              <div className="flex items-center gap-2 mb-4">
-                <Bot className="h-5 w-5 text-blue-600" />
-                <h3 className="text-lg font-bold text-gray-900 font-[Anton] uppercase">
-                  AI Insights
-                </h3>
-              </div>
-
-              {!selectedPost ? (
-                <p className="text-gray-600 font-[Roboto] text-center py-8">
-                  Select a post to get AI-powered insights and recommendations.
-                </p>
-              ) : aiLoading ? (
-                <div className="text-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-3"></div>
-                  <p className="text-gray-600 text-sm font-[Roboto]">Generating AI insights...</p>
-                </div>
-              ) : aiError ? (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <AlertCircle className="h-4 w-4 text-yellow-600" />
-                    <span className="text-sm font-medium text-yellow-800">AI Service Notice</span>
-                  </div>
-                  <p className="text-sm text-yellow-700 mb-3">{aiError}</p>
-                  {aiInsights && (
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">Strategic Insights:</h4>
-                        <ul className="text-sm text-gray-600 space-y-1">
-                          {aiInsights.strategicInsights.map((insight, i) => (
-                            <li key={i} className="flex items-start gap-2">
-                              <Lightbulb className="h-3 w-3 text-yellow-500 mt-1 flex-shrink-0" />
-                              <span>{insight}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : aiInsights ? (
-                <div className="space-y-6">
-                  {/* Strategic Insights */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Lightbulb className="h-4 w-4 text-blue-600" />
-                      <h4 className="font-semibold text-gray-800 font-[Roboto]">Strategic Insights</h4>
-                    </div>
-                    <ul className="text-sm text-gray-600 space-y-2">
-                      {aiInsights.strategicInsights.map((insight, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mt-2 flex-shrink-0"></div>
-                          <span>{insight}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* SEO Opportunities */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <TrendingUp className="h-4 w-4 text-green-600" />
-                      <h4 className="font-semibold text-gray-800 font-[Roboto]">SEO Opportunities</h4>
-                    </div>
-                    <ul className="text-sm text-gray-600 space-y-2">
-                      {aiInsights.seoOpportunities.map((opportunity, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
-                          <span>{opportunity}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white rounded-lg p-3 border border-gray-200">
-                      <div className="text-xs text-gray-500 mb-1">Readability Score</div>
-                      <div className="text-lg font-bold text-gray-900">{aiInsights.readabilityScore}%</div>
-                    </div>
-                    <div className="bg-white rounded-lg p-3 border border-gray-200">
-                      <div className="text-xs text-gray-500 mb-1">Linking Potential</div>
-                      <div className="text-lg font-bold text-gray-900">{aiInsights.linkingPotential}</div>
-                    </div>
-                  </div>
-
-                  {/* Recommended Actions */}
-                  <div>
-                    <div className="flex items-center gap-2 mb-3">
-                      <Zap className="h-4 w-4 text-purple-600" />
-                      <h4 className="font-semibold text-gray-800 font-[Roboto]">Action Items</h4>
-                    </div>
-                    <ul className="text-sm text-gray-600 space-y-2">
-                      {aiInsights.recommendedActions.map((action, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <div className="w-1.5 h-1.5 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
-                          <span>{action}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ) : null}
-
-              {/* AI Chat (placeholder for future enhancement) */}
-              <div className="mt-6 pt-6 border-t border-blue-200">
-                <div className="flex items-center gap-2 mb-3">
-                  <MessageSquare className="h-4 w-4 text-blue-600" />
-                  <h4 className="font-semibold text-gray-800 font-[Roboto]">AI Assistant Chat</h4>
-                </div>
-                <p className="text-sm text-gray-500 text-center py-4 font-[Roboto]">
-                  Interactive AI chat coming soon...
-                </p>
-              </div>
-            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-4 font-[Anton] uppercase">AI Assistant</h3>
+            <p className="text-gray-600 font-[Roboto]">AI features available once WordPress connection is working properly.</p>
           </div>
         )}
       </div>
@@ -873,38 +638,19 @@ const SeoInterlinkingTool = () => {
               <div>URL: {process.env.NEXT_PUBLIC_WORDPRESS_API_URL || 'Not configured'}</div>
               <div>Posts loaded: {posts.length}</div>
               <div>Status: {postsLoading ? 'Loading...' : posts.length > 0 ? 'Connected' : 'Failed'}</div>
-              {debugInfo?.status === 'success' && (
-                <div>WordPress posts: {debugInfo.details.postsCount}</div>
-              )}
             </div>
           </div>
           <div>
-            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">Quick Setup</h4>
+            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">Troubleshooting</h4>
             <div className="text-sm text-gray-600 space-y-1 font-[Roboto]">
-              <div>1. Create .env.local file</div>
-              <div>2. Add: NEXT_PUBLIC_WORDPRESS_API_URL=your-url</div>
-              <div>3. Install WPGraphQL plugin on WordPress</div>
-              <div>4. Click refresh button above</div>
+              <div>1. Check your .env.local file</div>
+              <div>2. Verify WordPress is accessible</div>
+              <div>3. Check browser console for errors</div>
+              <div>4. Click the Debug button above</div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Performance Summary */}
-      {posts.length > 0 && (
-        <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <h4 className="font-semibold text-green-900 font-[Roboto]">Tool Ready</h4>
-          </div>
-          <p className="text-sm text-green-700 font-[Roboto]">
-            Successfully loaded {posts.length} posts. 
-            {selectedPost && suggestions.length > 0 && (
-              <span> Found {suggestions.length} linking opportunities for "{selectedPost.title}".</span>
-            )}
-          </p>
-        </div>
-      )}
     </div>
   );
 };
