@@ -292,7 +292,6 @@ export const GET_ALL_POSTS_FOR_SEO = `
           title
           slug
           excerpt
-          content
           date
           categories {
             edges {
