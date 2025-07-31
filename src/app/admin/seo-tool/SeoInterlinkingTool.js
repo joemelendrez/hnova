@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Link, Target, TrendingUp, FileText, ArrowRight, Copy, CheckCircle, Bot, Lightbulb, Zap, MessageSquare, AlertCircle } from 'lucide-react';
 import OpenAI from 'openai';
 
-const SEOInterlinkingTool = () => {
+const SeoInterlinkingTool = () => {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -469,4 +469,4 @@ const SEOInterlinkingTool = () => {
   );
 };
 
-export default SEOInterlinkingTool;
+export default SeoInterlinkingTool;
