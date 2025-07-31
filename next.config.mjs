@@ -138,30 +138,6 @@ const nextConfig = {
 
     return config
   },
-
-  // Generate static params for blog posts at build time
-  async generateStaticParams() {
-    // This will be called at build time to pre-generate blog post pages
-    try {
-      if (process.env.NEXT_PUBLIC_WORDPRESS_API_URL && 
-          process.env.NEXT_PUBLIC_WORDPRESS_API_URL !== 'https://your-wordpress-site.com/graphql') {
-        
-        // Import the WordPress functions
-        const { getAllPosts } = await import('./src/lib/wordpress.js')
-        
-        // Fetch all posts for static generation
-        const posts = await getAllPosts(100) // Get more posts for static generation
-        
-        return posts.edges.map((edge) => ({
-          slug: edge.node.slug,
-        }))
-      }
-    } catch (error) {
-      console.warn('Could not pre-generate blog post params:', error.message)
-    }
-    
-    return []
-  }
 }
 
 export default nextConfig
