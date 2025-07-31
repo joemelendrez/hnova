@@ -3,7 +3,6 @@
 // src/app/admin/seo-tool/SEOInterlinkingTool.js
 import React, { useState, useEffect, useMemo } from 'react';
 import { Search, Link, Target, TrendingUp, FileText, ArrowRight, Copy, CheckCircle, Bot, Lightbulb, Zap, MessageSquare, AlertCircle } from 'lucide-react';
-import OpenAI from 'openai';
 
 const SeoInterlinkingTool = () => {
   const [posts, setPosts] = useState([]);
@@ -18,23 +17,7 @@ const SeoInterlinkingTool = () => {
   const [chatInput, setChatInput] = useState('');
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiError, setAiError] = useState(null);
-  const [apiKeyConfigured, setApiKeyConfigured] = useState(false);
-
-  // Initialize OpenAI client
-  const [openai, setOpenai] = useState(null);
-
-  useEffect(() => {
-    // Check if OpenAI API key is configured
-    const apiKey = process.env.NEXT_PUBLIC_OPENAI_API_KEY;
-    if (apiKey && apiKey !== 'your-openai-api-key-here') {
-      const client = new OpenAI({
-        apiKey: apiKey,
-        dangerouslyAllowBrowser: true // Only for client-side usage
-      });
-      setOpenai(client);
-      setApiKeyConfigured(true);
-    }
-  }, []);
+  const [apiKeyConfigured, setApiKeyConfigured] = useState(true); // Always true now since we use server-side
 
   // Mock data - replace with actual GraphQL query to your WordPress backend
   const mockPosts = [
@@ -100,82 +83,37 @@ const SeoInterlinkingTool = () => {
     setPosts(mockPosts);
   }, []);
 
-  // Real AI Analysis Function
+  // Server-side AI Analysis Function
   const generateAIInsights = async (post, suggestions) => {
-    if (!openai || !apiKeyConfigured) {
-      setAiError("OpenAI API key not configured. Please add NEXT_PUBLIC_OPENAI_API_KEY to your environment variables.");
-      return;
-    }
-
     setAiLoading(true);
     setAiError(null);
     
     try {
-      const suggestionsText = suggestions.length > 0 
-        ? suggestions.map(s => `- ${s.post.title} (Categories: ${s.post.categories.join(', ')}, Relevance Score: ${s.relevanceScore})`).join('\n')
-        : "No linking suggestions found.";
-
-      const prompt = `
-      Analyze this blog post for SEO interlinking opportunities and provide strategic insights:
-      
-      BLOG POST DETAILS:
-      Title: ${post.title}
-      Content Preview: ${post.content.substring(0, 1500)}...
-      Categories: ${post.categories.join(', ')}
-      Keywords: ${post.keywords.join(', ')}
-      Read Time: ${post.readTime} minutes
-      
-      AVAILABLE POSTS TO LINK TO:
-      ${suggestionsText}
-      
-      Please provide a comprehensive analysis in the following JSON format:
-      {
-        "strategicInsights": [
-          "Strategic insight about hub pages, content clusters, or positioning",
-          "Insight about content authority and topic expertise",
-          "Insight about user journey and content flow"
-        ],
-        "contentGaps": [
-          "Missing content or linking opportunities",
-          "Topics that could strengthen this post",
-          "Related content that should be created"
-        ],
-        "seoOpportunities": [
-          "Specific SEO improvements for rankings",
-          "Internal linking strategies for this post",
-          "Optimization tactics for better search visibility"
-        ],
-        "readabilityScore": 85,
-        "linkingPotential": "High",
-        "recommendedActions": [
-          "Specific action with clear implementation steps",
-          "Another actionable recommendation",
-          "Third specific action to take",
-          "Fourth optimization step"
-        ]
-      }
-      
-      Focus on actionable, specific advice for a habit formation blog. Consider user intent, search behavior, and content marketing best practices.
-      `;
-
-      const response = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert SEO strategist and content marketing specialist with deep knowledge of habit formation, psychology, and behavior change content. Provide actionable, specific insights that will improve search rankings and user engagement. Always respond with valid JSON."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        max_tokens: 1200,
-        temperature: 0.7
+      const response = await fetch('/api/ai-insights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          post,
+          suggestions,
+          type: 'insights'
+        })
       });
 
-      const aiResponse = JSON.parse(response.choices[0].message.content);
-      setAiInsights(aiResponse);
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.fallback) {
+          // Use fallback data when AI is unavailable
+          setAiInsights(data.fallback);
+          setAiError(`AI temporarily unavailable: ${data.error}`);
+        } else {
+          throw new Error(data.error || 'AI service error');
+        }
+      } else {
+        setAiInsights(data);
+      }
       
     } catch (error) {
       console.error('AI Analysis Error:', error);
@@ -212,13 +150,9 @@ const SeoInterlinkingTool = () => {
     }
   };
 
-  // Real Chat functionality
+  // Server-side Chat functionality
   const sendChatMessage = async () => {
     if (!chatInput.trim()) return;
-    if (!openai || !apiKeyConfigured) {
-      setAiError("OpenAI API key not configured for chat functionality.");
-      return;
-    }
 
     const userMessage = {
       id: Date.now(),
@@ -232,49 +166,38 @@ const SeoInterlinkingTool = () => {
     setChatInput('');
 
     try {
-      const contextPrompt = selectedPost ? `
-      CURRENT CONTEXT:
+      const context = selectedPost ? `
       - Selected Post: "${selectedPost.title}"
       - Post Categories: ${selectedPost.categories.join(', ')}
       - Available Link Suggestions: ${suggestions.length} opportunities
-      - Blog Focus: Habit formation, behavior change, digital wellness, productivity, psychology
       ` : "No post currently selected.";
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [
-          {
-            role: "system",
-            content: `You are an expert SEO and content marketing consultant specializing in habit formation and behavior change blogs. You help with:
-
-            - Internal linking strategies and best practices
-            - SEO optimization for habit/psychology content  
-            - Content clustering and site architecture
-            - User experience and content flow optimization
-            - Anchor text optimization and natural link integration
-            - Performance tracking and analytics insights
-
-            Provide specific, actionable advice. Reference the current context when relevant. Keep responses concise but comprehensive.
-
-            ${contextPrompt}`
-          },
-          ...chatMessages.slice(-5).map(msg => ({
+      const response = await fetch('/api/ai-insights', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: currentInput,
+          context,
+          chatHistory: chatMessages.slice(-5).map(msg => ({
             role: msg.type === 'user' ? 'user' : 'assistant',
             content: msg.content
           })),
-          {
-            role: 'user',
-            content: currentInput
-          }
-        ],
-        max_tokens: 600,
-        temperature: 0.8
+          type: 'chat'
+        })
       });
 
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Chat service error');
+      }
+      
       const aiResponse = {
         id: Date.now() + 1,
         type: 'ai',
-        content: response.choices[0].message.content,
+        content: data.content,
         timestamp: new Date()
       };
 
@@ -298,7 +221,6 @@ const SeoInterlinkingTool = () => {
 
     const suggestions = [];
     const currentContent = currentPost.content.toLowerCase();
-    const currentKeywords = currentPost.keywords.map(k => k.toLowerCase());
 
     posts.forEach(post => {
       if (post.id === currentPost.id) return;
@@ -375,10 +297,8 @@ const SeoInterlinkingTool = () => {
       setSuggestions(interlinkingSuggestions);
       setLoading(false);
       
-      // Generate AI insights automatically if API is configured
-      if (apiKeyConfigured) {
-        generateAIInsights(post, interlinkingSuggestions);
-      }
+      // Generate AI insights automatically
+      generateAIInsights(post, interlinkingSuggestions);
     }, 1000);
   };
 
@@ -434,12 +354,6 @@ const SeoInterlinkingTool = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            {!apiKeyConfigured && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-yellow-50 text-yellow-700 rounded-lg text-sm">
-                <AlertCircle className="h-4 w-4" />
-                <span className="font-[Roboto]">AI Offline</span>
-              </div>
-            )}
             <button
               onClick={() => setShowAiPanel(!showAiPanel)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
@@ -455,15 +369,343 @@ const SeoInterlinkingTool = () => {
         </div>
       </div>
 
-      {/* Rest of the component content... */}
-      {/* The component content is very long, so I'll include the key parts */}
-      
-      <div className="text-center py-12 text-gray-500">
-        <Bot className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-        <p className="font-[Roboto]">Select a blog post from the left to begin SEO analysis</p>
-        <p className="text-sm text-gray-400 mt-2 font-[Roboto]">
-          {apiKeyConfigured ? "AI insights ready" : "Configure OpenAI API key for AI features"}
-        </p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Panel - Post Selection */}
+        <div className={`space-y-6 ${showAiPanel ? 'lg:col-span-1' : 'lg:col-span-1'}`}>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 mb-4 font-[Anton] uppercase">
+              Select a Blog Post
+            </h2>
+            
+            {/* Search Bar */}
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search posts by title, category, or keyword..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-[Roboto]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {/* Posts List */}
+            <div className="space-y-3 max-h-96 overflow-y-auto">
+              {filteredPosts.map(post => (
+                <div
+                  key={post.id}
+                  onClick={() => handlePostSelect(post)}
+                  className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md ${
+                    selectedPost?.id === post.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <h3 className="font-semibold text-gray-900 mb-2 font-[Roboto]">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 mb-2 font-[Roboto]">
+                    {post.excerpt}
+                  </p>
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1">
+                        <FileText className="h-3 w-3" />
+                        {post.readTime} min read
+                      </span>
+                      <span>•</span>
+                      <span>{post.categories.join(', ')}</span>
+                    </div>
+                    <span>{post.publishedDate}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Middle Panel - Show basic message for now */}
+        <div className={showAiPanel ? 'lg:col-span-1' : 'lg:col-span-2'}>
+          <h2 className="text-xl font-bold text-gray-900 mb-4 font-[Anton] uppercase">
+            Interlinking Suggestions
+          </h2>
+
+          {!selectedPost ? (
+            <div className="text-center py-12 text-gray-500">
+              <Link className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+              <p className="font-[Roboto]">Select a blog post to see interlinking suggestions</p>
+            </div>
+          ) : loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <p className="text-gray-600 font-[Roboto]">Analyzing content for linking opportunities...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Selected Post Info */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-blue-900 mb-2 font-[Roboto]">
+                  Currently Analyzing: {selectedPost.title}
+                </h3>
+                <p className="text-sm text-blue-700 font-[Roboto]">
+                  Found {suggestions.length} potential linking opportunities
+                </p>
+              </div>
+
+              {/* Suggestions */}
+              {suggestions.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <Target className="h-8 w-8 mx-auto mb-4 text-gray-300" />
+                  <p className="font-[Roboto]">No strong interlinking opportunities found for this post.</p>
+                </div>
+              ) : (
+                suggestions.map((suggestion) => (
+                  <div key={suggestion.post.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900 mb-1 font-[Roboto]">
+                          {suggestion.post.title}
+                        </h4>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRelevanceColor(suggestion.relevanceScore)}`}>
+                            {getRelevanceLabel(suggestion.relevanceScore)}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            Score: {suggestion.relevanceScore}
+                          </span>
+                        </div>
+                      </div>
+                      <TrendingUp className="h-5 w-5 text-green-500 mt-1" />
+                    </div>
+
+                    {/* Suggested Link */}
+                    <div className="bg-gray-50 rounded p-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <span className="text-xs font-medium text-gray-700 block mb-1">Suggested Link:</span>
+                          <code className="text-sm text-gray-800 bg-white px-2 py-1 rounded border font-[Roboto] break-all">
+                            &lt;a href="/{suggestion.post.slug}"&gt;{suggestion.recommendedAnchorText}&lt;/a&gt;
+                          </code>
+                        </div>
+                        <button
+                          onClick={() => copyToClipboard(`<a href="/${suggestion.post.slug}">${suggestion.recommendedAnchorText}</a>`, suggestion.post.id)}
+                          className="ml-3 p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-colors"
+                          title="Copy HTML link"
+                        >
+                          {copiedLinks.has(suggestion.post.id) ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right Panel - AI Insights & Chat */}
+        {showAiPanel && (
+          <div className="lg:col-span-1 space-y-6">
+            {/* AI Error Display */}
+            {aiError && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="h-5 w-5 text-yellow-600" />
+                  <h4 className="font-semibold text-yellow-800 font-[Roboto]">AI Notice</h4>
+                </div>
+                <p className="text-sm text-yellow-700 font-[Roboto]">{aiError}</p>
+              </div>
+            )}
+
+            {/* AI Insights */}
+            {selectedPost && (
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Bot className="h-5 w-5 text-blue-600" />
+                  <h3 className="text-lg font-bold text-blue-900 font-[Anton] uppercase">
+                    AI Insights
+                  </h3>
+                </div>
+
+                {aiLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-3"></div>
+                    <p className="text-blue-700 text-sm font-[Roboto]">Analyzing content with AI...</p>
+                  </div>
+                ) : aiInsights ? (
+                  <div className="space-y-4">
+                    {/* Strategic Insights */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Lightbulb className="h-4 w-4 text-yellow-600" />
+                        <h4 className="font-semibold text-gray-800 font-[Roboto]">Strategic Insights</h4>
+                      </div>
+                      <ul className="space-y-1 text-sm text-gray-700">
+                        {aiInsights.strategicInsights.map((insight, idx) => (
+                          <li key={idx} className="font-[Roboto] text-xs leading-relaxed">• {insight}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Content Gaps */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target className="h-4 w-4 text-orange-600" />
+                        <h4 className="font-semibold text-gray-800 font-[Roboto]">Content Gaps</h4>
+                      </div>
+                      <ul className="space-y-1 text-sm text-gray-700">
+                        {aiInsights.contentGaps.map((gap, idx) => (
+                          <li key={idx} className="font-[Roboto] text-xs leading-relaxed">• {gap}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* SEO Opportunities */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="h-4 w-4 text-green-600" />
+                        <h4 className="font-semibold text-gray-800 font-[Roboto]">SEO Opportunities</h4>
+                      </div>
+                      <ul className="space-y-1 text-sm text-gray-700">
+                        {aiInsights.seoOpportunities.map((opportunity, idx) => (
+                          <li key={idx} className="font-[Roboto] text-xs leading-relaxed">• {opportunity}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Quick Stats */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-white rounded p-3 text-center">
+                        <div className="text-lg font-bold text-blue-600">{aiInsights.readabilityScore}</div>
+                        <div className="text-xs text-gray-600 font-[Roboto]">Readability</div>
+                      </div>
+                      <div className="bg-white rounded p-3 text-center">
+                        <div className="text-lg font-bold text-green-600">{aiInsights.linkingPotential}</div>
+                        <div className="text-xs text-gray-600 font-[Roboto]">Link Potential</div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-blue-700 text-sm font-[Roboto]">Select a post to get AI-powered insights</p>
+                )}
+              </div>
+            )}
+
+            {/* AI Chat Interface */}
+            <div className="bg-white border border-gray-200 rounded-lg">
+              <div className="flex items-center gap-2 p-4 border-b border-gray-200">
+                <MessageSquare className="h-5 w-5 text-gray-600" />
+                <h3 className="font-bold text-gray-900 font-[Anton] uppercase">Ask AI Assistant</h3>
+              </div>
+
+              <div className="p-4">
+                {/* Chat Messages */}
+                <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
+                  {chatMessages.length === 0 ? (
+                    <div className="text-center py-4 text-gray-500">
+                      <Bot className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm font-[Roboto]">
+                        Ask me about SEO strategy, linking best practices, or content optimization!
+                      </p>
+                    </div>
+                  ) : (
+                    chatMessages.map(message => (
+                      <div key={message.id} className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`max-w-xs p-3 rounded-lg ${
+                          message.type === 'user' 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-100 text-gray-900'
+                        }`}>
+                          <p className="text-sm font-[Roboto] whitespace-pre-line">{message.content}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Chat Input */}
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                    placeholder="Ask about SEO, linking strategy..."
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-[Roboto]"
+                  />
+                  <button
+                    onClick={sendChatMessage}
+                    disabled={!chatInput.trim()}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* AI-Powered Action Recommendations */}
+      {selectedPost && aiInsights && (
+        <div className="mt-8 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap className="h-5 w-5 text-purple-600" />
+            <h3 className="text-lg font-bold text-purple-900 font-[Anton] uppercase">
+              Recommended Actions
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {aiInsights.recommendedActions.map((action, idx) => (
+              <div key={idx} className="flex items-start gap-3 p-3 bg-white rounded-lg">
+                <div className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">
+                  {idx + 1}
+                </div>
+                <p className="text-sm text-gray-700 font-[Roboto]">{action}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Instructions */}
+      <div className="mt-12 bg-gray-50 rounded-lg p-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-4 font-[Anton] uppercase">
+          How to Use This AI-Enhanced Tool
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">1. Select & Analyze</h4>
+            <p className="text-sm text-gray-600 font-[Roboto]">
+              Choose your post and let AI analyze content relationships, SEO opportunities, and strategic insights.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">2. Review AI Insights</h4>
+            <p className="text-sm text-gray-600 font-[Roboto]">
+              Get strategic insights about content gaps, linking strategies, and optimization opportunities.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">3. Chat for Custom Advice</h4>
+            <p className="text-sm text-gray-600 font-[Roboto]">
+              Ask the AI assistant specific questions about SEO strategy, content optimization, and best practices.
+            </p>
+          </div>
+        </div>
+        
+        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <h4 className="font-semibold text-green-900 mb-2 font-[Roboto]">✅ Server-Side AI Integration</h4>
+          <ul className="text-sm text-green-800 space-y-1 font-[Roboto]">
+            <li>• Your OpenAI API key is secure on the server</li>
+            <li>• No client-side exposure of sensitive data</li>
+            <li>• Passes Netlify's security scanning</li>
+            <li>• Production-ready deployment</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
