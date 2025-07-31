@@ -1,84 +1,130 @@
 'use client'
 import { motion } from 'framer-motion'
-import { ArrowRight, TrendingUp, Target } from 'lucide-react'
+import { ArrowRight, Download, ShoppingBag } from 'lucide-react'
 import Button from './Button'
 
 const Hero = () => {
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
       
-    { /* Background Image */ }
-<div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-black/50 bg-blend-overlay"
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
           backgroundImage: 'url(/HabitBackground.webp)',
         }}
       />
-
-      {/* Main Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
-          {/* Left Column - Text Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            {/* Main Headline */}
-            <motion.h1 
-              className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            >
-              Discover the{' '}
-              <span className="font-anton text-[#DBDBDB]">Science</span> Behind{' '}
-              <span className=" font-anton text-[#dbdbdb]">Breaking Bad Habits</span>
-            </motion.h1>
-            
-            {/* Subtitle */}
-            <motion.p 
-              className="text-xl text-gray-200 mb-8 leading-relaxed max-w-lg"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              Join thousands of readers who are transforming their lives with evidence-based strategies, 
-              practical tools, and actionable insights for lasting habit change.
-            </motion.p>
-
-            {/* CTA Buttons */}
-            <motion.div 
-              className="flex flex-col sm:flex-row gap-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              <Button 
-                href="/blog" 
-                size="large"
-                variant="cta"
-                className="group"
-              >
-                Start Reading
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
-              </Button>
-            </motion.div>
-
-          
-          </motion.div>
-        </div>
+      
+      {/* Dark Overlay for Text Readability */}
+      <div className="absolute inset-0 bg-black/60" />
+      
+      {/* Subtle Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 20% 80%, #DBDBDB 1px, transparent 1px),
+                           radial-gradient(circle at 80% 20%, #DBDBDB 1px, transparent 1px)`,
+          backgroundSize: '100px 100px'
+        }} />
       </div>
 
-      {/* Scroll Indicator */}
+      {/* Main Content */}
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        
+        {/* Social Proof Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="inline-block bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 border border-white/20"
+        >
+          <span className="text-[#DBDBDB] text-sm font-medium">
+            ✨ Evidence-based habit transformation
+          </span>
+        </motion.div>
+
+        {/* Main Headline */}
+        <motion.h1 
+          className="text-5xl md:text-6xl lg:text-7xl font-anton uppercase leading-tight mb-6 tracking-tight"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.1 }}
+        >
+          Stop Failing at{' '}
+          <span className="text-[#DBDBDB] relative inline-block">
+            Habits
+            <motion.div
+              className="absolute -bottom-2 left-0 right-0 h-1 bg-[#DBDBDB]"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+            />
+          </span>
+        </motion.h1>
+        
+        {/* Subtitle */}
+        <motion.p 
+          className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
+        >
+          The science-backed system that makes change{' '}
+          <span className="text-[#DBDBDB] font-semibold">automatic</span>
+        </motion.p>
+
+        {/* CTA Buttons */}
+        <motion.div 
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+        >
+          <Button 
+            href="/start-here" 
+            size="large"
+            variant="cta"
+            className="group shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 min-w-[200px]"
+          >
+            <Download className="mr-2 h-5 w-5" />
+            Get Free Guide
+          </Button>
+          
+          <Button 
+            href="/shop" 
+            size="large"
+            variant="outline"
+            className="group border-2 border-white/30 text-white hover:bg-white hover:text-[#1a1a1a] transition-all duration-300 min-w-[200px]"
+          >
+            <ShoppingBag className="mr-2 h-5 w-5" />
+            Shop Tools
+            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+          </Button>
+        </motion.div>
+
+        {/* Simple Trust Indicator */}
+        <motion.div
+          className="text-center border-t border-white/20 pt-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.7 }}
+        >
+          <div className="text-lg text-gray-300 mb-2">
+            Join readers who are building better habits
+          </div>
+          <div className="text-[#DBDBDB] font-semibold">
+            Start your transformation today
+          </div>
+        </motion.div>
+      </div>
+
+      {/* Minimal Scroll Indicator */}
       <motion.div
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
+        animate={{ y: [0, 8, 0] }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
       >
-        <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center opacity-60">
-          <div className="w-1 h-3 bg-white rounded-full mt-2"></div>
+        <div className="w-6 h-10 border border-white/40 rounded-full flex justify-center">
+          <div className="w-1 h-3 bg-white/60 rounded-full mt-2"></div>
         </div>
       </motion.div>
     </section>
