@@ -1,5 +1,5 @@
 // src/app/admin/seo-tool/page.js
-import SEOInterlinkingTool from './SEOInterlinkingTool';
+import SeoInterlinkingTool from './SeoInterlinkingTool';
 
 export default function SEOToolPage() {
   return (
