@@ -30,20 +30,21 @@ const SeoInterlinkingTool = () => {
       const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL;
       console.log('🔍 WordPress URL:', wpUrl);
       
-      if (!wpUrl || wpUrl === 'https://your-wordpress-site.com/graphql') {
+      if (!wpUrl || wpUrl === 'https://habitnova.com/graphql') {
         throw new Error('WordPress URL not configured');
       }
       
       // Test basic connection first
       const testQuery = `
         query TestConnection {
-          posts(first: 5, where: { status: PUBLISH }) {
+          posts(first: 100, where: { status: PUBLISH }) {
             edges {
               node {
                 id
                 title
                 slug
                 excerpt
+                content
                 date
                 categories {
                   edges {
