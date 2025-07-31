@@ -1,25 +1,96 @@
 'use client'
-
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { Clock, ArrowRight, TrendingUp } from 'lucide-react'
-import { getFeaturedPosts, getAllPosts, formatPostData } from '@/lib/wordpress'
+import { Clock, ArrowRight, TrendingUp, Zap } from 'lucide-react'
+import { 
+  getFeaturedPosts, 
+  getAllPosts, 
+  formatPostData, 
+  preloadCriticalData,
+  getCacheStats 
+} from '@/lib/wordpress'
 import FeaturedArticlesSkeleton from './FeaturedArticlesSkeleton'
 
 const FeaturedArticles = () => {
   const [featuredPosts, setFeaturedPosts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [cacheHit, setCacheHit] = useState(false)
+  const [loadTime, setLoadTime] = useState(0)
 
-  useEffect(() => {
-    const fetchFeaturedPosts = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+  // Memoize fallback posts to prevent recreation on every render
+  const fallbackPosts = useMemo(() => [
+    {
+      id: 'fallback-1',
+      title: "The 2-Minute Rule: Why Starting Small Leads to Big Changes",
+      excerpt: "Discover how breaking habits down into 2-minute actions can create lasting transformation in your life.",
+      category: "Habit Formation",
+      readTime: "5 min read",
+      image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&h=400&fit=crop",
+      slug: "the-2-minute-rule-why-starting-small-leads-to-big-changes"
+    },
+    {
+      id: 'fallback-2',
+      title: "Breaking the Dopamine Loop: Understanding Digital Addiction",
+      excerpt: "Learn the neuroscience behind social media addiction and proven strategies to reclaim your attention.",
+      category: "Digital Wellness",
+      readTime: "8 min read",
+      image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=400&fit=crop",
+      slug: "breaking-the-dopamine-loop-understanding-digital-addiction"
+    },
+    {
+      id: 'fallback-3',
+      title: "The Habit Stacking Method: Building New Routines That Stick",
+      excerpt: "How to link new habits to existing ones for automatic behavior change.",
+      category: "Productivity",
+      readTime: "6 min read",
+      image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&h=400&fit=crop",
+      slug: "the-habit-stacking-method-building-new-routines-that-stick"
+    },
+    {
+      id: 'fallback-4',
+      title: "Why Willpower Fails (And What Actually Works)",
+      excerpt: "The surprising science behind why relying on willpower alone sabotages your habit change efforts.",
+      category: "Psychology",
+      readTime: "7 min read",
+      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop",
+      slug: "why-willpower-fails-and-what-actually-works"
+    }
+  ], [])
 
+  // Optimized data fetching with performance tracking
+  const fetchFeaturedPosts = useCallback(async () => {
+    const startTime = performance.now()
+    
+    try {
+      setLoading(true)
+      setError(null)
+      
+      console.log('🎯 FeaturedArticles: Starting data fetch')
+      
+      // Try to use preloaded critical data first (fastest)
+      const criticalData = await preloadCriticalData()
+      
+      if (criticalData?.featured && criticalData.featured.length > 0) {
+        console.log('📦 FeaturedArticles: Using preloaded data (CACHE HIT)')
+        setCacheHit(true)
+        
+        const formattedPosts = criticalData.featured.map(edge => {
+          const post = edge.node || edge
+          return formatPostData(post)
+        })
+        
+        setFeaturedPosts(formattedPosts)
+      } else {
+        // Fallback to individual API calls
+        console.log('🌐 FeaturedArticles: Fetching from API')
+        setCacheHit(false)
+        
         let posts = await getFeaturedPosts()
+        
         if (!posts || posts.length === 0) {
+          console.log('📋 FeaturedArticles: No featured posts, getting recent posts')
           const allPosts = await getAllPosts(4)
           posts = allPosts.edges || []
         }
@@ -30,54 +101,48 @@ const FeaturedArticles = () => {
         })
 
         setFeaturedPosts(formattedPosts)
-      } catch (err) {
-        console.error('Error fetching featured posts:', err)
-        setError('Failed to load featured articles')
-        setFeaturedPosts([
-          {
-            id: 'fallback-1',
-            title: "The 2-Minute Rule: Why Starting Small Leads to Big Changes",
-            excerpt: "Discover how breaking habits down into 2-minute actions can create lasting transformation in your life.",
-            category: "Habit Formation",
-            readTime: "5 min read",
-            image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&h=400&fit=crop",
-            slug: "the-2-minute-rule-why-starting-small-leads-to-big-changes"
-          },
-          {
-            id: 'fallback-2',
-            title: "Breaking the Dopamine Loop: Understanding Digital Addiction",
-            excerpt: "Learn the neuroscience behind social media addiction and proven strategies to reclaim your attention.",
-            category: "Digital Wellness",
-            readTime: "8 min read",
-            image: "https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600&h=400&fit=crop",
-            slug: "breaking-the-dopamine-loop-understanding-digital-addiction"
-          },
-          {
-            id: 'fallback-3',
-            title: "The Habit Stacking Method: Building New Routines That Stick",
-            excerpt: "How to link new habits to existing ones for automatic behavior change.",
-            category: "Productivity",
-            readTime: "6 min read",
-            image: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&h=400&fit=crop",
-            slug: "the-habit-stacking-method-building-new-routines-that-stick"
-          },
-          {
-            id: 'fallback-4',
-            title: "Why Willpower Fails (And What Actually Works)",
-            excerpt: "The surprising science behind why relying on willpower alone sabotages your habit change efforts.",
-            category: "Psychology",
-            readTime: "7 min read",
-            image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=400&fit=crop",
-            slug: "why-willpower-fails-and-what-actually-works"
-          }
-        ])
-      } finally {
-        setLoading(false)
       }
+      
+      const endTime = performance.now()
+      const duration = Math.round(endTime - startTime)
+      setLoadTime(duration)
+      
+      console.log(`✅ FeaturedArticles: Loaded in ${duration}ms`)
+      
+    } catch (err) {
+      console.error('❌ FeaturedArticles: Error fetching posts:', err)
+      setError('Failed to load featured articles')
+      setCacheHit(false)
+      
+      // Use fallback posts
+      setFeaturedPosts(fallbackPosts)
+    } finally {
+      setLoading(false)
     }
+  }, [fallbackPosts])
 
+  // Initialize data fetching
+  useEffect(() => {
     fetchFeaturedPosts()
-  }, [])
+  }, [fetchFeaturedPosts])
+
+  // Performance indicator (development only)
+  const PerformanceIndicator = () => {
+    if (process.env.NODE_ENV !== 'development' || loading) return null
+    
+    return (
+      <div className="absolute top-4 right-4 z-10">
+        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
+          cacheHit 
+            ? 'bg-green-100 text-green-700 border border-green-200' 
+            : 'bg-blue-100 text-blue-700 border border-blue-200'
+        }`}>
+          <Zap className="h-3 w-3" />
+          {cacheHit ? 'CACHED' : 'API'} • {loadTime}ms
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return <FeaturedArticlesSkeleton />
@@ -85,7 +150,8 @@ const FeaturedArticles = () => {
 
   if (error && featuredPosts.length === 0) {
     return (
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white relative">
+        <PerformanceIndicator />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 bg-[#DBDBDB] bg-opacity-20 rounded-full text-[#1a1a1a] text-sm font-medium mb-4">
@@ -112,7 +178,9 @@ const FeaturedArticles = () => {
   }
 
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-white relative">
+      <PerformanceIndicator />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -132,7 +200,7 @@ const FeaturedArticles = () => {
           </p>
         </motion.div>
 
-        {/* Large Featured */}
+        {/* Large Featured Article */}
         {featuredPosts.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -149,6 +217,7 @@ const FeaturedArticles = () => {
                       src={featuredPosts[0].image}
                       alt={featuredPosts[0].imageAlt || featuredPosts[0].title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="eager" // Load featured image immediately
                       onError={(e) => {
                         e.target.src = 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&h=400&fit=crop'
                       }}
@@ -189,7 +258,7 @@ const FeaturedArticles = () => {
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: Math.min(index * 0.1, 0.5) }}
               >
                 <Link href={`/blog/${post.slug}`} className="group">
                   <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-200">
@@ -198,6 +267,7 @@ const FeaturedArticles = () => {
                         src={post.image}
                         alt={post.imageAlt || post.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading={index < 2 ? 'eager' : 'lazy'} // Eager load first 3 images total
                         onError={(e) => {
                           e.target.src = 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&h=400&fit=crop'
                         }}
@@ -237,20 +307,33 @@ const FeaturedArticles = () => {
         >
           <Link
             href="/blog"
-            className="inline-flex items-center px-8 py-3 bg-[#fe0000] text-white font-semibold rounded-lg hover:bg-[#dc2626] transition-colors duration-200"
+            className="inline-flex items-center px-8 py-3 bg-[#fe0000] text-white font-semibold rounded-lg hover:bg-[#dc2626] transition-all duration-200 transform hover:-translate-y-0.5"
           >
             View All Articles
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </motion.div>
 
-        {/* Fallback Indicator */}
-        {error && (
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-500">
-              * Currently showing sample articles. WordPress connection needed for live content.
-            </p>
-          </div>
+        {/* Cache Status Indicator (Development Only) */}
+        {process.env.NODE_ENV === 'development' && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.5 }}
+            className="mt-8 text-center"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg text-sm text-gray-600">
+              <Zap className="h-4 w-4" />
+              {cacheHit ? (
+                <span className="text-green-700">✅ Loaded from cache ({loadTime}ms)</span>
+              ) : (
+                <span className="text-blue-700">🌐 Loaded from API ({loadTime}ms)</span>
+              )}
+              {error && (
+                <span className="text-orange-700">⚠️ Using fallback data</span>
+              )}
+            </div>
+          </motion.div>
         )}
       </div>
     </section>
