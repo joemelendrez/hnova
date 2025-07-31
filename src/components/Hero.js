@@ -30,17 +30,7 @@ const Hero = () => {
       {/* Main Content */}
       <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         
-        {/* Social Proof Badge */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-block bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8 border border-white/20"
-        >
-          <span className="text-[#DBDBDB] text-sm font-medium">
-            ✨ Evidence-based habit transformation
-          </span>
-        </motion.div>
+
 
         {/* Main Headline */}
         <motion.h1 
@@ -116,17 +106,6 @@ const Hero = () => {
           </div>
         </motion.div>
       </div>
-
-      {/* Minimal Scroll Indicator */}
-      <motion.div
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        animate={{ y: [0, 8, 0] }}
-        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <div className="w-6 h-10 border border-white/40 rounded-full flex justify-center">
-          <div className="w-1 h-3 bg-white/60 rounded-full mt-2"></div>
-        </div>
-      </motion.div>
     </section>
   )
 }
