@@ -40,7 +40,7 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.1 }}
         >
           Stop Failing at{' '}
-          <span className="text-[#DBDBDB] relative inline-block">
+          <span className="text-[#DBDBDB] font-anton relative inline-block">
             Habits
             <motion.div
               className="absolute -bottom-2 left-0 right-0 h-1 bg-[#DBDBDB]"
