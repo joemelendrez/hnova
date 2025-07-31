@@ -2,13 +2,15 @@
 
 // src/app/admin/seo-tool/SEOInterlinkingTool.js
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, Link, Target, TrendingUp, FileText, ArrowRight, Copy, CheckCircle, Bot, Lightbulb, Zap, MessageSquare, AlertCircle } from 'lucide-react';
+import { Search, Link, Target, TrendingUp, FileText, ArrowRight, Copy, CheckCircle, Bot, Lightbulb, Zap, MessageSquare, AlertCircle, RefreshCw } from 'lucide-react';
+import { getAllPostsForSEO } from '../../../lib/wordpress';
 
 const SeoInterlinkingTool = () => {
   const [posts, setPosts] = useState([]);
   const [selectedPost, setSelectedPost] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [postsLoading, setPostsLoading] = useState(true);
   const [suggestions, setSuggestions] = useState([]);
   const [copiedLinks, setCopiedLinks] = useState(new Set());
   const [aiInsights, setAiInsights] = useState(null);
@@ -19,69 +21,24 @@ const SeoInterlinkingTool = () => {
   const [aiError, setAiError] = useState(null);
   const [apiKeyConfigured] = useState(true); // Always true now since we use server-side
 
-  // Mock data - replace with actual GraphQL query to your WordPress backend
-  const mockPosts = useMemo(() => [
-    {
-      id: 1,
-      title: "The Science Behind Habit Formation: What Your Brain Really Does",
-      slug: "science-behind-habit-formation",
-      excerpt: "Discover the neurological processes that drive habit formation and how understanding your brain can help you build lasting changes.",
-      content: "Habit formation is fascinating from a neuroscience perspective. The basal ganglia plays a crucial role in automatic behaviors. When we repeat actions, our brain creates neural pathways that make these behaviors easier over time. Research shows that it takes an average of 66 days to form a new habit, though this varies significantly based on complexity. The habit loop consists of three parts: cue, routine, and reward. Understanding this cycle is essential for both building good habits and breaking bad ones. Digital wellness and screen time management follow the same principles. Productivity habits often start with small changes that compound over time.",
-      categories: ["Habit Formation", "Psychology"],
-      publishedDate: "2024-01-15",
-      readTime: 8,
-      keywords: ["habit formation", "neuroscience", "basal ganglia", "habit loop", "neural pathways", "behavior change"]
-    },
-    {
-      id: 2,
-      title: "Breaking Bad Habits: A Step-by-Step Scientific Approach",
-      slug: "breaking-bad-habits-scientific-approach",
-      excerpt: "Learn evidence-based strategies to eliminate unwanted behaviors and replace them with positive alternatives.",
-      content: "Breaking bad habits requires understanding the psychology behind automatic behaviors. The key is not just stopping the bad habit, but replacing it with something beneficial. Habit stacking is a powerful technique where you attach new behaviors to existing routines. Environmental design plays a crucial role - changing your surroundings can disrupt negative patterns. Mindfulness and awareness are the first steps to recognizing trigger situations. Research from Stanford University shows that implementation intentions significantly improve success rates. The habit formation process works in reverse when breaking habits - we need to disrupt the cue-routine-reward cycle.",
-      categories: ["Breaking Bad Habits", "Psychology"],
-      publishedDate: "2024-01-20", 
-      readTime: 6,
-      keywords: ["breaking habits", "habit stacking", "environmental design", "mindfulness", "implementation intentions", "behavior change"]
-    },
-    {
-      id: 3,
-      title: "Digital Wellness: Reclaiming Your Attention in the Smartphone Age",
-      slug: "digital-wellness-smartphone-attention",
-      excerpt: "Practical strategies to reduce screen time, manage social media addiction, and create healthier relationships with technology.",
-      content: "Digital wellness has become essential in our hyper-connected world. Screen time addiction follows the same psychological patterns as other habits - cue, routine, reward. Social media platforms are designed to trigger dopamine responses, making them inherently addictive. To improve digital wellness, start by auditing your current usage patterns. Set specific times for checking emails and social media. Create phone-free zones in your home, especially the bedroom. The concept of attention residue shows how constant digital switching reduces our ability to focus deeply. Productivity often improves dramatically when we establish better digital boundaries.",
-      categories: ["Digital Wellness", "Productivity"],
-      publishedDate: "2024-01-25",
-      readTime: 7,
-      keywords: ["digital wellness", "screen time", "social media addiction", "dopamine", "attention residue", "productivity"]
-    },
-    {
-      id: 4,
-      title: "The Psychology of Habit Stacking: Compound Your Success",
-      slug: "psychology-habit-stacking-compound-success",
-      excerpt: "Master the art of linking new habits to existing routines for exponential behavior change results.",
-      content: "Habit stacking leverages existing neural pathways to build new behaviors more effectively. This technique, popularized by behavior change research, works by anchoring new habits to established routines. The key is choosing the right existing habit as your anchor - it should be specific, automatic, and occur at the right time. Environmental design supports habit stacking by providing consistent cues. Small wins compound over time, creating momentum for larger changes. This approach is particularly effective for morning routines and productivity systems. The psychology behind habit stacking relates to implementation intentions and contextual cues that trigger desired behaviors.",
-      categories: ["Habit Formation", "Productivity"],
-      publishedDate: "2024-02-01",
-      readTime: 5,
-      keywords: ["habit stacking", "neural pathways", "implementation intentions", "morning routines", "environmental design", "compound habits"]
-    },
-    {
-      id: 5,
-      title: "Mindfulness and Habit Change: The Power of Present-Moment Awareness",
-      slug: "mindfulness-habit-change-present-moment-awareness",
-      excerpt: "How mindfulness practices can accelerate habit formation and help you become more intentional with your daily behaviors.",
-      content: "Mindfulness serves as a powerful catalyst for habit change by increasing self-awareness and breaking automatic response patterns. When we practice present-moment awareness, we can catch ourselves in the middle of unwanted behaviors and make conscious choices instead. Research shows that mindfulness meditation actually changes brain structure, strengthening areas associated with attention and emotional regulation. This neuroplasticity supports both breaking bad habits and forming new ones. Mindful eating, for example, helps people develop healthier relationships with food by increasing awareness of hunger cues and emotional triggers. The intersection of mindfulness and habit formation creates space for intentional behavior change rather than reactive patterns.",
-      categories: ["Mindfulness", "Psychology"],
-      publishedDate: "2024-02-05",
-      readTime: 6,
-      keywords: ["mindfulness", "present-moment awareness", "neuroplasticity", "emotional regulation", "mindful eating", "intentional behavior"]
+  // Fetch posts from WordPress
+  const fetchWordPressPosts = useCallback(async () => {
+    setPostsLoading(true);
+    try {
+      const wordpressPosts = await getAllPostsForSEO();
+      setPosts(wordpressPosts);
+    } catch (error) {
+      console.error('Error loading WordPress posts:', error);
+      // Fallback will be handled by the getAllPostsForSEO function
+    } finally {
+      setPostsLoading(false);
     }
-  ], []);
+  }, []);
 
-  // Initialize with mock data - fixed useEffect dependency
+  // Load WordPress posts on component mount
   useEffect(() => {
-    setPosts(mockPosts);
-  }, [mockPosts]);
+    fetchWordPressPosts();
+  }, [fetchWordPressPosts]);
 
   // Server-side AI Analysis Function
   const generateAIInsights = useCallback(async (post, suggestions) => {
@@ -379,52 +336,100 @@ const SeoInterlinkingTool = () => {
         {/* Left Panel - Post Selection */}
         <div className={`space-y-6 ${showAiPanel ? 'lg:col-span-1' : 'lg:col-span-1'}`}>
           <div>
-            <h2 className="text-xl font-bold text-gray-900 mb-4 font-[Anton] uppercase">
-              Select a Blog Post
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900 font-[Anton] uppercase">
+                Select a Blog Post
+              </h2>
+              <button
+                onClick={fetchWordPressPosts}
+                disabled={postsLoading}
+                className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                title="Refresh posts from WordPress"
+              >
+                <RefreshCw className={`h-4 w-4 ${postsLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+            </div>
             
-            {/* Search Bar */}
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search posts by title, category, or keyword..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-[Roboto]"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-            {/* Posts List */}
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {filteredPosts.map(post => (
-                <div
-                  key={post.id}
-                  onClick={() => handlePostSelect(post)}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md ${
-                    selectedPost?.id === post.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <h3 className="font-semibold text-gray-900 mb-2 font-[Roboto]">
-                    {post.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 mb-2 font-[Roboto]">
-                    {post.excerpt}
-                  </p>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center gap-2">
-                      <span className="flex items-center gap-1">
-                        <FileText className="h-3 w-3" />
-                        {post.readTime} min read
-                      </span>
-                      <span>•</span>
-                      <span>{post.categories.join(', ')}</span>
-                    </div>
-                    <span>{post.publishedDate}</span>
-                  </div>
+            {postsLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto mb-3"></div>
+                <p className="text-gray-600 text-sm font-[Roboto]">Loading posts from WordPress...</p>
+              </div>
+            ) : (
+              <>
+                {/* Search Bar */}
+                <div className="relative mb-4">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search posts by title, category, or keyword..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-[Roboto]"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
-              ))}
-            </div>
+
+                {/* Posts Count */}
+                <div className="mb-4 text-sm text-gray-600 font-[Roboto]">
+                  {filteredPosts.length} posts available for analysis
+                </div>
+
+                {/* Posts List */}
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {filteredPosts.map(post => (
+                    <div
+                      key={post.id}
+                      onClick={() => handlePostSelect(post)}
+                      className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md ${
+                        selectedPost?.id === post.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <h3 className="font-semibold text-gray-900 mb-2 font-[Roboto]">
+                        {post.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-2 font-[Roboto]">
+                        {post.excerpt}
+                      </p>
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center gap-2">
+                          <span className="flex items-center gap-1">
+                            <FileText className="h-3 w-3" />
+                            {post.readTime}
+                          </span>
+                          <span>•</span>
+                          <span>{post.categories.join(', ')}</span>
+                        </div>
+                        <span>{post.publishedDate}</span>
+                      </div>
+                      
+                      {/* Keywords Preview */}
+                      {post.keywords.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {post.keywords.slice(0, 3).map(keyword => (
+                            <span key={keyword} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                              {keyword}
+                            </span>
+                          ))}
+                          {post.keywords.length > 3 && (
+                            <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded">
+                              +{post.keywords.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {filteredPosts.length === 0 && !postsLoading && (
+                    <div className="text-center py-8 text-gray-500">
+                      <Search className="h-8 w-8 mx-auto mb-4 text-gray-300" />
+                      <p className="font-[Roboto]">No posts found matching your search</p>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -742,14 +747,34 @@ const SeoInterlinkingTool = () => {
           </div>
         </div>
         
-        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-          <h4 className="font-semibold text-green-900 mb-2 font-[Roboto]">✅ Server-Side AI Integration</h4>
-          <ul className="text-sm text-green-800 space-y-1 font-[Roboto]">
-            <li>• Your OpenAI API key is secure on the server</li>
-            <li>• No client-side exposure of sensitive data</li>
-            <li>• Passes Netlify&apos;s security scanning</li>
-            <li>• Production-ready deployment</li>
-          </ul>
+        <div className="mt-6 space-y-4">
+          {/* WordPress Connection Status */}
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h4 className="font-semibold text-blue-900 mb-3 font-[Roboto]">🔗 WordPress Integration</h4>
+            <div className="text-sm text-blue-800 space-y-2 font-[Roboto]">
+              <div className="flex items-center gap-2">
+                <div className={`w-2 h-2 rounded-full ${posts.length > 0 ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                <span>
+                  {posts.length > 0 ? `Connected - ${posts.length} posts loaded` : 'Loading posts...'}
+                </span>
+              </div>
+              <p className="text-xs">
+                Posts are automatically fetched from your WordPress GraphQL endpoint. 
+                Use the refresh button to reload if you&apos;ve added new content.
+              </p>
+            </div>
+          </div>
+
+          {/* AI Setup Status */}
+          <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+            <h4 className="font-semibold text-green-900 mb-2 font-[Roboto]">✅ Server-Side AI Integration</h4>
+            <ul className="text-sm text-green-800 space-y-1 font-[Roboto]">
+              <li>• Your OpenAI API key is secure on the server</li>
+              <li>• Real WordPress content analysis</li>
+              <li>• Production-ready deployment</li>
+              <li>• Automatic keyword extraction from ACF fields</li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
