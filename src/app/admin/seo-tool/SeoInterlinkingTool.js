@@ -1,7 +1,7 @@
 'use client';
 
 // src/app/admin/seo-tool/SEOInterlinkingTool.js
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Search, Link, Target, TrendingUp, FileText, ArrowRight, Copy, CheckCircle, Bot, Lightbulb, Zap, MessageSquare, AlertCircle } from 'lucide-react';
 
 const SeoInterlinkingTool = () => {
@@ -17,10 +17,10 @@ const SeoInterlinkingTool = () => {
   const [chatInput, setChatInput] = useState('');
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiError, setAiError] = useState(null);
-  const [apiKeyConfigured, setApiKeyConfigured] = useState(true); // Always true now since we use server-side
+  const [apiKeyConfigured] = useState(true); // Always true now since we use server-side
 
   // Mock data - replace with actual GraphQL query to your WordPress backend
-  const mockPosts = [
+  const mockPosts = useMemo(() => [
     {
       id: 1,
       title: "The Science Behind Habit Formation: What Your Brain Really Does",
@@ -48,7 +48,7 @@ const SeoInterlinkingTool = () => {
       title: "Digital Wellness: Reclaiming Your Attention in the Smartphone Age",
       slug: "digital-wellness-smartphone-attention",
       excerpt: "Practical strategies to reduce screen time, manage social media addiction, and create healthier relationships with technology.",
-      content: "Digital wellness has become essential in our hyper-connected world. Screen time addiction follows the same psychological patterns as other habits - cue, routine, reward. Social media platforms are designed to trigger dopamine responses, making them inherently addictive. To improve digital wellness, start by auditing your current usage patterns. Set specific times for checking emails and social media. Create phone-free zones in your home, especially the bedroom. The concept of 'attention residue' shows how constant digital switching reduces our ability to focus deeply. Productivity often improves dramatically when we establish better digital boundaries.",
+      content: "Digital wellness has become essential in our hyper-connected world. Screen time addiction follows the same psychological patterns as other habits - cue, routine, reward. Social media platforms are designed to trigger dopamine responses, making them inherently addictive. To improve digital wellness, start by auditing your current usage patterns. Set specific times for checking emails and social media. Create phone-free zones in your home, especially the bedroom. The concept of attention residue shows how constant digital switching reduces our ability to focus deeply. Productivity often improves dramatically when we establish better digital boundaries.",
       categories: ["Digital Wellness", "Productivity"],
       publishedDate: "2024-01-25",
       readTime: 7,
@@ -76,15 +76,15 @@ const SeoInterlinkingTool = () => {
       readTime: 6,
       keywords: ["mindfulness", "present-moment awareness", "neuroplasticity", "emotional regulation", "mindful eating", "intentional behavior"]
     }
-  ];
+  ], []);
 
-  // Initialize with mock data
+  // Initialize with mock data - fixed useEffect dependency
   useEffect(() => {
     setPosts(mockPosts);
-  }, []);
+  }, [mockPosts]);
 
   // Server-side AI Analysis Function
-  const generateAIInsights = async (post, suggestions) => {
+  const generateAIInsights = useCallback(async (post, suggestions) => {
     setAiLoading(true);
     setAiError(null);
     
@@ -123,7 +123,7 @@ const SeoInterlinkingTool = () => {
       setAiInsights({
         strategicInsights: [
           "AI analysis temporarily unavailable. Manual review recommended.",
-          "Consider this post's role in your overall content strategy.",
+          "Consider this post role in your overall content strategy.",
           "Evaluate linking opportunities based on topic relevance."
         ],
         contentGaps: [
@@ -148,10 +148,10 @@ const SeoInterlinkingTool = () => {
     } finally {
       setAiLoading(false);
     }
-  };
+  }, []);
 
   // Server-side Chat functionality
-  const sendChatMessage = async () => {
+  const sendChatMessage = useCallback(async () => {
     if (!chatInput.trim()) return;
 
     const userMessage = {
@@ -208,18 +208,18 @@ const SeoInterlinkingTool = () => {
       const errorResponse = {
         id: Date.now() + 1,
         type: 'ai',
-        content: `I'm sorry, I encountered an error: ${error.message}. Please try again or check your API configuration.`,
+        content: `I am sorry, I encountered an error: ${error.message}. Please try again or check your API configuration.`,
         timestamp: new Date()
       };
       setChatMessages(prev => [...prev, errorResponse]);
     }
-  };
+  }, [chatInput, selectedPost, suggestions, chatMessages]);
 
   // Find interlinking opportunities
-  const findInterlinkingSuggestions = (currentPost) => {
+  const findInterlinkingSuggestions = useCallback((currentPost) => {
     if (!currentPost) return [];
 
-    const suggestions = [];
+    const suggestionsResults = [];
     const currentContent = currentPost.content.toLowerCase();
 
     posts.forEach(post => {
@@ -269,7 +269,7 @@ const SeoInterlinkingTool = () => {
       });
 
       if (relevanceScore > 5) {
-        suggestions.push({
+        suggestionsResults.push({
           post,
           relevanceScore,
           matchedKeywords,
@@ -282,10 +282,10 @@ const SeoInterlinkingTool = () => {
       }
     });
 
-    return suggestions.sort((a, b) => b.relevanceScore - a.relevanceScore);
-  };
+    return suggestionsResults.sort((a, b) => b.relevanceScore - a.relevanceScore);
+  }, [posts]);
 
-  const handlePostSelect = (post) => {
+  const handlePostSelect = useCallback((post) => {
     setSelectedPost(post);
     setLoading(true);
     setAiInsights(null);
@@ -300,7 +300,7 @@ const SeoInterlinkingTool = () => {
       // Generate AI insights automatically
       generateAIInsights(post, interlinkingSuggestions);
     }, 1000);
-  };
+  }, [findInterlinkingSuggestions, generateAIInsights]);
 
   const copyToClipboard = async (text, id) => {
     try {
@@ -338,6 +338,12 @@ const SeoInterlinkingTool = () => {
     if (score >= 15) return 'Good Match';
     if (score >= 10) return 'Moderate';
     return 'Low Priority';
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      sendChatMessage();
+    }
   };
 
   return (
@@ -422,7 +428,7 @@ const SeoInterlinkingTool = () => {
           </div>
         </div>
 
-        {/* Middle Panel - Show basic message for now */}
+        {/* Middle Panel - Interlinking Suggestions */}
         <div className={showAiPanel ? 'lg:col-span-1' : 'lg:col-span-2'}>
           <h2 className="text-xl font-bold text-gray-900 mb-4 font-[Anton] uppercase">
             Interlinking Suggestions
@@ -476,13 +482,42 @@ const SeoInterlinkingTool = () => {
                       <TrendingUp className="h-5 w-5 text-green-500 mt-1" />
                     </div>
 
-                    {/* Suggested Link */}
+                    {/* Matching Details */}
+                    <div className="space-y-2 mb-4">
+                      {suggestion.matchedKeywords.length > 0 && (
+                        <div>
+                          <span className="text-xs font-medium text-gray-700">Keyword Matches:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {suggestion.matchedKeywords.map(keyword => (
+                              <span key={keyword} className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
+                                {keyword}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {suggestion.categoryOverlap.length > 0 && (
+                        <div>
+                          <span className="text-xs font-medium text-gray-700">Shared Categories:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {suggestion.categoryOverlap.map(category => (
+                              <span key={category} className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">
+                                {category}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Suggested Link - Fixed character escaping */}
                     <div className="bg-gray-50 rounded p-3">
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
                           <span className="text-xs font-medium text-gray-700 block mb-1">Suggested Link:</span>
                           <code className="text-sm text-gray-800 bg-white px-2 py-1 rounded border font-[Roboto] break-all">
-                            &lt;a href="/{suggestion.post.slug}"&gt;{suggestion.recommendedAnchorText}&lt;/a&gt;
+                            &lt;a href=&quot;/{suggestion.post.slug}&quot;&gt;{suggestion.recommendedAnchorText}&lt;/a&gt;
                           </code>
                         </div>
                         <button
@@ -496,6 +531,16 @@ const SeoInterlinkingTool = () => {
                             <Copy className="h-4 w-4" />
                           )}
                         </button>
+                      </div>
+                    </div>
+
+                    {/* Link Preview */}
+                    <div className="mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex items-center text-sm text-gray-600">
+                        <ArrowRight className="h-4 w-4 mr-2" />
+                        <span className="font-[Roboto]">
+                          {suggestion.linkingOpportunities} potential linking opportunities in content
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -631,7 +676,7 @@ const SeoInterlinkingTool = () => {
                     type="text"
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                    onKeyPress={handleKeyPress}
                     placeholder="Ask about SEO, linking strategy..."
                     className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent font-[Roboto]"
                   />
@@ -678,7 +723,7 @@ const SeoInterlinkingTool = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">1. Select & Analyze</h4>
+            <h4 className="font-semibold text-gray-800 mb-2 font-[Roboto]">1. Select &amp; Analyze</h4>
             <p className="text-sm text-gray-600 font-[Roboto]">
               Choose your post and let AI analyze content relationships, SEO opportunities, and strategic insights.
             </p>
@@ -702,7 +747,7 @@ const SeoInterlinkingTool = () => {
           <ul className="text-sm text-green-800 space-y-1 font-[Roboto]">
             <li>• Your OpenAI API key is secure on the server</li>
             <li>• No client-side exposure of sensitive data</li>
-            <li>• Passes Netlify's security scanning</li>
+            <li>• Passes Netlify&apos;s security scanning</li>
             <li>• Production-ready deployment</li>
           </ul>
         </div>
