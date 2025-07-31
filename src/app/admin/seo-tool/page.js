@@ -4,7 +4,7 @@ import SeoInterlinkingTool from './SeoInterlinkingTool';
 export default function SEOToolPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="pt-16 lg-pt-20">
+      <div className="pt-16 lg:pt-20">
       <SeoInterlinkingTool />
       </div>
     </div>
