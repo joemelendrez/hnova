@@ -37,7 +37,7 @@ const SeoInterlinkingTool = () => {
       // Test basic connection first
       const testQuery = `
         query TestConnection {
-          posts(first: 100, where: { status: PUBLISH }) {
+          posts(first: 5, where: { status: PUBLISH }) {
             edges {
               node {
                 id
