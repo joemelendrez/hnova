@@ -280,7 +280,9 @@ export const GET_CATEGORIES = `
   }
 `;
 
-// Add this query to your existing queries
+// ADD THESE TO YOUR EXISTING src/lib/wordpress.js FILE
+// Place this query with your other GraphQL queries
+
 export const GET_ALL_POSTS_FOR_SEO = `
   query GetAllPostsForSEO {
     posts(first: 100, where: { status: PUBLISH }) {
@@ -311,74 +313,7 @@ export const GET_ALL_POSTS_FOR_SEO = `
   }
 `;
 
-// Add this function to your existing functions
-export async function getAllPostsForSEO() {
-  try {
-    const data = await fetchAPI(GET_ALL_POSTS_FOR_SEO);
-    
-    const posts = data?.posts?.edges?.map(edge => {
-      const post = edge.node;
-      
-      // Clean content by removing HTML tags for keyword analysis
-      const cleanContent = post.content?.replace(/<[^>]*>/g, '') || '';
-      const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
-      
-      // Extract keywords from ACF field or generate from content
-      let keywords = [];
-      if (post.acfBlogFields?.keywords) {
-        keywords = post.acfBlogFields.keywords
-          .split(',')
-          .map(k => k.trim())
-          .filter(k => k.length > 0);
-      } else {
-        // Extract keywords from categories and title
-        const categoryKeywords = post.categories.edges.map(edge => edge.node.name.toLowerCase());
-        const titleWords = post.title.toLowerCase()
-          .split(' ')
-          .filter(word => word.length > 3 && !['the', 'and', 'for', 'with', 'your', 'this', 'that'].includes(word));
-        
-        keywords = [...categoryKeywords, ...titleWords];
-      }
-      
-      return {
-        id: parseInt(post.id.replace('post:', '')),
-        title: decodeHtmlEntities(post.title),
-        slug: post.slug,
-        excerpt: decodeHtmlEntities(cleanExcerpt),
-        content: decodeHtmlEntities(cleanContent),
-        categories: post.categories.edges.map(edge => edge.node.name),
-        publishedDate: formatDate(post.date),
-        readTime: post.acfBlogFields?.readTime || calculateReadTime(cleanContent),
-        keywords: keywords
-      };
-    }) || [];
-    
-    return posts;
-    
-  } catch (error) {
-    console.error('Error fetching posts for SEO analysis:', error.message);
-    // Return fallback data if WordPress is unavailable
-    return getFallbackSEOPosts();
-  }
-}
 
-// Add fallback function for development
-function getFallbackSEOPosts() {
-  return [
-    {
-      id: 1,
-      title: "The Science Behind Habit Formation: What Your Brain Really Does",
-      slug: "science-behind-habit-formation",
-      excerpt: "Discover the neurological processes that drive habit formation and how understanding your brain can help you build lasting changes.",
-      content: "Habit formation is fascinating from a neuroscience perspective. The basal ganglia plays a crucial role in automatic behaviors...",
-      categories: ["Habit Formation", "Psychology"],
-      publishedDate: "Dec 15, 2024",
-      readTime: "8 min read",
-      keywords: ["habit formation", "neuroscience", "basal ganglia", "habit loop", "neural pathways", "behavior change"]
-    }
-    // Add more fallback posts as needed
-  ];
-}
 
 // API Functions with fallback data
 export async function getAllPosts(first = 20, after = null) {
@@ -465,6 +400,60 @@ export async function getCategories() {
     ];
   }
 }
+
+// ADD THIS FUNCTION with your other API functions
+
+export async function getAllPostsForSEO() {
+  try {
+    const data = await fetchAPI(GET_ALL_POSTS_FOR_SEO);
+    
+    const posts = data?.posts?.edges?.map(edge => {
+      const post = edge.node;
+      
+      // Clean content by removing HTML tags for keyword analysis
+      const cleanContent = post.content?.replace(/<[^>]*>/g, '') || '';
+      const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
+      
+      // Extract keywords from ACF field or generate from content
+      let keywords = [];
+      if (post.acfBlogFields?.keywords) {
+        // If keywords are stored as comma-separated string
+        keywords = post.acfBlogFields.keywords
+          .split(',')
+          .map(k => k.trim())
+          .filter(k => k.length > 0);
+      } else {
+        // Extract keywords from categories and title
+        const categoryKeywords = post.categories.edges.map(edge => edge.node.name.toLowerCase());
+        const titleWords = post.title.toLowerCase()
+          .split(' ')
+          .filter(word => word.length > 3 && !['the', 'and', 'for', 'with', 'your', 'this', 'that'].includes(word));
+        
+        keywords = [...categoryKeywords, ...titleWords];
+      }
+      
+      return {
+        id: parseInt(post.id.replace('post:', '')), // Convert WordPress ID to number
+        title: decodeHtmlEntities(post.title),
+        slug: post.slug,
+        excerpt: decodeHtmlEntities(cleanExcerpt),
+        content: decodeHtmlEntities(cleanContent),
+        categories: post.categories.edges.map(edge => edge.node.name),
+        publishedDate: formatDate(post.date),
+        readTime: post.acfBlogFields?.readTime || calculateReadTime(cleanContent),
+        keywords: keywords
+      };
+    }) || [];
+    
+    return posts;
+    
+  } catch (error) {
+    console.error('Error fetching posts for SEO analysis:', error.message);
+    // Return fallback data if WordPress is unavailable
+    return getFallbackSEOPosts();
+  };
+}
+
 
 // Utility Functions
 export function formatPostData(post) {
@@ -669,4 +658,44 @@ function getFallbackPosts(count = 20) {
     edges: fallbackPosts.slice(0, count),
     pageInfo: { hasNextPage: false, endCursor: null },
   };
+}
+
+// ADD THIS FALLBACK FUNCTION
+
+function getFallbackSEOPosts() {
+  return [
+    {
+      id: 1,
+      title: "The Science Behind Habit Formation: What Your Brain Really Does",
+      slug: "science-behind-habit-formation",
+      excerpt: "Discover the neurological processes that drive habit formation and how understanding your brain can help you build lasting changes.",
+      content: "Habit formation is fascinating from a neuroscience perspective. The basal ganglia plays a crucial role in automatic behaviors. When we repeat actions, our brain creates neural pathways that make these behaviors easier over time. Research shows that it takes an average of 66 days to form a new habit, though this varies significantly based on complexity. The habit loop consists of three parts: cue, routine, and reward. Understanding this cycle is essential for both building good habits and breaking bad ones. Digital wellness and screen time management follow the same principles. Productivity habits often start with small changes that compound over time.",
+      categories: ["Habit Formation", "Psychology"],
+      publishedDate: "Dec 15, 2024",
+      readTime: "8 min read",
+      keywords: ["habit formation", "neuroscience", "basal ganglia", "habit loop", "neural pathways", "behavior change"]
+    },
+    {
+      id: 2,
+      title: "Breaking Bad Habits: A Step-by-Step Scientific Approach",
+      slug: "breaking-bad-habits-scientific-approach",
+      excerpt: "Learn evidence-based strategies to eliminate unwanted behaviors and replace them with positive alternatives.",
+      content: "Breaking bad habits requires understanding the psychology behind automatic behaviors. The key is not just stopping the bad habit, but replacing it with something beneficial. Habit stacking is a powerful technique where you attach new behaviors to existing routines. Environmental design plays a crucial role - changing your surroundings can disrupt negative patterns. Mindfulness and awareness are the first steps to recognizing trigger situations. Research from Stanford University shows that implementation intentions significantly improve success rates. The habit formation process works in reverse when breaking habits - we need to disrupt the cue-routine-reward cycle.",
+      categories: ["Breaking Bad Habits", "Psychology"],
+      publishedDate: "Dec 12, 2024",
+      readTime: "6 min read",
+      keywords: ["breaking habits", "habit stacking", "environmental design", "mindfulness", "implementation intentions", "behavior change"]
+    },
+    {
+      id: 3,
+      title: "Digital Wellness: Reclaiming Your Attention in the Smartphone Age",
+      slug: "digital-wellness-smartphone-attention",
+      excerpt: "Practical strategies to reduce screen time, manage social media addiction, and create healthier relationships with technology.",
+      content: "Digital wellness has become essential in our hyper-connected world. Screen time addiction follows the same psychological patterns as other habits - cue, routine, reward. Social media platforms are designed to trigger dopamine responses, making them inherently addictive. To improve digital wellness, start by auditing your current usage patterns. Set specific times for checking emails and social media. Create phone-free zones in your home, especially the bedroom. The concept of attention residue shows how constant digital switching reduces our ability to focus deeply. Productivity often improves dramatically when we establish better digital boundaries.",
+      categories: ["Digital Wellness", "Productivity"],
+      publishedDate: "Dec 10, 2024",
+      readTime: "7 min read",
+      keywords: ["digital wellness", "screen time", "social media addiction", "dopamine", "attention residue", "productivity"]
+    }
+  ];
 }
