@@ -1,14 +1,7 @@
 // next.config.mjs - Enhanced caching and performance configuration
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable experimental features for better caching
-  experimental: {
-    // Enable partial prerendering for faster loading
-    ppr: false, // Set to true when stable
-
-    // Enable optimized package imports
-    optimizePackageImports: ['framer-motion', 'lucide-react'],
-  },
+ 
 
   // Image optimization
   images: {
