@@ -1,212 +1,281 @@
-// src/app/blog/page.js
-'use client'
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { Search, Clock, ArrowRight, Filter, Loader, X } from 'lucide-react'
-import { 
-  getAllPosts, 
-  searchPosts, 
-  getPostsByCategory, 
+// src/app/blog/page.js - Optimized with caching and performance improvements
+'use client';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import Link from 'next/link';
+import {
+  Search,
+  Clock,
+  ArrowRight,
+  Filter,
+  Loader,
+  X,
+  Zap,
+  Database,
+} from 'lucide-react';
+import {
+  getAllPosts,
+  searchPosts,
+  getPostsByCategory,
   getCategories,
-  formatPostData
-} from '@/lib/wordpress'
-import BlogPageSkeleton from '@/components/BlogPageSkeleton'
+  formatPostData,
+  preloadCriticalData,
+  getCacheStats,
+  warmupCache,
+} from '@/lib/wordpress';
+import BlogPageSkeleton from '@/components/BlogPageSkeleton';
 
 export default function BlogPage() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategories, setSelectedCategories] = useState([]) // Changed to array
-  const [posts, setPosts] = useState([])
-  const [categories, setCategories] = useState([]) // Store category objects
-  const [loading, setLoading] = useState(true)
-  const [searching, setSearching] = useState(false)
-  const [hasNextPage, setHasNextPage] = useState(false)
-  const [endCursor, setEndCursor] = useState(null)
-  const [loadingMore, setLoadingMore] = useState(false)
-  
-  // Fetch initial data
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        setLoading(true)
-        
-        // Fetch posts and categories in parallel
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [endCursor, setEndCursor] = useState(null);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [cacheStats, setCacheStats] = useState({
+    memory: { count: 0 },
+    browser: { count: 0 },
+  });
+  const [showCacheStats, setShowCacheStats] = useState(false);
+
+  // Memoize expensive computations
+  const filteredPostsCount = useMemo(() => posts.length, [posts]);
+  const hasActiveFilters = useMemo(
+    () => searchTerm.length > 0 || selectedCategories.length > 0,
+    [searchTerm, selectedCategories]
+  );
+
+  // Optimized initial data loading with preloading
+  const fetchInitialData = useCallback(async () => {
+    try {
+      setLoading(true);
+      console.time('Initial Data Load');
+
+      // Try to use preloaded critical data first
+      const criticalData = await preloadCriticalData();
+
+      if (criticalData) {
+        // Use the preloaded data
+        const formattedPosts = criticalData.posts.edges.map((edge) =>
+          formatPostData(edge.node)
+        );
+        const categoryList = criticalData.categories.map((edge) => ({
+          name: edge.node.name,
+          slug: edge.node.slug,
+        }));
+
+        setPosts(formattedPosts);
+        setHasNextPage(criticalData.posts.pageInfo.hasNextPage);
+        setEndCursor(criticalData.posts.pageInfo.endCursor);
+        setCategories(categoryList);
+
+        console.log('✅ Used preloaded critical data');
+      } else {
+        // Fallback to individual API calls
         const [postsData, categoriesData] = await Promise.all([
           getAllPosts(12),
-          getCategories()
-        ])
-        
-        // Format posts
-        const formattedPosts = postsData.edges.map(edge => formatPostData(edge.node))
-        setPosts(formattedPosts)
-        setHasNextPage(postsData.pageInfo.hasNextPage)
-        setEndCursor(postsData.pageInfo.endCursor)
-        
-        // Set up categories with both name and slug
-        const categoryList = categoriesData.map(edge => ({
+          getCategories(),
+        ]);
+
+        const formattedPosts = postsData.edges.map((edge) =>
+          formatPostData(edge.node)
+        );
+        setPosts(formattedPosts);
+        setHasNextPage(postsData.pageInfo.hasNextPage);
+        setEndCursor(postsData.pageInfo.endCursor);
+
+        const categoryList = categoriesData.map((edge) => ({
           name: edge.node.name,
-          slug: edge.node.slug
-        }))
-        setCategories(categoryList)
-        
-      } catch (error) {
-        console.error('Error fetching blog data:', error)
-        setPosts([])
-      } finally {
-        setLoading(false)
+          slug: edge.node.slug,
+        }));
+        setCategories(categoryList);
       }
+    } catch (error) {
+      console.error('Error fetching blog data:', error);
+      setPosts([]);
+    } finally {
+      setLoading(false);
+      console.timeEnd('Initial Data Load');
+      // Update cache stats
+      setCacheStats(getCacheStats());
     }
-    
-    fetchInitialData()
-  }, [])
-  
-  // Handle search
+  }, []);
+
+  // Initialize cache warmup and fetch data
   useEffect(() => {
-    if (!searchTerm) {
+    warmupCache(); // Start warming up cache in background
+    fetchInitialData();
+  }, [fetchInitialData]);
+
+  // Optimized search with debouncing
+  useEffect(() => {
+    if (!searchTerm.trim()) {
       // Reset to category filter when search is cleared
       if (selectedCategories.length === 0) {
-        fetchAllPosts()
+        fetchAllPosts();
       } else {
-        handleCategoryFilter()
+        handleCategoryFilter();
       }
-      return
+      return;
     }
-    
+
     const searchDebounce = setTimeout(async () => {
       try {
-        setSearching(true)
-        const searchData = await searchPosts(searchTerm, 12)
-        const formattedPosts = searchData.edges.map(edge => formatPostData(edge.node))
-        setPosts(formattedPosts)
-        setHasNextPage(false) // Disable load more for search results
-        setEndCursor(null)
+        setSearching(true);
+        console.time(`Search: ${searchTerm}`);
+
+        const searchData = await searchPosts(searchTerm, 12);
+        const formattedPosts = searchData.edges.map((edge) =>
+          formatPostData(edge.node)
+        );
+        setPosts(formattedPosts);
+        setHasNextPage(false); // Disable load more for search results
+        setEndCursor(null);
+
+        console.timeEnd(`Search: ${searchTerm}`);
       } catch (error) {
-        console.error('Error searching posts:', error)
-        setPosts([])
+        console.error('Error searching posts:', error);
+        setPosts([]);
       } finally {
-        setSearching(false)
+        setSearching(false);
+        setCacheStats(getCacheStats()); // Update cache stats after search
       }
-    }, 500)
-    
-    return () => clearTimeout(searchDebounce)
-  }, [searchTerm])
+    }, 500);
+
+    return () => clearTimeout(searchDebounce);
+  }, [searchTerm, selectedCategories]);
 
   // Handle category filtering when categories change
   useEffect(() => {
     if (!searchTerm) {
-      handleCategoryFilter()
+      handleCategoryFilter();
     }
-  }, [selectedCategories])
+  }, [selectedCategories]);
 
-  // Fetch all posts
-  const fetchAllPosts = async () => {
+  // Optimized fetch all posts with caching
+  const fetchAllPosts = useCallback(async () => {
     try {
-      setLoading(true)
-      const postsData = await getAllPosts(12)
-      const formattedPosts = postsData.edges.map(edge => formatPostData(edge.node))
-      setPosts(formattedPosts)
-      setHasNextPage(postsData.pageInfo.hasNextPage)
-      setEndCursor(postsData.pageInfo.endCursor)
+      setLoading(true);
+      console.time('Fetch All Posts');
+
+      const postsData = await getAllPosts(12);
+      const formattedPosts = postsData.edges.map((edge) =>
+        formatPostData(edge.node)
+      );
+      setPosts(formattedPosts);
+      setHasNextPage(postsData.pageInfo.hasNextPage);
+      setEndCursor(postsData.pageInfo.endCursor);
+
+      console.timeEnd('Fetch All Posts');
     } catch (error) {
-      console.error('Error fetching all posts:', error)
-      setPosts([])
+      console.error('Error fetching all posts:', error);
+      setPosts([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-  
-  // Handle category filtering
-  const handleCategoryFilter = async () => {
+  }, []);
+
+  // Optimized category filtering with parallel requests and deduplication
+  const handleCategoryFilter = useCallback(async () => {
     if (selectedCategories.length === 0) {
-      // No categories selected, show all posts
-      fetchAllPosts()
-      return
+      fetchAllPosts();
+      return;
     }
 
     try {
-      setLoading(true)
-      
-      // Fetch posts for each selected category
-      const categoryPromises = selectedCategories.map(categoryName => {
-        const category = categories.find(cat => cat.name === categoryName)
-        const categorySlug = category?.slug || categoryName.toLowerCase().replace(/\s+/g, '-')
-        return getPostsByCategory(categorySlug, 50) // Get more posts to avoid duplicates
-      })
-      
-      const categoryResults = await Promise.all(categoryPromises)
-      
-      // Combine and deduplicate posts
-      const allPosts = []
-      const seenIds = new Set()
-      
-      categoryResults.forEach(result => {
-        result.edges.forEach(edge => {
-          if (!seenIds.has(edge.node.id)) {
-            seenIds.add(edge.node.id)
-            allPosts.push(formatPostData(edge.node))
-          }
-        })
-      })
-      
-      // Sort by date (newest first)
-      allPosts.sort((a, b) => new Date(b.date) - new Date(a.date))
-      
-      setPosts(allPosts)
-      setHasNextPage(false) // Disable load more for filtered results
-      setEndCursor(null)
-      
-    } catch (error) {
-      console.error('Error fetching category posts:', error)
-      setPosts([])
-    } finally {
-      setLoading(false)
-    }
-  }
+      setLoading(true);
+      console.time(`Category Filter: ${selectedCategories.join(', ')}`);
 
-  // Toggle category selection
-  const toggleCategory = (categoryName) => {
-    setSearchTerm('') // Clear search when changing categories
-    setSelectedCategories(prev => {
+      // Fetch posts for each selected category in parallel
+      const categoryPromises = selectedCategories.map((categoryName) => {
+        const category = categories.find((cat) => cat.name === categoryName);
+        const categorySlug =
+          category?.slug || categoryName.toLowerCase().replace(/\s+/g, '-');
+        return getPostsByCategory(categorySlug, 50); // Get more posts to avoid duplicates
+      });
+
+      const categoryResults = await Promise.all(categoryPromises);
+
+      // Combine and deduplicate posts efficiently
+      const postsMap = new Map();
+
+      categoryResults.forEach((result) => {
+        result.edges.forEach((edge) => {
+          if (!postsMap.has(edge.node.id)) {
+            postsMap.set(edge.node.id, formatPostData(edge.node));
+          }
+        });
+      });
+
+      // Convert to array and sort by date (newest first)
+      const allPosts = Array.from(postsMap.values()).sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
+
+      setPosts(allPosts);
+      setHasNextPage(false); // Disable load more for filtered results
+      setEndCursor(null);
+
+      console.timeEnd(`Category Filter: ${selectedCategories.join(', ')}`);
+    } catch (error) {
+      console.error('Error fetching category posts:', error);
+      setPosts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedCategories, categories, fetchAllPosts]);
+
+  // Optimized category toggle
+  const toggleCategory = useCallback((categoryName) => {
+    setSearchTerm(''); // Clear search when changing categories
+    setSelectedCategories((prev) => {
       if (prev.includes(categoryName)) {
-        // Remove category
-        return prev.filter(cat => cat !== categoryName)
+        return prev.filter((cat) => cat !== categoryName);
       } else {
-        // Add category
-        return [...prev, categoryName]
+        return [...prev, categoryName];
       }
-    })
-  }
+    });
+  }, []);
 
   // Clear all category filters
-  const clearAllCategories = () => {
-    setSelectedCategories([])
-  }
-  
-  // Load more posts (only works when no filters are applied)
-  const loadMorePosts = async () => {
-    if (!hasNextPage || loadingMore || selectedCategories.length > 0) return
-    
+  const clearAllCategories = useCallback(() => {
+    setSelectedCategories([]);
+  }, []);
+
+  // Optimized load more with caching
+  const loadMorePosts = useCallback(async () => {
+    if (!hasNextPage || loadingMore || selectedCategories.length > 0) return;
+
     try {
-      setLoadingMore(true)
-      const postsData = await getAllPosts(12, endCursor)
-      const formattedPosts = postsData.edges.map(edge => formatPostData(edge.node))
-      
-      setPosts(prevPosts => [...prevPosts, ...formattedPosts])
-      setHasNextPage(postsData.pageInfo.hasNextPage)
-      setEndCursor(postsData.pageInfo.endCursor)
-      
+      setLoadingMore(true);
+      console.time('Load More Posts');
+
+      const postsData = await getAllPosts(12, endCursor);
+      const formattedPosts = postsData.edges.map((edge) =>
+        formatPostData(edge.node)
+      );
+
+      setPosts((prevPosts) => [...prevPosts, ...formattedPosts]);
+      setHasNextPage(postsData.pageInfo.hasNextPage);
+      setEndCursor(postsData.pageInfo.endCursor);
+
+      console.timeEnd('Load More Posts');
     } catch (error) {
-      console.error('Error loading more posts:', error)
+      console.error('Error loading more posts:', error);
     } finally {
-      setLoadingMore(false)
+      setLoadingMore(false);
+      setCacheStats(getCacheStats()); // Update cache stats
     }
-  }
-  
+  }, [hasNextPage, loadingMore, selectedCategories.length, endCursor]);
+
   // Show skeleton while loading
   if (loading && posts.length === 0) {
-    return <BlogPageSkeleton />
+    return <BlogPageSkeleton />;
   }
-  
+
   return (
     <div className="pt-16 lg:pt-20">
       {/* Hero Section */}
@@ -221,10 +290,10 @@ export default function BlogPage() {
               The Habit Nova Blog
             </h1>
             <p className="text-xl text-gray-200 leading-relaxed mb-8">
-              Evidence-based insights, practical strategies, and the latest research 
-              on habit formation and behavior change.
+              Evidence-based insights, practical strategies, and the latest
+              research on habit formation and behavior change.
             </p>
-            
+
             {/* Search Bar */}
             <div className="max-w-md mx-auto relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -245,42 +314,103 @@ export default function BlogPage() {
         </div>
       </section>
 
+      {/* Performance Stats Bar (Development only) */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="bg-blue-50 border-b border-blue-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+            <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1 text-blue-700">
+                  <Zap className="h-4 w-4" />
+                  <span>
+                    Cache: {cacheStats.memory.count} memory,{' '}
+                    {cacheStats.browser.count} browser
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 text-green-700">
+                  <Database className="h-4 w-4" />
+                  <span>{filteredPostsCount} articles loaded</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCacheStats(!showCacheStats)}
+                className="text-blue-600 hover:text-blue-800 font-medium"
+              >
+                {showCacheStats ? 'Hide' : 'Show'} Details
+              </button>
+            </div>
+
+            {showCacheStats && (
+              <div className="mt-2 pt-2 border-t border-blue-200">
+                <div className="grid grid-cols-2 gap-4 text-xs text-blue-600">
+                  <div>
+                    <strong>Memory Cache:</strong> {cacheStats.memory.count}{' '}
+                    entries
+                    <div className="mt-1 max-h-20 overflow-y-auto">
+                      {cacheStats.memory.entries?.slice(0, 5).map((key, i) => (
+                        <div key={i} className="truncate">
+                          {key}
+                        </div>
+                      ))}
+                      {cacheStats.memory.entries?.length > 5 && (
+                        <div>
+                          +{cacheStats.memory.entries.length - 5} more...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <strong>Browser Cache:</strong> {cacheStats.browser.count}{' '}
+                    entries ({cacheStats.browser.sizeKB}KB)
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Categories Filter */}
       <section className="py-8 bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-4 mb-4">
             <Filter className="h-5 w-5 text-gray-500 flex-shrink-0" />
-            <span className="text-sm font-medium text-gray-700">Filter by categories:</span>
+            <span className="text-sm font-medium text-gray-700">
+              Filter by categories:
+            </span>
             {selectedCategories.length > 0 && (
               <button
                 onClick={clearAllCategories}
-                className="text-sm text-red-600 hover:text-red-800 font-medium"
+                className="text-sm text-red-600 hover:text-red-800 font-medium transition-colors"
               >
                 Clear all
               </button>
             )}
           </div>
-          
+
           {/* Selected Categories */}
           {selectedCategories.length > 0 && (
             <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
               {selectedCategories.map((category) => (
-                <span
+                <motion.span
                   key={category}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
                   className="inline-flex items-center px-3 py-1 bg-[#1a1a1a] text-white text-sm font-medium rounded-full whitespace-nowrap flex-shrink-0"
                 >
                   {category}
                   <button
                     onClick={() => toggleCategory(category)}
-                    className="ml-2 hover:bg-gray-700 rounded-full p-0.5"
+                    className="ml-2 hover:bg-gray-700 rounded-full p-0.5 transition-colors"
                   >
                     <X className="h-3 w-3" />
                   </button>
-                </span>
+                </motion.span>
               ))}
             </div>
           )}
-          
+
           {/* Category Buttons - Scrollable */}
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {categories.map((category) => (
@@ -288,17 +418,17 @@ export default function BlogPage() {
                 key={category.name}
                 onClick={() => toggleCategory(category.name)}
                 disabled={searching || loading}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 disabled:opacity-50 ${
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 disabled:opacity-50 ${
                   selectedCategories.includes(category.name)
-                    ? 'bg-[#1a1a1a] text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-[#1a1a1a] text-white shadow-md'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:shadow-sm'
                 }`}
               >
                 {category.name}
               </button>
             ))}
           </div>
-          
+
           {/* Scroll indicator */}
           {categories.length > 4 && (
             <div className="text-xs text-gray-400 mt-2 text-center">
@@ -313,11 +443,18 @@ export default function BlogPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Filter Summary */}
           {selectedCategories.length > 0 && !searchTerm && (
-            <div className="mb-8">
-              <p className="text-gray-600">
-                Showing articles from: <span className="font-semibold">{selectedCategories.join(', ')}</span>
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200"
+            >
+              <p className="text-blue-700">
+                Showing articles from:{' '}
+                <span className="font-semibold">
+                  {selectedCategories.join(', ')}
+                </span>
               </p>
-            </div>
+            </motion.div>
           )}
 
           {loading && posts.length === 0 ? (
@@ -340,17 +477,21 @@ export default function BlogPage() {
                     key={post.id}
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    transition={{
+                      duration: 0.6,
+                      delay: Math.min(index * 0.1, 0.8),
+                    }}
                   >
                     <Link href={`/blog/${post.slug}`} className="group">
-                      <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                      <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200">
                         <div className="relative h-48">
                           <img
                             src={post.image}
                             alt={post.imageAlt}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading={index < 6 ? 'eager' : 'lazy'} // Eager load first 6 images
                             onError={(e) => {
-                              e.target.src = '/images/blog/default.jpg'
+                              e.target.src = '/images/blog/default.jpg';
                             }}
                           />
                           <div className="absolute top-4 left-4">
@@ -382,14 +523,14 @@ export default function BlogPage() {
                   </motion.div>
                 ))}
               </div>
-              
+
               {/* Load More Button - Only show when no filters are applied */}
-              {hasNextPage && !searchTerm && selectedCategories.length === 0 && (
+              {hasNextPage && !hasActiveFilters && (
                 <div className="text-center mt-12">
                   <button
                     onClick={loadMorePosts}
                     disabled={loadingMore}
-                    className="inline-flex items-center px-8 py-3 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center px-8 py-3 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
                   >
                     {loadingMore ? (
                       <>
@@ -409,21 +550,24 @@ export default function BlogPage() {
           ) : (
             // Empty State
             <div className="text-center py-12">
-              <h3 className="text-2xl font-bold text-[#1a1a1a] mb-4">No articles found</h3>
+              <h3 className="text-2xl font-bold text-[#1a1a1a] mb-4">
+                No articles found
+              </h3>
               <p className="text-gray-600 mb-6">
-                {searchTerm 
+                {searchTerm
                   ? `No results for "${searchTerm}". Try adjusting your search terms.`
-                  : selectedCategories.length > 0 
-                    ? `No articles found in the selected categories: ${selectedCategories.join(', ')}`
-                    : 'No articles available.'
-                }
+                  : selectedCategories.length > 0
+                  ? `No articles found in the selected categories: ${selectedCategories.join(
+                      ', '
+                    )}`
+                  : 'No articles available.'}
               </p>
-              {(searchTerm || selectedCategories.length > 0) && (
+              {hasActiveFilters && (
                 <div className="space-x-4">
                   {searchTerm && (
                     <button
                       onClick={() => setSearchTerm('')}
-                      className="text-[#1a1a1a] font-semibold hover:underline"
+                      className="text-[#1a1a1a] font-semibold hover:underline transition-all duration-200"
                     >
                       Clear search
                     </button>
@@ -431,7 +575,7 @@ export default function BlogPage() {
                   {selectedCategories.length > 0 && (
                     <button
                       onClick={clearAllCategories}
-                      className="text-[#1a1a1a] font-semibold hover:underline"
+                      className="text-[#1a1a1a] font-semibold hover:underline transition-all duration-200"
                     >
                       Clear filters
                     </button>
@@ -443,5 +587,5 @@ export default function BlogPage() {
         </div>
       </section>
     </div>
-  )
+  );
 }

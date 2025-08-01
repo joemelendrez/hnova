@@ -1,12 +1,44 @@
-// src/lib/wordpress.js
-// GraphQL client for WordPress API with improved error handling
+// src/lib/wordpress.js - Enhanced with comprehensive caching
 
 const WORDPRESS_API_URL =
   process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
   'https://your-wordpress-site.com/graphql';
 
-async function fetchAPI(query, { variables } = {}) {
-  // Check if WordPress URL is configured
+// Memory cache for ultra-fast access
+const memoryCache = new Map();
+const MEMORY_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Cache configuration for different data types
+const CACHE_CONFIG = {
+  POSTS: {
+    memory: 5 * 60 * 1000, // 5 minutes in memory
+    browser: 10, // 10 minutes in localStorage
+    revalidate: 300, // 5 minutes Next.js cache
+  },
+  FEATURED: {
+    memory: 10 * 60 * 1000, // 10 minutes in memory
+    browser: 20, // 20 minutes in localStorage
+    revalidate: 600, // 10 minutes Next.js cache
+  },
+  CATEGORIES: {
+    memory: 30 * 60 * 1000, // 30 minutes in memory
+    browser: 120, // 2 hours in localStorage
+    revalidate: 3600, // 1 hour Next.js cache
+  },
+  INDIVIDUAL_POST: {
+    memory: 15 * 60 * 1000, // 15 minutes in memory
+    browser: 60, // 1 hour in localStorage
+    revalidate: 1800, // 30 minutes Next.js cache
+  },
+  SEARCH: {
+    memory: 2 * 60 * 1000, // 2 minutes in memory
+    browser: 5, // 5 minutes in localStorage
+    revalidate: 180, // 3 minutes Next.js cache
+  },
+};
+
+// Enhanced fetch function with intelligent caching
+async function fetchAPI(query, { variables } = {}, cacheType = 'POSTS') {
   if (
     !process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
     process.env.NEXT_PUBLIC_WORDPRESS_API_URL ===
@@ -18,6 +50,7 @@ async function fetchAPI(query, { variables } = {}) {
     throw new Error('WordPress API URL not configured');
   }
 
+  const config = CACHE_CONFIG[cacheType];
   const headers = { 'Content-Type': 'application/json' };
 
   if (process.env.WORDPRESS_AUTH_REFRESH_TOKEN) {
@@ -30,11 +63,12 @@ async function fetchAPI(query, { variables } = {}) {
     const res = await fetch(WORDPRESS_API_URL, {
       headers,
       method: 'POST',
-      body: JSON.stringify({
-        query,
-        variables,
-      }),
-      next: { revalidate: 60 },
+      body: JSON.stringify({ query, variables }),
+      next: {
+        revalidate: config.revalidate,
+        tags: [`wordpress-${cacheType.toLowerCase()}`],
+      },
+      cache: 'force-cache',
     });
 
     if (!res.ok) {
@@ -56,17 +90,118 @@ async function fetchAPI(query, { variables } = {}) {
   }
 }
 
+// Memory cache utilities
+function setMemoryCache(key, data, ttl = MEMORY_CACHE_TTL) {
+  memoryCache.set(key, {
+    data,
+    expires: Date.now() + ttl,
+    created: Date.now(),
+  });
+}
+
+function getMemoryCache(key) {
+  const cached = memoryCache.get(key);
+  if (!cached) return null;
+
+  if (Date.now() > cached.expires) {
+    memoryCache.delete(key);
+    return null;
+  }
+
+  return cached.data;
+}
+
+// Browser storage cache utilities (client-side only)
+function setBrowserCache(key, data, ttlMinutes = 10) {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const item = {
+      data,
+      expires: Date.now() + ttlMinutes * 60 * 1000,
+      created: Date.now(),
+      version: '1.0', // For cache invalidation if needed
+    };
+    localStorage.setItem(`hn_cache_${key}`, JSON.stringify(item));
+  } catch (error) {
+    console.warn('Browser cache storage failed:', error);
+  }
+}
+
+function getBrowserCache(key) {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const item = localStorage.getItem(`hn_cache_${key}`);
+    if (!item) return null;
+
+    const parsed = JSON.parse(item);
+    if (Date.now() > parsed.expires) {
+      localStorage.removeItem(`hn_cache_${key}`);
+      return null;
+    }
+
+    return parsed.data;
+  } catch (error) {
+    console.warn('Browser cache retrieval failed:', error);
+    return null;
+  }
+}
+
+// Intelligent cache key generation
+function generateCacheKey(prefix, params = {}) {
+  const sortedParams = Object.keys(params)
+    .sort()
+    .map((key) => `${key}:${params[key]}`)
+    .join('|');
+  return `${prefix}_${sortedParams || 'default'}`;
+}
+
+// Cache-first data fetching with fallback chain
+async function fetchWithCache(cacheKey, fetchFunction, cacheType = 'POSTS') {
+  const config = CACHE_CONFIG[cacheType];
+
+  // 1. Check memory cache first (fastest)
+  const memoryData = getMemoryCache(cacheKey);
+  if (memoryData) {
+    console.log(`📦 Cache HIT (Memory): ${cacheKey}`);
+    return memoryData;
+  }
+
+  // 2. Check browser cache (fast)
+  const browserData = getBrowserCache(cacheKey);
+  if (browserData) {
+    console.log(`💾 Cache HIT (Browser): ${cacheKey}`);
+    // Promote to memory cache for next time
+    setMemoryCache(cacheKey, browserData, config.memory);
+    return browserData;
+  }
+
+  // 3. Fetch from API (slow)
+  console.log(`🌐 Cache MISS: Fetching ${cacheKey}`);
+  try {
+    const data = await fetchFunction();
+
+    // Cache the fresh data
+    setMemoryCache(cacheKey, data, config.memory);
+    setBrowserCache(cacheKey, data, config.browser);
+
+    return data;
+  } catch (error) {
+    console.error(`Failed to fetch ${cacheKey}:`, error);
+    throw error;
+  }
+}
+
 // HTML entity decoder function
 const decodeHtmlEntities = (text) => {
   if (!text) return '';
-  
+
   if (typeof window !== 'undefined') {
-    // Client-side decoding using DOM
     const textArea = document.createElement('textarea');
     textArea.innerHTML = text;
     return textArea.value;
   } else {
-    // Server-side decoding using common replacements
     return text
       .replace(/&#8217;/g, "'")
       .replace(/&#8216;/g, "'")
@@ -82,7 +217,7 @@ const decodeHtmlEntities = (text) => {
   }
 };
 
-// GraphQL Queries
+// GraphQL Queries (keeping your existing ones)
 export const GET_ALL_POSTS = `
   query GetAllPosts($first: Int = 20, $after: String) {
     posts(first: $first, after: $after, where: { status: PUBLISH }) {
@@ -280,116 +415,130 @@ export const GET_CATEGORIES = `
   }
 `;
 
-// Add this query to your existing queries
-export const GET_ALL_POSTS_FOR_SEO = `
-  query GetAllPostsForSEO {
-    posts(first: 100, where: { status: PUBLISH }) {
-      edges {
-        node {
-          id
-          title
-          slug
-          excerpt
-          content
-          date
-          categories {
-            edges {
-              node {
-                name
-                slug
-              }
-            }
-          }
-          acfBlogFields {
-            readTime
-            keywords
-            metaDescription
-          }
-        }
-      }
-    }
-  }
-`;
-
-
-
-
-// API Functions with fallback data
+// Cached API Functions
 export async function getAllPosts(first = 20, after = null) {
-  try {
-    const data = await fetchAPI(GET_ALL_POSTS, {
-      variables: { first, after },
-    });
-    return data?.posts || { edges: [], pageInfo: {} };
-  } catch (error) {
+  const cacheKey = generateCacheKey('all_posts', { first, after });
+
+  return fetchWithCache(
+    cacheKey,
+    async () => {
+      const data = await fetchAPI(
+        GET_ALL_POSTS,
+        {
+          variables: { first, after },
+        },
+        'POSTS'
+      );
+      return data?.posts || { edges: [], pageInfo: {} };
+    },
+    'POSTS'
+  ).catch((error) => {
     console.error('Error fetching all posts:', error.message);
-    // Return fallback data for development
     return getFallbackPosts(first);
-  }
+  });
 }
 
 export async function getFeaturedPosts() {
-  try {
-    const data = await fetchAPI(GET_FEATURED_POSTS);
-    const allPosts = data?.posts?.edges || [];
+  const cacheKey = 'featured_posts';
 
-    // Filter for featured posts in JavaScript since GraphQL meta query might not work
-    const featuredPosts = allPosts.filter(
-      (edge) => edge.node.acfBlogFields?.featuredPost === true
-    );
-
-    // If no featured posts found, return the first 4 posts
-    return featuredPosts.length > 0 ? featuredPosts : allPosts.slice(0, 4);
-  } catch (error) {
+  return fetchWithCache(
+    cacheKey,
+    async () => {
+      const data = await fetchAPI(GET_FEATURED_POSTS, {}, 'FEATURED');
+      const allPosts = data?.posts?.edges || [];
+      const featuredPosts = allPosts.filter(
+        (edge) => edge.node.acfBlogFields?.featuredPost === true
+      );
+      return featuredPosts.length > 0 ? featuredPosts : allPosts.slice(0, 4);
+    },
+    'FEATURED'
+  ).catch((error) => {
     console.error('Error fetching featured posts:', error.message);
-    // Return fallback data for development
     return getFallbackPosts(4).edges;
-  }
+  });
 }
 
 export async function getPostBySlug(slug) {
-  try {
-    const data = await fetchAPI(GET_POST_BY_SLUG, {
-      variables: { slug },
-    });
-    return data?.postBy;
-  } catch (error) {
+  const cacheKey = generateCacheKey('post_by_slug', { slug });
+
+  return fetchWithCache(
+    cacheKey,
+    async () => {
+      const data = await fetchAPI(
+        GET_POST_BY_SLUG,
+        {
+          variables: { slug },
+        },
+        'INDIVIDUAL_POST'
+      );
+      return data?.postBy;
+    },
+    'INDIVIDUAL_POST'
+  ).catch((error) => {
     console.error('Error fetching post by slug:', error.message);
     return null;
-  }
+  });
 }
 
 export async function searchPosts(searchTerm, first = 20) {
-  try {
-    const data = await fetchAPI(SEARCH_POSTS, {
-      variables: { search: searchTerm, first },
-    });
-    return data?.posts || { edges: [] };
-  } catch (error) {
+  const cacheKey = generateCacheKey('search', { searchTerm, first });
+
+  return fetchWithCache(
+    cacheKey,
+    async () => {
+      const data = await fetchAPI(
+        SEARCH_POSTS,
+        {
+          variables: { search: searchTerm, first },
+        },
+        'SEARCH'
+      );
+      return data?.posts || { edges: [] };
+    },
+    'SEARCH'
+  ).catch((error) => {
     console.error('Error searching posts:', error.message);
     return { edges: [] };
-  }
+  });
 }
 
 export async function getPostsByCategory(categoryName, first = 20) {
-  try {
-    const data = await fetchAPI(GET_POSTS_BY_CATEGORY, {
-      variables: { categoryName, first },
-    });
-    return data?.posts || { edges: [], pageInfo: {} };
-  } catch (error) {
+  const cacheKey = generateCacheKey('posts_by_category', {
+    categoryName,
+    first,
+  });
+
+  return fetchWithCache(
+    cacheKey,
+    async () => {
+      const data = await fetchAPI(
+        GET_POSTS_BY_CATEGORY,
+        {
+          variables: { categoryName, first },
+        },
+        'POSTS'
+      );
+      return data?.posts || { edges: [], pageInfo: {} };
+    },
+    'POSTS'
+  ).catch((error) => {
     console.error('Error fetching posts by category:', error.message);
     return { edges: [], pageInfo: {} };
-  }
+  });
 }
 
 export async function getCategories() {
-  try {
-    const data = await fetchAPI(GET_CATEGORIES);
-    return data?.categories?.edges || [];
-  } catch (error) {
+  const cacheKey = 'categories';
+
+  return fetchWithCache(
+    cacheKey,
+    async () => {
+      const data = await fetchAPI(GET_CATEGORIES, {}, 'CATEGORIES');
+      return data?.categories?.edges || [];
+    },
+    'CATEGORIES'
+  ).catch((error) => {
     console.error('Error fetching categories:', error.message);
-    // Return fallback categories
     return [
       { node: { name: 'Habit Formation', slug: 'habit-formation' } },
       { node: { name: 'Digital Wellness', slug: 'digital-wellness' } },
@@ -397,65 +546,97 @@ export async function getCategories() {
       { node: { name: 'Psychology', slug: 'psychology' } },
       { node: { name: 'Mindfulness', slug: 'mindfulness' } },
     ];
-  }
+  });
 }
 
-// Add this function to your existing functions
-export async function getAllPostsForSEO() {
+// Batch loading for better performance
+export async function preloadCriticalData() {
+  console.log('🚀 Preloading critical blog data...');
+
   try {
-    const data = await fetchAPI(GET_ALL_POSTS_FOR_SEO);
-    
-    const posts = data?.posts?.edges?.map(edge => {
-      const post = edge.node;
-      
-      // Clean content by removing HTML tags for keyword analysis
-      const cleanContent = post.content?.replace(/<[^>]*>/g, '') || '';
-      const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
-      
-      // Extract keywords from ACF field or generate from content
-      let keywords = [];
-      if (post.acfBlogFields?.keywords) {
-        keywords = post.acfBlogFields.keywords
-          .split(',')
-          .map(k => k.trim())
-          .filter(k => k.length > 0);
-      } else {
-        // Extract keywords from categories and title
-        const categoryKeywords = post.categories.edges.map(edge => edge.node.name.toLowerCase());
-        const titleWords = post.title.toLowerCase()
-          .split(' ')
-          .filter(word => word.length > 3 && !['the', 'and', 'for', 'with', 'your', 'this', 'that'].includes(word));
-        
-        keywords = [...categoryKeywords, ...titleWords];
-      }
-      
-      return {
-        id: parseInt(post.id.replace('post:', '')),
-        title: decodeHtmlEntities(post.title),
-        slug: post.slug,
-        excerpt: decodeHtmlEntities(cleanExcerpt),
-        content: decodeHtmlEntities(cleanContent),
-        categories: post.categories.edges.map(edge => edge.node.name),
-        publishedDate: formatDate(post.date),
-        readTime: post.acfBlogFields?.readTime || calculateReadTime(cleanContent),
-        keywords: keywords
-      };
-    }) || [];
-    
-    return posts;
-    
+    // Load in parallel for speed
+    const [posts, featured, categories] = await Promise.allSettled([
+      getAllPosts(12),
+      getFeaturedPosts(),
+      getCategories(),
+    ]);
+
+    const result = {
+      posts:
+        posts.status === 'fulfilled'
+          ? posts.value
+          : { edges: [], pageInfo: {} },
+      featured: featured.status === 'fulfilled' ? featured.value : [],
+      categories: categories.status === 'fulfilled' ? categories.value : [],
+    };
+
+    console.log('✅ Critical data preloaded successfully');
+    return result;
   } catch (error) {
-    console.error('Error fetching posts for SEO analysis:', error.message);
-    // Return fallback data if WordPress is unavailable
-    return getFallbackSEOPosts();
+    console.error('❌ Error preloading critical data:', error);
+    return null;
   }
 }
 
-// Utility Functions
+// Cache management utilities
+export function clearCache() {
+  // Clear memory cache
+  memoryCache.clear();
+
+  // Clear browser cache
+  if (typeof window !== 'undefined') {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('hn_cache_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  }
+
+  console.log('🧹 All caches cleared');
+}
+
+export function getCacheStats() {
+  const memorySize = memoryCache.size;
+  let browserSize = 0;
+  let totalBrowserSize = 0;
+
+  if (typeof window !== 'undefined') {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith('hn_cache_')) {
+        browserSize++;
+        try {
+          totalBrowserSize += localStorage.getItem(key).length;
+        } catch (e) {}
+      }
+    });
+  }
+
+  return {
+    memory: {
+      count: memorySize,
+      entries: Array.from(memoryCache.keys()),
+    },
+    browser: {
+      count: browserSize,
+      sizeKB: Math.round(totalBrowserSize / 1024),
+    },
+  };
+}
+
+// Warm up cache for better initial performance
+export function warmupCache() {
+  if (typeof window !== 'undefined') {
+    // Preload critical data in the background
+    setTimeout(() => {
+      preloadCriticalData().catch(console.error);
+    }, 1000);
+  }
+}
+
+// Your existing utility functions
 export function formatPostData(post) {
-  // Clean and decode excerpt
   const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
-  
+
   return {
     id: post.id,
     title: decodeHtmlEntities(post.title || ''),
@@ -463,21 +644,25 @@ export function formatPostData(post) {
     excerpt: decodeHtmlEntities(
       post.acfBlogFields?.customExcerpt || cleanExcerpt || ''
     ),
-    category: decodeHtmlEntities(post.categories?.edges?.[0]?.node?.name || 'Uncategorized'),
+    category: decodeHtmlEntities(
+      post.categories?.edges?.[0]?.node?.name || 'Uncategorized'
+    ),
     categorySlug: post.categories?.edges?.[0]?.node?.slug || 'uncategorized',
-    readTime: post.acfBlogFields?.readTime || calculateReadTime(post.content || cleanExcerpt),
+    readTime:
+      post.acfBlogFields?.readTime ||
+      calculateReadTime(post.content || cleanExcerpt),
     date: formatDate(post.date),
-    // Use placeholder image service for development
     image:
       post.featuredImage?.node?.sourceUrl ||
       'https://images.unsplash.com/photo-1488998427799-e3362cec87c3?w=600&h=400&fit=crop&crop=center',
-    imageAlt: decodeHtmlEntities(post.featuredImage?.node?.altText || post.title || ''),
+    imageAlt: decodeHtmlEntities(
+      post.featuredImage?.node?.altText || post.title || ''
+    ),
     featured: post.acfBlogFields?.featuredPost || false,
     content: decodeHtmlEntities(post.content || ''),
   };
 }
 
-// Helper function to format dates consistently
 export function formatDate(dateString) {
   try {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -491,22 +676,20 @@ export function formatDate(dateString) {
   }
 }
 
-// Helper function to calculate read time
 export function calculateReadTime(content) {
   if (!content) return '1 min read';
-  
-  // Remove HTML tags and count words
+
   const cleanContent = content.replace(/<[^>]*>/g, '');
-  const wordCount = cleanContent.split(/\s+/).filter(word => word.length > 0).length;
-  
-  // Average reading speed is 200-250 words per minute
+  const wordCount = cleanContent
+    .split(/\s+/)
+    .filter((word) => word.length > 0).length;
   const wordsPerMinute = 225;
   const readTimeMinutes = Math.ceil(wordCount / wordsPerMinute);
-  
+
   return `${readTimeMinutes} min read`;
 }
 
-// Fallback data for development when WordPress is not available
+// Your existing fallback data function
 function getFallbackPosts(count = 20) {
   const fallbackPosts = [
     {
@@ -627,7 +810,7 @@ function getFallbackPosts(count = 20) {
         title: 'Sleeping Smarter, Not Longer: The New Rules of Productivity',
         slug: 'sleeping-smarter-not-longer-the-new-rules-of-productivity',
         excerpt:
-          'Smart sleep isn\'t about sleeping longer; it\'s about optimizing sleep quality for peak productivity.',
+          "Smart sleep isn't about sleeping longer; it's about optimizing sleep quality for peak productivity.",
         date: '2024-12-05T00:00:00',
         categories: {
           edges: [{ node: { name: 'Productivity', slug: 'productivity' } }],
@@ -654,22 +837,4 @@ function getFallbackPosts(count = 20) {
     edges: fallbackPosts.slice(0, count),
     pageInfo: { hasNextPage: false, endCursor: null },
   };
-}
-
-// Add fallback function for development
-function getFallbackSEOPosts() {
-  return [
-    {
-      id: 1,
-      title: "The Science Behind Habit Formation: What Your Brain Really Does",
-      slug: "science-behind-habit-formation",
-      excerpt: "Discover the neurological processes that drive habit formation and how understanding your brain can help you build lasting changes.",
-      content: "Habit formation is fascinating from a neuroscience perspective. The basal ganglia plays a crucial role in automatic behaviors...",
-      categories: ["Habit Formation", "Psychology"],
-      publishedDate: "Dec 15, 2024",
-      readTime: "8 min read",
-      keywords: ["habit formation", "neuroscience", "basal ganglia", "habit loop", "neural pathways", "behavior change"]
-    }
-    // Add more fallback posts as needed
-  ];
 }
