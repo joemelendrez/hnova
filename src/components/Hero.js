@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, Download, ShoppingBag } from 'lucide-react'
 import Button from './Button'
@@ -7,7 +7,9 @@ import Button from './Button'
 const Hero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [scrollY, setScrollY] = useState(0)
+  const parallaxRef = useRef(null)
+  const rafRef = useRef(null)
+  const scrollYRef = useRef(0)
   
   // Check if device is mobile (guarded for SSR)
   useEffect(() => {
@@ -23,18 +25,42 @@ const Hero = () => {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
   
-  // Parallax scroll on mobile
+  // Smooth parallax animation with RAF
+  const updateParallax = useCallback(() => {
+    if (parallaxRef.current) {
+      const offset = scrollYRef.current * 0.5
+      parallaxRef.current.style.transform = `translate3d(0, ${offset}px, 0)`
+    }
+  }, [])
+  
+  // Optimized scroll handler with RAF
   useEffect(() => {
     if (typeof window === 'undefined' || !isMobile) return
     
+    let ticking = false
+    
     const handleScroll = () => {
-      setScrollY(window.scrollY)
+      scrollYRef.current = window.scrollY
+      
+      if (!ticking) {
+        rafRef.current = requestAnimationFrame(() => {
+          updateParallax()
+          ticking = false
+        })
+        ticking = true
+      }
     }
     
+    // Use passive listener for better performance
     window.addEventListener('scroll', handleScroll, { passive: true })
     
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [isMobile])
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [isMobile, updateParallax])
   
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
@@ -55,15 +81,17 @@ const Hero = () => {
         </video>
       )}
 
-      {/* Mobile: Parallax Image Background */}
+      {/* Mobile: Smooth Parallax Image Background */}
       {isMobile && (
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          ref={parallaxRef}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
           style={{
             backgroundImage: 'url(/HabitBackground.webp)',
-            transform: `translateY(${scrollY * 0.5}px)`,
             height: '120%',
             top: '-10%',
+            backfaceVisibility: 'hidden',
+            perspective: '1000px',
           }}
         />
       )}
