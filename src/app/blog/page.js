@@ -286,9 +286,7 @@ export default function BlogPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Blog.
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">Blog.</h1>
             <p className="text-xl text-gray-200 leading-relaxed mb-8">
               Evidence-based insights, practical strategies, and the latest
               research on habit formation and behavior change.
@@ -397,7 +395,7 @@ export default function BlogPage() {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className="inline-flex items-center px-3 py-1 bg-[#1a1a1a] text-white text-sm font-medium rounded-full whitespace-nowrap flex-shrink-0"
+                  className="inline-flex items-center px-3 py-1 bg-accent-hover text-white text-sm font-medium rounded-full whitespace-nowrap flex-shrink-0"
                 >
                   {category}
                   <button
@@ -420,7 +418,7 @@ export default function BlogPage() {
                 disabled={searching || loading}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 disabled:opacity-50 ${
                   selectedCategories.includes(category.name)
-                    ? 'bg-[#1a1a1a] text-white shadow-md'
+                    ? 'bg-accent text-white shadow-md'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:shadow-sm'
                 }`}
               >
@@ -438,154 +436,69 @@ export default function BlogPage() {
         </div>
       </section>
 
-      {/* Blog Posts Grid */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Filter Summary */}
-          {selectedCategories.length > 0 && !searchTerm && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8 p-4 bg-blue-50 rounded-lg border border-blue-200"
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {posts.map((post, index) => (
+          <motion.div
+            key={post.id}
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.6,
+              delay: Math.min(index * 0.1, 0.8),
+            }}
+            className="flex" // ensure child can stretch if needed
+          >
+            <Link
+              href={`/blog/${post.slug}`}
+              className="group flex flex-col flex-grow"
             >
-              <p className="text-blue-700">
-                Showing articles from:{' '}
-                <span className="font-semibold">
-                  {selectedCategories.join(', ')}
-                </span>
-              </p>
-            </motion.div>
-          )}
-
-          {loading && posts.length === 0 ? (
-            // Loading State
-            <div className="flex items-center justify-center py-12">
-              <Loader className="w-8 h-8 animate-spin text-[#1a1a1a]" />
-              <span className="ml-2 text-gray-600">Loading articles...</span>
-            </div>
-          ) : searching ? (
-            // Searching State
-            <div className="flex items-center justify-center py-12">
-              <div className="w-8 h-8 border-2 border-[#1a1a1a] border-t-transparent rounded-full animate-spin"></div>
-              <span className="ml-2 text-gray-600">Searching articles...</span>
-            </div>
-          ) : posts.length > 0 ? (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {posts.map((post, index) => (
-                  <motion.div
-                    key={post.id}
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      duration: 0.6,
-                      delay: Math.min(index * 0.1, 0.8),
+              <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 flex flex-col h-full">
+                <div className="relative h-48 flex-shrink-0">
+                  <img
+                    src={post.image}
+                    alt={post.imageAlt}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    loading={index < 6 ? 'eager' : 'lazy'}
+                    onError={(e) => {
+                      e.currentTarget.src = '/images/blog/default.jpg';
                     }}
-                  >
-                    <Link href={`/blog/${post.slug}`} className="group">
-                      <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200">
-                        <div className="relative h-48">
-                          <img
-                            src={post.image}
-                            alt={post.imageAlt}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            loading={index < 6 ? 'eager' : 'lazy'} // Eager load first 6 images
-                            onError={(e) => {
-                              e.target.src = '/images/blog/default.jpg';
-                            }}
-                          />
-                          <div className="absolute top-4 left-4">
-                            <span className="bg-[#1a1a1a] text-white px-3 py-1 rounded-full text-xs font-medium">
-                              {post.category}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="p-6">
-                          <div className="flex items-center text-sm text-gray-500 mb-3">
-                            <span>{post.date}</span>
-                            <span className="mx-2">•</span>
-                            <Clock className="h-4 w-4 mr-1" />
-                            <span>{post.readTime}</span>
-                          </div>
-                          <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors leading-tight">
-                            {post.title}
-                          </h3>
-                          <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">
-                            {post.excerpt}
-                          </p>
-                          <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700">
-                            Read Article
-                            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
-                          </div>
-                        </div>
-                      </article>
-                    </Link>
-                  </motion.div>
-                ))}
-              </div>
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-accent-hover text-white px-3 py-1 rounded-full text-xs font-medium">
+                      {post.category}
+                    </span>
+                  </div>
+                </div>
 
-              {/* Load More Button - Only show when no filters are applied */}
-              {hasNextPage && !hasActiveFilters && (
-                <div className="text-center mt-12">
-                  <button
-                    onClick={loadMorePosts}
-                    disabled={loadingMore}
-                    className="inline-flex items-center px-8 py-3 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-gray-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:-translate-y-0.5"
-                  >
-                    {loadingMore ? (
-                      <>
-                        <Loader className="mr-2 h-5 w-5 animate-spin" />
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        Load More Articles
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                      </>
-                    )}
-                  </button>
+                {/* Body: grows to fill space */}
+                <div className="p-6 flex flex-col flex-grow">
+                  <div className="flex items-center text-sm text-gray-500 mb-3">
+                    <span>{post.date}</span>
+                    <span className="mx-2">•</span>
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>{post.readTime}</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors leading-tight">
+                    {post.title}
+                  </h3>
+                  <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3 flex-grow">
+                    {post.excerpt}
+                  </p>
+                  {/* Spacer is implicit because flex-grow on excerpt if needed */}
                 </div>
-              )}
-            </>
-          ) : (
-            // Empty State
-            <div className="text-center py-12">
-              <h3 className="text-2xl font-bold text-[#1a1a1a] mb-4">
-                No articles found
-              </h3>
-              <p className="text-gray-600 mb-6">
-                {searchTerm
-                  ? `No results for "${searchTerm}". Try adjusting your search terms.`
-                  : selectedCategories.length > 0
-                  ? `No articles found in the selected categories: ${selectedCategories.join(
-                      ', '
-                    )}`
-                  : 'No articles available.'}
-              </p>
-              {hasActiveFilters && (
-                <div className="space-x-4">
-                  {searchTerm && (
-                    <button
-                      onClick={() => setSearchTerm('')}
-                      className="text-[#1a1a1a] font-semibold hover:underline transition-all duration-200"
-                    >
-                      Clear search
-                    </button>
-                  )}
-                  {selectedCategories.length > 0 && (
-                    <button
-                      onClick={clearAllCategories}
-                      className="text-[#1a1a1a] font-semibold hover:underline transition-all duration-200"
-                    >
-                      Clear filters
-                    </button>
-                  )}
+
+                {/* Footer: stays at bottom */}
+                <div className="px-6 pb-6">
+                  <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700">
+                    Read Article
+                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      </section>
+              </article>
+            </Link>
+          </motion.div>
+        ))}
+      </div>
     </div>
   );
 }

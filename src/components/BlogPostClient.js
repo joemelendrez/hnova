@@ -150,21 +150,24 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
     <>
       <article className="pt-16 lg:pt-20">
         {/* Back Button */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Link
-              href="/blog"
-              className="inline-flex items-center text-gray-600 hover:text-[#1a1a1a] transition-colors duration-200 mb-8"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Blog
-            </Link>
-          </motion.div>
-        </div>
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4"></div>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="bg-[#DBDBDB] bg-opacity-10 hover:bg-opacity-20 transition-colors duration-200 py-6 mb-8">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <Link
+                href="/blog"
+                className="inline-flex items-center text-gray-600 hover:text-[#1a1a1a] transition-colors duration-200 font-medium"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Blog
+              </Link>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Article Header */}
         <header className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
@@ -175,7 +178,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
           >
             {/* Category Badge */}
             <div className="mb-6">
-              <span className="inline-block bg-[#1a1a1a] text-white px-4 py-2 rounded-full text-sm font-medium">
+              <span className="inline-block bg-accent-hover text-white px-4 py-2 rounded-full text-sm font-medium">
                 {decodeHtmlEntities(post.category)}
               </span>
             </div>
@@ -389,7 +392,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                           </div>
                           <div className="p-6">
                             <div className="flex items-center text-sm text-gray-500 mb-3">
-                              <span className="bg-[#1a1a1a] text-white px-2 py-1 rounded text-xs font-medium mr-3">
+                              <span className="bg-accent-hover text-white px-2 py-1 rounded text-xs font-medium mr-3">
                                 {decodeHtmlEntities(relatedPost.category)}
                               </span>
                               <Clock className="h-4 w-4 mr-1" />

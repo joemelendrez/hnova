@@ -226,7 +226,6 @@ const FeaturedArticles = () => {
             better habits and break the ones holding you back.
           </p>
         </motion.div>
-
         {/* Large Featured Article */}
         {featuredPosts.length > 0 && (
           <motion.div
@@ -258,7 +257,7 @@ const FeaturedArticles = () => {
                   </div>
                   <div className="p-8 lg:p-12 flex flex-col justify-center">
                     <div className="flex items-center text-sm text-gray-500 mb-4">
-                      <span className="bg-[#1a1a1a] text-white px-3 py-1 rounded-full text-xs font-medium mr-3">
+                      <span className="bg-accent-hover text-white px-3 py-1 rounded-full text-xs font-medium mr-3">
                         {featuredPosts[0].category}
                       </span>
                       <Clock className="h-4 w-4 mr-1" />
@@ -280,7 +279,7 @@ const FeaturedArticles = () => {
             </Link>
           </motion.div>
         )}
-
+     
         {/* Grid of Other Posts */}
         {featuredPosts.length > 1 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -294,24 +293,28 @@ const FeaturedArticles = () => {
                   duration: 0.6,
                   delay: Math.min(index * 0.1, 0.5),
                 }}
+                className="h-full" // Important: Add this to motion.div
               >
-                <Link href={`/blog/${post.slug}`} className="group">
-                  <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-200">
-                    <div className="relative h-48">
+                <Link
+                  href={`/blog/${post.slug}`}
+                  className="group h-full block"
+                >
+                  <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-200 h-full flex flex-col">
+                    <div className="relative h-48 flex-shrink-0">
                       <img
                         src={post.image}
                         alt={post.imageAlt || post.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading={index < 2 ? 'eager' : 'lazy'} // Eager load first 3 images total
+                        loading={index < 2 ? 'eager' : 'lazy'}
                         onError={(e) => {
                           e.target.src =
                             'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&h=400&fit=crop';
                         }}
                       />
                     </div>
-                    <div className="p-6">
+                    <div className="p-6 flex flex-col flex-grow">
                       <div className="flex items-center text-sm text-gray-500 mb-3">
-                        <span className="bg-[#1a1a1a] text-white px-2 py-1 rounded text-xs font-medium mr-3">
+                        <span className="bg-accent-hover text-white px-2 py-1 rounded text-xs font-medium mr-3">
                           {post.category}
                         </span>
                         <Clock className="h-4 w-4 mr-1" />
@@ -320,10 +323,10 @@ const FeaturedArticles = () => {
                       <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-[#fe0000] transition-colors leading-tight">
                         {post.title}
                       </h3>
-                      <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">
+                      <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3 flex-grow">
                         {post.excerpt}
                       </p>
-                      <div className="flex items-center text-[#fe0000] font-semibold group-hover:text-[#dc2626]">
+                      <div className="flex items-center text-[#fe0000] font-semibold group-hover:text-[#dc2626] mt-auto">
                         Read More
                         <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                       </div>
@@ -334,7 +337,6 @@ const FeaturedArticles = () => {
             ))}
           </div>
         )}
-
         {/* View All Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -351,7 +353,6 @@ const FeaturedArticles = () => {
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </motion.div>
-
         {/* Cache Status Indicator (Development Only) */}
         {process.env.NODE_ENV === 'development' && (
           <motion.div
