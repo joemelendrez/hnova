@@ -1,39 +1,103 @@
 'use client'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, Download, ShoppingBag } from 'lucide-react'
 import Button from './Button'
 
 const Hero = () => {
+  const [videoLoaded, setVideoLoaded] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [scrollY, setScrollY] = useState(0)
+  
+  // Check if device is mobile (guarded for SSR)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
+  // Parallax scroll on mobile
+  useEffect(() => {
+    if (typeof window === 'undefined' || !isMobile) return
+    
+    const handleScroll = () => {
+      setScrollY(window.scrollY)
+    }
+    
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [isMobile])
+  
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
-      
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage: 'url(/HabitBackground.webp)',
-        }}
-      />
-      
+      {/* Desktop: Video Background */}
+      {!isMobile && (
+        <video
+          className="absolute inset-0 w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          onLoadedData={() => setVideoLoaded(true)}
+          style={{ display: videoLoaded ? 'block' : 'none' }}
+        >
+          <source src="/HabitBackground.webm" type="video/webm" />
+          <source src="/HabitBackground.mp4" type="video/mp4" />
+        </video>
+      )}
+
+      {/* Mobile: Parallax Image Background */}
+      {isMobile && (
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/HabitBackground.webp)',
+            transform: `translateY(${scrollY * 0.5}px)`,
+            height: '120%',
+            top: '-10%',
+          }}
+        />
+      )}
+
+      {/* Desktop Fallback Background Image */}
+      {!isMobile && (
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: 'url(/HabitBackground.webp)',
+            display: videoLoaded ? 'none' : 'block',
+          }}
+        />
+      )}
+
       {/* Dark Overlay for Text Readability */}
       <div className="absolute inset-0 bg-black/60" />
-      
+
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `radial-gradient(circle at 20% 80%, #DBDBDB 1px, transparent 1px),
-                           radial-gradient(circle at 80% 20%, #DBDBDB 1px, transparent 1px)`,
-          backgroundSize: '100px 100px'
-        }} />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle at 20% 80%, #DBDBDB 1px, transparent 1px),
+                              radial-gradient(circle at 80% 20%, #DBDBDB 1px, transparent 1px)`,
+            backgroundSize: '100px 100px',
+          }}
+        />
       </div>
 
       {/* Main Content */}
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        
-
-
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
         {/* Main Headline */}
-        <motion.h1 
+        <motion.h1
           className="text-5xl md:text-6xl lg:text-7xl font-anton uppercase leading-tight mb-6 tracking-tight"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -50,9 +114,9 @@ const Hero = () => {
             />
           </span>
         </motion.h1>
-        
+
         {/* Subtitle */}
-        <motion.p 
+        <motion.p
           className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed max-w-3xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -63,14 +127,14 @@ const Hero = () => {
         </motion.p>
 
         {/* CTA Buttons */}
-        <motion.div 
+        <motion.div
           className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
         >
-          <Button 
-            href="/start-here" 
+          <Button
+            href="/start-here"
             size="large"
             variant="cta"
             className="group shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 min-w-[200px]"
@@ -78,9 +142,9 @@ const Hero = () => {
             <Download className="mr-2 h-5 w-5" />
             Get Free Guide
           </Button>
-          
-          <Button 
-            href="/shop" 
+
+          <Button
+            href="/shop"
             size="large"
             variant="outline"
             className="group border-2 border-white/30 text-white hover:bg-white hover:text-[#1a1a1a] transition-all duration-300 min-w-[200px]"
