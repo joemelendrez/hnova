@@ -13,17 +13,17 @@ export default function AboutPage() {
   return (
     <div className="pt-16 lg:pt-20">
       {/* Hero Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-[#1a1a1a] text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold text-[#1a1a1a] mb-6">
-              About Habit Nova
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
+              About.
             </h1>
-            <p className="text-xl text-gray-600 leading-relaxed">
+            <p className="text-xl text-[#dbdbdb] leading-relaxed">
               We&apos;re on a mission to help people understand the science behind habit formation 
               and provide practical tools for lasting behavior change.
             </p>

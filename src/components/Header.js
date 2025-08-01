@@ -4,8 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Mail, Phone } from 'lucide-react';
-import Button from './Button';
+import { Mail } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import AnimatedLogo from './AnimatedLogo';
 
@@ -15,6 +14,7 @@ const Header = () => {
   const [headerVisible, setHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [readingProgress, setReadingProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
 
   // Navigation items
@@ -24,6 +24,17 @@ const Header = () => {
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
   ];
+
+  // Detect mobile/desktop
+  useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 1280); // xl breakpoint
+    };
+
+    checkIsMobile();
+    window.addEventListener('resize', checkIsMobile);
+    return () => window.removeEventListener('resize', checkIsMobile);
+  }, []);
 
   // Handle scroll effect and header visibility
   useEffect(() => {
@@ -52,11 +63,14 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  // Reading progress tracking for blog posts
+  // Reading progress tracking - ONLY for mobile
   useEffect(() => {
     const updateReadingProgress = () => {
-      // Only show progress on individual blog post pages
-      if (!pathname.startsWith('/blog/') || pathname === '/blog') return;
+      // Only show progress on individual blog post pages AND only on mobile
+      if (!pathname.startsWith('/blog/') || pathname === '/blog' || !isMobile) {
+        setReadingProgress(0);
+        return;
+      }
 
       const article = document.querySelector('article');
       if (!article) return;
@@ -86,7 +100,7 @@ const Header = () => {
     updateReadingProgress();
 
     return () => window.removeEventListener('scroll', updateReadingProgress);
-  }, [pathname]);
+  }, [pathname, isMobile]);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -99,6 +113,10 @@ const Header = () => {
     }
     return pathname.startsWith(href);
   };
+
+  // Show reading progress only on mobile blog posts
+  const showReadingProgress =
+    pathname.startsWith('/blog/') && pathname !== '/blog' && isMobile;
 
   return (
     <>
@@ -158,9 +176,7 @@ const Header = () => {
                     priority
                   />
                 </motion.div>
-                <span className="text-2xl font-bold text-[#1a1a1a] hover:text-gray-700">
-                  Habit Nova
-                </span>
+               
               </Link>
             </div>
 
@@ -248,8 +264,8 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Reading Progress Bar - Bottom of Header */}
-        {pathname.startsWith('/blog/') && pathname !== '/blog' && (
+        {/* Reading Progress Bar - Bottom of Header - MOBILE ONLY */}
+        {showReadingProgress && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent">
             <motion.div
               className="h-full origin-left bg-[#fe0000]"
@@ -262,27 +278,25 @@ const Header = () => {
         )}
       </header>
 
-      {/* Fixed Reading Progress Bar - When header is hidden */}
-      {pathname.startsWith('/blog/') &&
-        pathname !== '/blog' &&
-        !headerVisible && (
+      {/* Fixed Reading Progress Bar - When header is hidden - MOBILE ONLY */}
+      {showReadingProgress && !headerVisible && (
+        <motion.div
+          className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-1 bg-transparent"
+          initial={{ opacity: 0, y: -4 }}
+          animate={{
+            opacity: readingProgress >= 100 ? 0 : 1,
+            y: readingProgress >= 100 ? -4 : 0,
+          }}
+          transition={{ duration: 0.3 }}
+        >
           <motion.div
-            className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-1 bg-transparent"
-            initial={{ opacity: 0, y: -4 }}
-            animate={{
-              opacity: readingProgress >= 100 ? 0 : 1,
-              y: readingProgress >= 100 ? -4 : 0,
-            }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.div
-              className="h-full origin-left bg-[#fe0000]"
-              style={{ scaleX: readingProgress / 100 }}
-              animate={{ scaleX: readingProgress / 100 }}
-              transition={{ duration: 0.1, ease: 'easeOut' }}
-            />
-          </motion.div>
-        )}
+            className="h-full origin-left bg-[#fe0000]"
+            style={{ scaleX: readingProgress / 100 }}
+            animate={{ scaleX: readingProgress / 100 }}
+            transition={{ duration: 0.1, ease: 'easeOut' }}
+          />
+        </motion.div>
+      )}
 
       {/* Mobile Menu */}
       <MobileMenu
@@ -291,9 +305,6 @@ const Header = () => {
         currentPath={pathname}
         navigation={navigation}
       />
-
-      {/* Spacer to prevent content overlap */}
-      {/*<div className="h-20 lg:h-24" />*/}
     </>
   );
 };

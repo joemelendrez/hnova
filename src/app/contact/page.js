@@ -39,7 +39,7 @@ export default function ContactPage() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Get In Touch
+              Get In Touch.
             </h1>
             <p className="text-xl text-gray-200 leading-relaxed">
               Have a question about habits, need personalized advice, or want to collaborate? 

@@ -7,7 +7,6 @@ import {
   ArrowLeft,
   Clock,
   Calendar,
-  Share2,
   Facebook,
   Twitter,
   Linkedin,
@@ -16,26 +15,22 @@ import {
   ArrowRight,
   ChevronUp,
 } from 'lucide-react';
-import Button from '@/components/Button';
 import TableOfContents from '@/components/TableOfContents';
 import MobileTableOfContents from '@/components/MobileTableOfContents';
 
 const BlogPostClient = ({ post, relatedPosts = [] }) => {
   const [copied, setCopied] = useState(false);
-  const [readingProgress, setReadingProgress] = useState(0);
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   // HTML entity decoder function
   const decodeHtmlEntities = (text) => {
     if (!text) return '';
-    
+
     if (typeof window !== 'undefined') {
-      // Client-side decoding using DOM
       const textArea = document.createElement('textarea');
       textArea.innerHTML = text;
       return textArea.value;
     } else {
-      // Server-side decoding using common replacements
       return text
         .replace(/&#8217;/g, "'")
         .replace(/&#8216;/g, "'")
@@ -51,40 +46,16 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
     }
   };
 
-  // Track reading progress
+  // Track scroll for scroll-to-top button
   useEffect(() => {
-    const updateReadingProgress = () => {
-      // Only track progress if we're on a blog post page
-      const article = document.getElementById('article-content');
-      if (!article) return;
-
-      const articleTop = article.offsetTop;
-      const articleHeight = article.offsetHeight;
-      const articleBottom = articleTop + articleHeight;
-      const scrollTop = window.scrollY;
-      const windowHeight = window.innerHeight;
-
-      // Start tracking when article comes into view
-      const startReading = articleTop - windowHeight * 0.3;
-      const finishReading = articleBottom - windowHeight * 0.7;
-
-      if (scrollTop < startReading) {
-        setReadingProgress(0);
-      } else if (scrollTop > finishReading) {
-        setReadingProgress(100);
-      } else {
-        const progress =
-          ((scrollTop - startReading) / (finishReading - startReading)) * 100;
-        setReadingProgress(Math.min(100, Math.max(0, progress)));
-      }
-
-      setShowScrollTop(scrollTop > 400);
+    const updateScrollState = () => {
+      setShowScrollTop(window.scrollY > 400);
     };
 
-    window.addEventListener('scroll', updateReadingProgress, { passive: true });
-    updateReadingProgress(); // Call once to set initial state
+    window.addEventListener('scroll', updateScrollState, { passive: true });
+    updateScrollState();
 
-    return () => window.removeEventListener('scroll', updateReadingProgress);
+    return () => window.removeEventListener('scroll', updateScrollState);
   }, []);
 
   // Share functions
@@ -93,22 +64,31 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
 
   const shareToFacebook = () => {
     window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`,
-      '_blank'
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        shareUrl
+      )}`,
+      '_blank',
+      'width=600,height=400'
     );
   };
 
   const shareToTwitter = () => {
     window.open(
-      `https://twitter.com/intent/tweet?url=${shareUrl}&text=${shareTitle}`,
-      '_blank'
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+        shareUrl
+      )}&text=${encodeURIComponent(shareTitle)}`,
+      '_blank',
+      'width=600,height=400'
     );
   };
 
   const shareToLinkedIn = () => {
     window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}`,
-      '_blank'
+      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+        shareUrl
+      )}`,
+      '_blank',
+      'width=600,height=400'
     );
   };
 
@@ -118,7 +98,15 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy link:', err);
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = shareUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -129,10 +117,9 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
   // Format content for display with HTML entity decoding and heading IDs
   const formatContent = (content) => {
     if (!content) return '';
-    
-    // First decode HTML entities, then clean up WordPress specific content
+
     let decodedContent = decodeHtmlEntities(content);
-    
+
     // Clean up WordPress content
     decodedContent = decodedContent
       .replace(/<!--.*?-->/g, '') // Remove comments
@@ -141,16 +128,18 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
 
     // Add IDs to headings for TOC navigation
     let headingCounter = 0;
-    decodedContent = decodedContent.replace(/<(h[2-4])([^>]*)>(.*?)<\/\1>/gi, (match, tag, attributes, content) => {
-      const id = `heading-${headingCounter}`;
-      headingCounter++;
-      
-      // Check if ID already exists in attributes
-      if (!attributes.includes('id=')) {
-        return `<${tag} id="${id}" ${attributes} style="scroll-margin-top: 120px;">${content}</${tag}>`;
+    decodedContent = decodedContent.replace(
+      /<(h[2-4])([^>]*)>(.*?)<\/\1>/gi,
+      (match, tag, attributes, content) => {
+        const id = `heading-${headingCounter}`;
+        headingCounter++;
+
+        if (!attributes.includes('id=')) {
+          return `<${tag} id="${id}" ${attributes} style="scroll-margin-top: 120px;">${content}</${tag}>`;
+        }
+        return match;
       }
-      return match;
-    });
+    );
 
     return decodedContent;
   };
@@ -294,25 +283,8 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
           </motion.div>
         </div>
 
-        {/* Fixed Desktop Table of Contents */}
+        {/* Desktop Table of Contents - Fixed positioning */}
         <TableOfContents content={formattedContent} />
-
-        {/* Debug Button - Remove in production */}
-        {process.env.NODE_ENV === 'development' && (
-          <button
-            onClick={() => {
-              console.log('=== TOC DEBUG INFO ===');
-              const headings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
-              console.log('Found headings:', headings.length);
-              headings.forEach((h, i) => {
-                console.log(`${i}: ${h.tagName} - ID: ${h.id} - Text: ${h.textContent}`);
-              });
-            }}
-            className="fixed bottom-20 right-8 bg-red-500 text-white px-3 py-1 rounded text-sm z-50"
-          >
-            Debug TOC
-          </button>
-        )}
 
         {/* Article Footer */}
         <footer className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
@@ -406,7 +378,9 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                           <div className="relative h-48">
                             <img
                               src={relatedPost.image}
-                              alt={decodeHtmlEntities(relatedPost.imageAlt || relatedPost.title)}
+                              alt={decodeHtmlEntities(
+                                relatedPost.imageAlt || relatedPost.title
+                              )}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               onError={(e) => {
                                 e.target.src = '/images/blog/default.jpg';

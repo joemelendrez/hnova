@@ -1,4 +1,4 @@
-// src/components/MobileTableOfContents.js
+// src/components/MobileTableOfContents.js - Alternative Anchor Version
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,133 +7,112 @@ import { List, ChevronDown, ChevronUp } from 'lucide-react';
 const MobileTableOfContents = ({ content }) => {
   const [headings, setHeadings] = useState([]);
   const [isCollapsed, setIsCollapsed] = useState(true);
-  
-  // Extract headings from HTML content
+
+  // Extract headings and create proper anchor IDs
   useEffect(() => {
     if (!content) return;
-    
-    // Create a temporary div to parse the HTML
+
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = content;
-    
-    // Extract headings (h2, h3, h4)
+
     const headingElements = tempDiv.querySelectorAll('h2, h3, h4');
     const headingsData = Array.from(headingElements).map((heading, index) => {
       const text = heading.textContent || '';
       const level = parseInt(heading.tagName.charAt(1));
-      const id = `heading-${index}`;
-      
+
+      // Create a clean anchor ID from the heading text
+      const anchorId = text
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single
+        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+
       return {
-        id,
+        id: anchorId || `heading-${index}`,
         text: text.trim(),
         level,
       };
     });
-    
+
     setHeadings(headingsData);
-  }, [content]);
-  
-  // Scroll to heading
-  const scrollToHeading = (id) => {
-    console.log('Mobile TOC - Clicking heading:', id); // Debug log
-    
-    const element = document.getElementById(id);
-    if (element) {
-      console.log('Mobile TOC - Found element:', element); // Debug log
-      
-      // Highlight the target heading briefly
-      element.style.backgroundColor = '#f3f4f6';
-      setTimeout(() => {
-        element.style.backgroundColor = '';
-      }, 1000);
-      
-      // Calculate scroll position with offset
-      const yOffset = -100; // Offset for fixed header
-      const elementTop = element.getBoundingClientRect().top;
-      const absoluteElementTop = elementTop + window.pageYOffset;
-      const middle = absoluteElementTop + yOffset;
-      
-      // Scroll to the element
-      window.scrollTo({
-        top: middle,
-        behavior: 'smooth'
-      });
-      
-      setIsCollapsed(true); // Collapse after clicking
-    } else {
-      console.log('Mobile TOC - Element not found:', id); // Debug log
-      
-      // Fallback: try to find heading by text content
-      const allHeadings = document.querySelectorAll('#article-content h2, #article-content h3, #article-content h4');
-      const targetHeading = headings.find(h => h.id === id);
-      
-      if (targetHeading) {
-        const matchingElement = Array.from(allHeadings).find(h =>
-          h.textContent.trim() === targetHeading.text
-        );
-        
-        if (matchingElement) {
-          console.log('Mobile TOC - Found by text match:', matchingElement);
-          matchingElement.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-          setIsCollapsed(true); // Collapse after clicking
+
+    // Add proper IDs to the actual headings in the DOM
+    setTimeout(() => {
+      const actualHeadings = document.querySelectorAll(
+        '#article-content h2, #article-content h3, #article-content h4'
+      );
+      actualHeadings.forEach((heading, index) => {
+        if (headingsData[index]) {
+          heading.id = headingsData[index].id;
+          // Add smooth scroll offset with CSS
+          heading.style.scrollMarginTop = '120px';
         }
-      }
-    }
-  };
-  
+      });
+    }, 500); // Longer delay to ensure content is fully rendered
+  }, [content]);
+
   // Don't render if no headings
   if (headings.length === 0) return null;
-  
+
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-8 xl:hidden">
+    <div className="bg-[#1a1a1a] rounded-xl overflow-hidden mb-8 xl:hidden">
       {/* Header */}
-      <div 
-        className="flex items-center justify-between cursor-pointer mb-4"
+      <div
+        className="px-6 py-4 cursor-pointer flex items-center justify-between"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
-        <div className="flex items-center gap-2">
-          <List className="h-5 w-5 text-[#1a1a1a]" />
-          <h3 className="text-lg font-semibold text-[#1a1a1a]">Table of Contents</h3>
-        </div>
-        <button className="p-1 hover:bg-gray-200 rounded transition-colors">
+        <h3 className="text-white font-anton text-xl uppercase">
+          Table of Contents
+        </h3>
+        <button className="text-white p-1">
           {isCollapsed ? (
-            <ChevronDown className="h-4 w-4 text-gray-600" />
+            <ChevronDown className="h-5 w-5" />
           ) : (
-            <ChevronUp className="h-4 w-4 text-gray-600" />
+            <ChevronUp className="h-5 w-5" />
           )}
         </button>
       </div>
 
-      {/* Table of Contents List */}
+      {/* Content */}
       <AnimatePresence>
         {!isCollapsed && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden"
+            transition={{ duration: 0.3 }}
+            className="bg-white"
           >
-            <nav>
-              <ul className="space-y-2">
-                {headings.map((heading) => (
+            <nav className="px-6 py-6">
+              <ul className="space-y-4">
+                {headings.map((heading, index) => (
                   <li key={heading.id}>
-                    <button
-                      onClick={() => scrollToHeading(heading.id)}
-                      className={`text-left w-full py-2 px-3 rounded-lg transition-all duration-200 hover:bg-gray-200 text-gray-700 hover:text-[#1a1a1a] ${
-                        heading.level === 2 ? 'text-base font-medium' :
-                        heading.level === 3 ? 'text-sm ml-4' :
-                        'text-sm ml-8'
+                    {/* Use anchor links instead of JavaScript */}
+                    <a
+                      href={`#${heading.id}`}
+                      onClick={() => {
+                        // Close TOC when link is clicked
+                        setTimeout(() => setIsCollapsed(true), 100);
+                      }}
+                      className={`block py-2 transition-colors duration-200 hover:text-[#1a1a1a] ${
+                        heading.level === 2
+                          ? 'text-lg font-semibold text-gray-800 font-roboto'
+                          : heading.level === 3
+                          ? 'text-base text-red-600 ml-4 font-roboto'
+                          : 'text-base text-gray-700 ml-8 font-roboto'
                       }`}
                     >
                       {heading.text}
-                    </button>
+                    </a>
                   </li>
                 ))}
               </ul>
+
+              {/* Troubleshooting note */}
+              <div className="mt-6 p-3 bg-gray-50 rounded text-xs text-gray-600">
+                💡 Using native anchor links for reliable navigation
+              </div>
             </nav>
           </motion.div>
         )}

@@ -41,7 +41,7 @@ const Hero = () => {
         >
           Stop Failing at{' '}
           <span className="text-[#DBDBDB] font-anton relative inline-block">
-            Habits
+            Habits.
             <motion.div
               className="absolute -bottom-2 left-0 right-0 h-1 bg-[#DBDBDB]"
               initial={{ scaleX: 0 }}
