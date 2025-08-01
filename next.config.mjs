@@ -1,24 +1,22 @@
-// next.config.mjs - Enhanced caching and performance configuration
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable experimental features for better caching
+  // Basic Next.js configuration
+  reactStrictMode: true,
+  poweredByHeader: false,
+  compress: true,
+
+  // Updated experimental features for Next.js 15.4.4
   experimental: {
-    // Enable partial prerendering for faster loading
-    ppr: false, // Set to true when stable
-    
-    // Optimize server components
-    serverComponentsExternalPackages: [],
-    
-    // Enable optimized package imports
+    // Enable optimized package imports for better performance
     optimizePackageImports: ['framer-motion', 'lucide-react']
   },
 
+  // Moved from experimental to top level (Next.js 15+)
+  serverExternalPackages: [],
+
   // Image optimization
   images: {
-    // Enable image optimization
     formats: ['image/webp', 'image/avif'],
-    
-    // Allow images from external domains
     remotePatterns: [
       {
         protocol: 'https',
@@ -26,11 +24,9 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'habitnova.com', // Replace with your WordPress domain
+        hostname: '**.wordpress.com',
       }
     ],
-    
-    // Image caching
     minimumCacheTTL: 31536000, // 1 year
   },
 
@@ -44,17 +40,6 @@ const nextConfig = {
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable'
-          }
-        ]
-      },
-      
-      // Cache API responses
-      {
-        source: '/api/:path*',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, s-maxage=300, stale-while-revalidate=86400'
           }
         ]
       },
@@ -80,21 +65,9 @@ const nextConfig = {
     ]
   },
 
-  // Compress responses
-  compress: true,
-
-  // Generate static pages at build time
-  output: 'standalone',
-
-  // PoweredBy header removal
-  poweredByHeader: false,
-
-  // Enable React strict mode
-  reactStrictMode: true,
-
   // Webpack optimizations
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
-    // Optimize bundle splitting
+    // Optimize bundle splitting for better caching
     if (!isServer) {
       config.optimization.splitChunks = {
         ...config.optimization.splitChunks,
@@ -118,21 +91,6 @@ const nextConfig = {
             enforce: true,
           }
         }
-      }
-    }
-
-    // Add webpack bundle analyzer in development
-    if (dev && !isServer) {
-      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-      
-      if (process.env.ANALYZE === 'true') {
-        config.plugins.push(
-          new BundleAnalyzerPlugin({
-            analyzerMode: 'server',
-            analyzerPort: 8888,
-            openAnalyzer: true,
-          })
-        )
       }
     }
 
