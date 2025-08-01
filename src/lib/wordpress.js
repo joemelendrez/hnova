@@ -280,9 +280,7 @@ export const GET_CATEGORIES = `
   }
 `;
 
-// ADD THESE TO YOUR EXISTING src/lib/wordpress.js FILE
-// Place this query with your other GraphQL queries
-
+// Add this query to your existing queries
 export const GET_ALL_POSTS_FOR_SEO = `
   query GetAllPostsForSEO {
     posts(first: 100, where: { status: PUBLISH }) {
@@ -313,7 +311,8 @@ export const GET_ALL_POSTS_FOR_SEO = `
   }
 `;
 
-9
+
+
 
 // API Functions with fallback data
 export async function getAllPosts(first = 20, after = null) {
@@ -398,6 +397,57 @@ export async function getCategories() {
       { node: { name: 'Psychology', slug: 'psychology' } },
       { node: { name: 'Mindfulness', slug: 'mindfulness' } },
     ];
+  }
+}
+
+// Add this function to your existing functions
+export async function getAllPostsForSEO() {
+  try {
+    const data = await fetchAPI(GET_ALL_POSTS_FOR_SEO);
+    
+    const posts = data?.posts?.edges?.map(edge => {
+      const post = edge.node;
+      
+      // Clean content by removing HTML tags for keyword analysis
+      const cleanContent = post.content?.replace(/<[^>]*>/g, '') || '';
+      const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
+      
+      // Extract keywords from ACF field or generate from content
+      let keywords = [];
+      if (post.acfBlogFields?.keywords) {
+        keywords = post.acfBlogFields.keywords
+          .split(',')
+          .map(k => k.trim())
+          .filter(k => k.length > 0);
+      } else {
+        // Extract keywords from categories and title
+        const categoryKeywords = post.categories.edges.map(edge => edge.node.name.toLowerCase());
+        const titleWords = post.title.toLowerCase()
+          .split(' ')
+          .filter(word => word.length > 3 && !['the', 'and', 'for', 'with', 'your', 'this', 'that'].includes(word));
+        
+        keywords = [...categoryKeywords, ...titleWords];
+      }
+      
+      return {
+        id: parseInt(post.id.replace('post:', '')),
+        title: decodeHtmlEntities(post.title),
+        slug: post.slug,
+        excerpt: decodeHtmlEntities(cleanExcerpt),
+        content: decodeHtmlEntities(cleanContent),
+        categories: post.categories.edges.map(edge => edge.node.name),
+        publishedDate: formatDate(post.date),
+        readTime: post.acfBlogFields?.readTime || calculateReadTime(cleanContent),
+        keywords: keywords
+      };
+    }) || [];
+    
+    return posts;
+    
+  } catch (error) {
+    console.error('Error fetching posts for SEO analysis:', error.message);
+    // Return fallback data if WordPress is unavailable
+    return getFallbackSEOPosts();
   }
 }
 
@@ -604,4 +654,22 @@ function getFallbackPosts(count = 20) {
     edges: fallbackPosts.slice(0, count),
     pageInfo: { hasNextPage: false, endCursor: null },
   };
+}
+
+// Add fallback function for development
+function getFallbackSEOPosts() {
+  return [
+    {
+      id: 1,
+      title: "The Science Behind Habit Formation: What Your Brain Really Does",
+      slug: "science-behind-habit-formation",
+      excerpt: "Discover the neurological processes that drive habit formation and how understanding your brain can help you build lasting changes.",
+      content: "Habit formation is fascinating from a neuroscience perspective. The basal ganglia plays a crucial role in automatic behaviors...",
+      categories: ["Habit Formation", "Psychology"],
+      publishedDate: "Dec 15, 2024",
+      readTime: "8 min read",
+      keywords: ["habit formation", "neuroscience", "basal ganglia", "habit loop", "neural pathways", "behavior change"]
+    }
+    // Add more fallback posts as needed
+  ];
 }
