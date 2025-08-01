@@ -1,20 +1,20 @@
-'use client'
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { Mail, CheckCircle } from 'lucide-react'
-import Button from './Button'
+'use client';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Mail, CheckCircle } from 'lucide-react';
+import Button from './Button';
 
 const Newsletter = () => {
-  const [email, setEmail] = useState('')
-  const [isSubscribed, setIsSubscribed] = useState(false)
+  const [email, setEmail] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
 
   const handleSubmit = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     // Handle newsletter signup here
-    console.log('Newsletter signup:', email)
-    setIsSubscribed(true)
-    setEmail('')
-  }
+    console.log('Newsletter signup:', email);
+    setIsSubscribed(true);
+    setEmail('');
+  };
 
   return (
     <section className="py-20 bg-[#DBDBDB] bg-opacity-10">
@@ -31,14 +31,15 @@ const Newsletter = () => {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-[#1a1a1a] rounded-full mb-6">
                 <Mail className="h-8 w-8 text-white" />
               </div>
-              
+
               <h2 className="text-3xl md:text-4xl font-bold text-[#1a1a1a] mb-4">
-                Join 50,000+ Habit Builders
+                Build Better Habits
               </h2>
-              
+
               <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-                Get weekly insights, practical tips, and evidence-based strategies delivered to your inbox. 
-                No spam, just actionable content to help you build better habits.
+                Get weekly insights, practical tips, and evidence-based
+                strategies delivered to your inbox. No spam, just actionable
+                content to help you build better habits.
               </p>
 
               <form onSubmit={handleSubmit} className="max-w-md mx-auto">
@@ -69,20 +70,21 @@ const Newsletter = () => {
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
-              
+
               <h2 className="text-3xl font-bold text-[#1a1a1a] mb-4">
                 Welcome to the Community!
               </h2>
-              
+
               <p className="text-xl text-gray-600">
-                Check your email for a welcome message and your first habit-building tip.
+                Check your email for a welcome message and your first
+                habit-building tip.
               </p>
             </motion.div>
           )}
         </motion.div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Newsletter
+export default Newsletter;
