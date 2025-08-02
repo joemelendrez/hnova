@@ -9,18 +9,19 @@ const Footer = () => {
       { name: 'Blog', href: '/blog' },
       { name: 'About', href: '/about' },
       { name: 'Contact', href: '/contact' },
-      { name: 'Newsletter', href: '/newsletter' }
+      { name: 'Shop', href: '/shop' }
     ],
     resources: [
       { name: 'Habit Tracker', href: '/habit-tracker' },
       { name: 'Start Here', href: '/start-here' },
       { name: 'Success Stories', href: '/success-stories' },
-      { name: 'Write for Us', href: '/write-for-us' }
+      { name: 'Free Tools', href: '/tools' }
     ],
     legal: [
       { name: 'Privacy Policy', href: '/privacy' },
       { name: 'Terms of Service', href: '/terms' },
-      { name: 'Cookie Policy', href: '/cookies' }
+      { name: 'Cookie Policy', href: '/cookies' },
+      { name: 'Affiliate Disclosure', href: '/affiliate-disclosure' }
     ]
   }
   
@@ -40,7 +41,7 @@ const Footer = () => {
               </h2>
               <p className="text-gray-300 text-lg leading-relaxed max-w-md">
                 Evidence-based strategies to break bad habits and build life-changing routines. 
-                Join 50,000+ readers transforming their lives.
+                Transform your daily life with science-backed tools and insights.
               </p>
             </div>
             
