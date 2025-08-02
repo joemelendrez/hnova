@@ -1,17 +1,18 @@
 // next.config.mjs - Enhanced caching and performance configuration
 /** @type {import('next').NextConfig} */
 const nextConfig = {
- // Redirects for blog slugs
+// Redirects for blog slugs only
   async redirects() {
     return [
       {
-        source: '/:slug((?!blog).*)',
+        // Only redirect URLs that look like blog post slugs
+        // Must contain hyphens and be longer than 10 characters (typical blog post pattern)
+        source: '/:slug([a-z0-9]+-[a-z0-9-]+)',
         destination: '/blog/:slug',
         permanent: true, // 301 redirect for SEO
       },
     ];
   },
-
   // Image optimization
   images: {
     // Enable image optimization
