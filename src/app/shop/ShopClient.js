@@ -275,7 +275,7 @@ export default function ShopClient() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-6 font-anton uppercase">
-              Habit Formation Tools
+              Habit Formation Tools.
             </h1>
             <p className="text-xl text-gray-200 leading-relaxed">
               Discover scientifically-backed tools and products to help you
