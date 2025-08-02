@@ -1,5 +1,5 @@
 'use client'
-import { Fragment } from 'react'
+import { Fragment, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -18,6 +18,31 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
     { name: 'Popular Articles', href: '/blog?filter=popular', icon: <TrendingUp className="h-4 w-4" /> },
     { name: 'Start Here Guide', href: '/start-here', icon: <BookOpen className="h-4 w-4" /> },
   ]
+
+  // Prevent body scroll when menu is open
+  useEffect(() => {
+    if (open) {
+      // Prevent scrolling
+      document.body.style.overflow = 'hidden'
+      document.body.style.paddingRight = 'var(--scrollbar-width, 0px)' // Prevent layout shift
+    } else {
+      // Restore scrolling
+      document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = ''
+      document.body.style.paddingRight = ''
+    }
+  }, [open])
+
+  // Calculate scrollbar width for layout shift prevention
+  useEffect(() => {
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+    document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`)
+  }, [])
 
   return (
     <AnimatePresence>
@@ -47,8 +72,12 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                     ease: [0.25, 0.46, 0.45, 0.94] 
                   }}
                 >
-                  {/* Logo Box - square box just for logo */}
-                  <div className="flex h-20 w-20 items-center justify-center bg-[#1a1a1a] shadow-lg">
+                  {/* Logo Box - square box just for logo - Now clickable to close */}
+                  <button
+                    onClick={onClose}
+                    className="flex h-20 w-20 items-center justify-center bg-[#1a1a1a] shadow-lg hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-inset"
+                    aria-label="Close menu"
+                  >
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8, rotate: -45 }}
                       animate={{ opacity: 1, scale: 1, rotate: 0 }}
@@ -61,13 +90,13 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                     >
                       <Image
                         src="/logos/HabitHead.svg"
-                        alt="Habit Nova Logo"
+                        alt="Habit Nova Logo - Click to close menu"
                         width={64}
                         height={64}
                         className="h-16 w-16 object-contain"
                       />
                     </motion.div>
-                  </div>
+                  </button>
 
                   {/* Main menu panel */}
                   <div className="w-80 max-w-[85vw] bg-white shadow-2xl">
@@ -81,7 +110,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           transition={{ delay: 0.3, duration: 0.4, ease: 'easeOut' }}
                         >
                           <h2 className="text-2xl font-anton text-[#1a1a1a]">Habit Nova</h2>
-                          <p className="text-sm text-gray-500 font-medium">Transform Your Habits</p>
+                          <p className="text-sm text-gray-600 font-medium">Transform Your Habits</p>
                         </motion.div>
                         <button
                           onClick={onClose}
@@ -173,7 +202,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           <div className="pt-4">
                             <Link
                               href="/contact"
-                              className="flex w-full items-center justify-center rounded-lg bg-[#f10000] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#cd1718] focus:outline-none focus:ring-2 focus:ring-[#f10000] focus:ring-offset-2"
+                              className="flex w-full items-center justify-center rounded-lg bg-[#1a1a1a] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gray-800"
                               onClick={onClose}
                             >
                               Get In Touch
