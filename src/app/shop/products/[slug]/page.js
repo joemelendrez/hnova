@@ -220,6 +220,7 @@ export default function ProductPage({ params }) {
   return (
     <div className="pt-16 lg:pt-20">
       {/* Back Button - Same style as BlogPostClient */}
+              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4"></div>
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
