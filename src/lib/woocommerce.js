@@ -1,5 +1,5 @@
 // lib/woocommerce.js
-/*import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
+import WooCommerceRestApi from "@woocommerce/woocommerce-rest-api";
 
 const WooCommerce = new WooCommerceRestApi({
   url: process.env.NEXT_PUBLIC_WORDPRESS_URL, // Your WordPress URL
@@ -9,4 +9,4 @@ const WooCommerce = new WooCommerceRestApi({
   queryStringAuth: true // For https
 });
 
-export default WooCommerce;*/
+export default WooCommerce;
