@@ -81,7 +81,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           transition={{ delay: 0.3, duration: 0.4, ease: 'easeOut' }}
                         >
                           <h2 className="text-2xl font-anton text-[#1a1a1a]">Habit Nova</h2>
-                          <p className="text-sm text-gray-600 font-medium">Transform Your Habits</p>
+                          <p className="text-sm text-gray-500 font-medium">Transform Your Habits</p>
                         </motion.div>
                         <button
                           onClick={onClose}
@@ -173,7 +173,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           <div className="pt-4">
                             <Link
                               href="/contact"
-                              className="flex w-full items-center justify-center rounded-lg bg-[#1a1a1a] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gray-800"
+                              className="flex w-full items-center justify-center rounded-lg bg-[#f10000] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#cd1718] focus:outline-none focus:ring-2 focus:ring-[#f10000] focus:ring-offset-2"
                               onClick={onClose}
                             >
                               Get In Touch
