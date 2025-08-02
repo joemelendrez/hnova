@@ -87,7 +87,7 @@ const Hero = () => {
           ref={parallaxRef}
           className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
           style={{
-            backgroundImage: 'url(/HabitBackground.webp)',
+            backgroundImage: 'url(/HabitBackground4.webp)',
             height: '120%',
             top: '-10%',
             backfaceVisibility: 'hidden',
