@@ -219,16 +219,24 @@ export default function ProductPage({ params }) {
 
   return (
     <div className="pt-16 lg:pt-20">
-      {/* Breadcrumb */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Link
-          href="/shop"
-          className="inline-flex items-center text-gray-600 hover:text-[#1a1a1a] transition-colors"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Shop
-        </Link>
-      </div>
+      {/* Back Button - Same style as BlogPostClient */}
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <div className="bg-[#DBDBDB] bg-opacity-10 hover:bg-opacity-20 transition-colors duration-200 py-6 mb-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Link
+              href="/shop"
+              className="inline-flex items-center text-gray-600 hover:text-[#1a1a1a] transition-colors duration-200 font-medium"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Shop
+            </Link>
+          </div>
+        </div>
+      </motion.div>
 
       {/* Product Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
