@@ -234,7 +234,7 @@ export default function ProductPage({ params }) {
               <Image
                 src={
                   product.images[selectedImage]?.src ||
-                  '/placeholder-product.jpg'
+                  '/placeholder-product.webp'
                 }
                 alt={product.images[selectedImage]?.alt || product.title}
                 fill

@@ -4,9 +4,10 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Mail } from 'lucide-react';
+import { Mail, ShoppingBag } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import AnimatedLogo from './AnimatedLogo';
+import { useCart } from '../app/hooks/useShopifyCart';
 
 const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -23,7 +24,7 @@ const Header = () => {
     { name: 'Blog', href: '/blog' },
     { name: 'About', href: '/about' },
     { name: 'Contact', href: '/contact' },
-    { name: 'Shop', href:'/shop'}
+    { name: 'Shop', href: '/shop' },
   ];
 
   // Detect mobile/desktop
@@ -177,12 +178,11 @@ const Header = () => {
                     priority
                   />
                 </motion.div>
-               
               </Link>
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex lg:items-center lg:space-x-8 ">
+            <nav className="hidden lg:flex lg:items-center lg:space-x-8">
               {navigation.map((item) => (
                 <motion.div
                   key={item.name}
@@ -235,6 +235,9 @@ const Header = () => {
                 </motion.div>
               ))}
 
+              {/* Desktop Cart Icon */}
+              <CartIcon />
+
               {/* Desktop Contact Info */}
               <a
                 href="mailto:contact@habitnova.com"
@@ -245,19 +248,10 @@ const Header = () => {
               </a>
             </nav>
 
-            {/* Mobile - Email icon and space for external animated logo */}
+            {/* Mobile - Cart icon and space for external animated logo */}
             <div className="flex items-center space-x-3 lg:hidden">
-              {/* Mobile Email Button */}
-              <motion.a
-                href="mailto:contact@habitnova.com"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-[#DBDBDB] text-[#1a1a1a] shadow-sm transition-colors hover:bg-gray-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Mail className="h-5 w-5" />
-                <span className="sr-only">Email us</span>
-              </motion.a>
+              {/* Mobile Cart Button */}
+              <MobileCartIcon />
 
               {/* Space reserved for animated logo */}
               <div className="w-16"></div>
@@ -309,5 +303,49 @@ const Header = () => {
     </>
   );
 };
+
+// Desktop Cart Icon Component
+function CartIcon() {
+  const { cartCount, setCartOpen } = useCart();
+
+  return (
+    <button
+      onClick={() => setCartOpen(true)}
+      className="relative p-2 text-white hover:text-[#dbdbdb] transition-colors"
+      aria-label={`Shopping cart with ${cartCount} items`}
+    >
+      <ShoppingBag className="h-5 w-5" />
+      {cartCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-[#fe0000] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+          {cartCount > 9 ? '9+' : cartCount}
+        </span>
+      )}
+    </button>
+  );
+}
+
+// Mobile Cart Icon Component
+function MobileCartIcon() {
+  const { cartCount, setCartOpen } = useCart();
+
+  return (
+    <motion.button
+      onClick={() => setCartOpen(true)}
+      className="flex h-10 w-10 items-center justify-center rounded-full bg-[#DBDBDB] text-[#1a1a1a] shadow-sm transition-colors hover:bg-gray-300 relative"
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+      aria-label={`Shopping cart with ${cartCount} items`}
+    >
+      <ShoppingBag className="h-5 w-5" />
+      {cartCount > 0 && (
+        <span className="absolute -top-1 -right-1 bg-[#fe0000] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+          {cartCount > 9 ? '9+' : cartCount}
+        </span>
+      )}
+      <span className="sr-only">Shopping cart</span>
+    </motion.button>
+  );
+}
 
 export default Header;
