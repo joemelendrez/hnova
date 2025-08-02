@@ -51,7 +51,15 @@ function formatShopifyProduct(shopifyProduct) {
     vendor: shopifyProduct.vendor,
     productType: shopifyProduct.productType,
     shopifyId: shopifyProduct.id,
-    variantId: variant?.id,
+    variantId: variant?.id, // This is crucial for cart functionality
+    // Include full variant data for individual product pages
+    variants: shopifyProduct.variants.map((v) => ({
+      id: v.id,
+      title: v.title,
+      price: getPrice(v.price),
+      compareAtPrice: getPrice(v.compareAtPrice),
+      available: v.available,
+    })),
   };
 }
 
@@ -111,6 +119,7 @@ export default function ShopClient() {
 
         // Format products
         const formattedProducts = shopifyProducts.map(formatShopifyProduct);
+        console.log('Formatted products with variant IDs:', formattedProducts);
 
         // Extract categories from product types
         const productCategories = extractCategories(formattedProducts);
@@ -137,7 +146,7 @@ export default function ShopClient() {
 
         const filteredProducts = selectedCategory
           ? fallbackProducts.filter((product) =>
-              product.categories.some((cat) => cat.id === selectedCategory)
+              product.categories.some((cat) => cat.slug === selectedCategory)
             )
           : fallbackProducts;
 
@@ -169,10 +178,12 @@ export default function ShopClient() {
             alt: 'Premium Leather Habit Tracking Journal',
           },
         ],
-        categories: [{ id: 1, name: 'Journals' }],
+        categories: [{ id: 1, name: 'Journals', slug: 'journals' }],
         productType: 'Journals',
         description:
           'Track your daily habits with this premium leather-bound journal.',
+        variantId: 'fallback-variant-1', // Add variant ID for fallback products
+        shopifyId: 'fallback-1',
       },
       {
         id: 'fallback-2',
@@ -188,10 +199,12 @@ export default function ShopClient() {
             alt: '90-Day Productivity Planner',
           },
         ],
-        categories: [{ id: 2, name: 'Planners' }],
+        categories: [{ id: 2, name: 'Planners', slug: 'planners' }],
         productType: 'Planners',
         description:
           'Transform your productivity with this 90-day planning system.',
+        variantId: 'fallback-variant-2',
+        shopifyId: 'fallback-2',
       },
       {
         id: 'fallback-3',
@@ -207,10 +220,12 @@ export default function ShopClient() {
             alt: 'Meditation Timer with Chimes',
           },
         ],
-        categories: [{ id: 3, name: 'Wellness' }],
+        categories: [{ id: 3, name: 'Wellness', slug: 'wellness' }],
         productType: 'Wellness',
         description:
           'Enhance your meditation practice with gentle chime intervals.',
+        variantId: 'fallback-variant-3',
+        shopifyId: 'fallback-3',
       },
       {
         id: 'fallback-4',
@@ -227,10 +242,12 @@ export default function ShopClient() {
             alt: 'Focus Time Blocking Set',
           },
         ],
-        categories: [{ id: 2, name: 'Planners' }],
+        categories: [{ id: 2, name: 'Planners', slug: 'planners' }],
         productType: 'Planners',
         description:
           'Visual time-blocking system to maximize your focus sessions.',
+        variantId: 'fallback-variant-4',
+        shopifyId: 'fallback-4',
       },
     ];
   }

@@ -108,11 +108,6 @@ const MobileTableOfContents = ({ content }) => {
                   </li>
                 ))}
               </ul>
-
-              {/* Troubleshooting note */}
-              <div className="mt-6 p-3 bg-gray-50 rounded text-xs text-gray-600">
-                💡 Using native anchor links for reliable navigation
-              </div>
             </nav>
           </motion.div>
         )}
