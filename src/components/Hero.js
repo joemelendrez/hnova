@@ -40,7 +40,7 @@ const Hero = () => {
     
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slideImages.length)
-    }, 5000) // Change slide every 5 seconds
+    }, 3000) // Change slide every 5 seconds
     
     return () => clearInterval(interval)
   }, [isMobile, slideImages.length])
