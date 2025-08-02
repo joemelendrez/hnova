@@ -61,7 +61,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                     >
                       <Image
                         src="/logos/HabitHead.svg"
-                        alt="HabitNova Logo"
+                        alt="Habit Nova Logo"
                         width={64}
                         height={64}
                         className="h-16 w-16 object-contain"

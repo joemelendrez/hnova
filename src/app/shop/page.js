@@ -8,7 +8,7 @@ export default function ShopPage() {
 
 // Add metadata for SEO
 export const metadata = {
-  title: 'Shop - Habit Formation Tools | HabitNova',
+  title: 'Shop - Habit Formation Tools | Habit Nova',
   description: 'Discover scientifically-backed tools and products to help you build better habits and transform your daily routine.',
   keywords: 'habit tracker, productivity tools, wellness products, behavior change',
 };

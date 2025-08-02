@@ -12,7 +12,7 @@ export default function SEOToolPage() {
 }
 
 export const metadata = {
-  title: 'SEO Interlinking Tool - HabitNova Admin',
-  description: 'AI-powered internal linking optimization for HabitNova blog',
+  title: 'SEO Interlinking Tool - Habit Nova Admin',
+  description: 'AI-powered internal linking optimization for Habit Nova blog',
   robots: 'noindex, nofollow' // Keep this private from search engines
 };

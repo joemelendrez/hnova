@@ -19,7 +19,7 @@ const anton = Anton({
 })
 
 export const metadata = {
-  title: 'HabitNova - Transform Your Habits',
+  title: 'Habit Nova - Transform Your Habits',
   description: 'Evidence-based strategies to break bad habits and build life-changing routines',
 }
 

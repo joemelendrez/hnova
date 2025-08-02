@@ -120,7 +120,7 @@ export default function ProductPage({ params }) {
           handle: params.slug,
           description:
             'Transform your daily routine with this scientifically-designed habit tracking journal. Features 90 days of guided tracking, habit stacking worksheets, and progress visualization tools.',
-          vendor: 'HabitNova',
+          vendor: 'Habit Nova',
           productType: 'Journals',
           tags: ['habit-tracking', 'productivity', 'journal'],
           images: [

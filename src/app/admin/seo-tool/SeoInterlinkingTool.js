@@ -395,7 +395,7 @@ const SeoInterlinkingTool = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2 font-anton uppercase">
-              HabitNova SEO Interlinking Tool
+              Habit Nova SEO Interlinking Tool
             </h1>
             <p className="text-gray-600 font-roboto">
               Discover internal linking opportunities with AI-powered insights
