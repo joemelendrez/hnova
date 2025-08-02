@@ -2,7 +2,8 @@ import { Roboto, Anton } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-
+import CartDrawer from '@/components/CartDrawer'
+import { CartProvider } from './hooks/useShopifyCart'
 // Load Roboto for body text
 const roboto = Roboto({
   subsets: ['latin'],
@@ -26,11 +27,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${roboto.variable} ${anton.variable}`}>
+      <CartProvider>
         <Header />
         <main className="relative">
           {children}
         </main>
         <Footer />
+        <CartDrawer />
+      </CartProvider>
       </body>
     </html>
   )
