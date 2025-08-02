@@ -42,6 +42,11 @@ body {
   font-family: var(--font-roboto), Arial, Helvetica, sans-serif;
 }
 
+  ::selection {
+      background: #f10000; /* Example: A light yellow color */
+      color: #ffffff; /* Example: A dark gray text color */
+    }
+
 /* Typography System */
 h1, h2 {
   font-family: var(--font-anton) !important;

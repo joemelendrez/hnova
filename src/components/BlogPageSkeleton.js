@@ -9,8 +9,8 @@ const BlogPageSkeleton = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              The Habit Nova Blog
-            </h1>
+            Blog.
+                        </h1>
             <p className="text-xl text-gray-200 leading-relaxed mb-8">
               Evidence-based insights, practical strategies, and the latest research 
               on habit formation and behavior change.
