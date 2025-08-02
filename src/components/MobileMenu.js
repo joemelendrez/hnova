@@ -202,7 +202,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                           <div className="pt-4">
                             <Link
                               href="/contact"
-                              className="flex w-full items-center justify-center rounded-lg bg-[#1a1a1a] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gray-800"
+                              className="flex w-full items-center justify-center rounded-lg bg-[#fe0000] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gray-800"
                               onClick={onClose}
                             >
                               Get In Touch
