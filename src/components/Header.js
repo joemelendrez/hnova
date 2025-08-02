@@ -237,15 +237,6 @@ const Header = () => {
 
               {/* Desktop Cart Icon */}
               <CartIcon />
-
-              {/* Desktop Contact Info */}
-              <a
-                href="mailto:contact@habitnova.com"
-                className="flex items-center space-x-2 text-sm text-white transition-colors hover:text-[#fe0000]"
-              >
-                <Mail className="h-4 w-4" />
-                <span className="font-medium">contact@habitnova.com</span>
-              </a>
             </nav>
 
             {/* Mobile - Cart icon and space for external animated logo */}
