@@ -120,7 +120,7 @@ export default function ShopClient() {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 pt-16 lg:pt-20">
         <div className="text-center py-12">
           <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">
             Shop Temporarily Unavailable
