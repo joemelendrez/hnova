@@ -386,14 +386,7 @@ export default function ShopClient() {
 function ShopPageSkeleton() {
   return (
     <div className="pt-16 lg:pt-20">
-      {/* Hero Section Skeleton */}
-      <section className="py-20 bg-[#1a1a1a] text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="h-12 bg-gray-200 rounded w-96 mx-auto mb-6 animate-pulse"></div>
-          <div className="h-6 bg-gray-200 rounded w-[500px] mx-auto animate-pulse"></div>
-        </div>
-      </section>
-
+      
       {/* Products Section Skeleton */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
