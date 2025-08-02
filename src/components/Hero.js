@@ -2,12 +2,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, Download, ShoppingBag } from 'lucide-react'
-import Image from 'next/image'
 import Button from './Button'
 
 const Hero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false)
-  const [imageLoaded, setImageLoaded] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const parallaxRef = useRef(null)
   const rafRef = useRef(null)
@@ -25,20 +23,6 @@ const Hero = () => {
     window.addEventListener('resize', checkMobile)
     
     return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-  
-  // Preload critical images on component mount
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    
-    // Preload the background image
-    const img = new window.Image()
-    img.onload = () => setImageLoaded(true)
-    img.src = '/HabitBackground.webp'
-    
-    // Preload low-quality placeholder if available
-    const placeholderImg = new window.Image()
-    placeholderImg.src = '/HabitBackground-placeholder.webp' // 10-20kb version
   }, [])
   
   // Smooth parallax animation with RAF
@@ -80,80 +64,45 @@ const Hero = () => {
   
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
-      {/* Low-Quality Placeholder Image (Always Visible First) */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500"
-        style={{
-          backgroundImage: 'url(/HabitBackground-placeholder.webp)',
-          opacity: imageLoaded ? 0 : 1,
-        }}
-      />
-
       {/* Desktop: Video Background */}
       {!isMobile && (
         <video
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-            videoLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
+          className="absolute inset-0 w-full h-full object-cover"
           autoPlay
           muted
           loop
           playsInline
           preload="metadata"
           onLoadedData={() => setVideoLoaded(true)}
-          poster="/HabitBackground.webp" // Show image while video loads
+          style={{ display: videoLoaded ? 'block' : 'none' }}
         >
           <source src="/HabitBackground.webm" type="video/webm" />
           <source src="/HabitBackground.mp4" type="video/mp4" />
         </video>
       )}
 
-      {/* Mobile: Optimized Image Background with Next.js Image */}
+      {/* Mobile: Smooth Parallax Image Background */}
       {isMobile && (
-        <div 
+        <div
           ref={parallaxRef}
-          className="absolute inset-0 will-change-transform"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
           style={{
+            backgroundImage: 'url(/HabitBackground.webp)',
             height: '120%',
             top: '-10%',
             backfaceVisibility: 'hidden',
             perspective: '1000px',
           }}
-        >
-          <div className="relative w-full h-full">
-            <Image
-              src="/HabitBackground.webp"
-              alt="Habit formation background"
-              fill
-              className={`object-cover transition-opacity duration-500 ${
-                imageLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
-              priority
-              quality={85}
-              sizes="100vw"
-              placeholder="empty"
-              style={{
-                objectFit: 'cover',
-                width: '100%',
-                height: '100%',
-              }}
-              onLoad={() => setImageLoaded(true)}
-              onLoadingComplete={() => setImageLoaded(true)}
-            />
-          </div>
-        </div>
+        />
       )}
 
-      {/* Desktop: High-Quality Background Image (Fallback & Video Poster) */}
+      {/* Desktop Fallback Background Image */}
       {!isMobile && (
         <div
-          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
-            videoLoaded ? 'opacity-0' : 'opacity-100'
-          }`}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: imageLoaded 
-              ? 'url(/HabitBackground.webp)' 
-              : 'url(/HabitBackground-placeholder.webp)',
+            backgroundImage: 'url(/HabitBackground.webp)',
+            display: videoLoaded ? 'none' : 'block',
           }}
         />
       )}
