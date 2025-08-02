@@ -189,13 +189,24 @@ export default function ProductPage({ params }) {
           <p className="text-gray-600 mb-6">
             The product you're looking for doesn't exist.
           </p>
-          <Link
-            href="/shop"
-            className="inline-flex items-center px-6 py-3 bg-[#1a1a1a] text-white rounded-lg hover:bg-gray-800 transition-colors"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Shop
-          </Link>
+                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4"></div>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="bg-[#DBDBDB] bg-opacity-10 hover:bg-opacity-20 transition-colors duration-200 py-6 mb-8">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+              <Link
+                href="/shop"
+                className="inline-flex items-center text-gray-600 hover:text-[#1a1a1a] transition-colors duration-200 font-medium"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Shop
+              </Link>
+            </div>
+          </div>
+        </motion.div>
         </div>
       </div>
     );
