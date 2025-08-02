@@ -386,7 +386,19 @@ export default function ShopClient() {
 function ShopPageSkeleton() {
   return (
     <div className="pt-16 lg:pt-20">
-      
+      {/* Hero Section Skeleton */}
+           <section className="py-20 bg-[#1a1a1a] text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">
+            Habit Formation Tools.
+                        </h1>
+            <p className="text-xl text-gray-200 leading-relaxed mb-8">
+              Discover scientifically-backed tools and products to help you build better habits and transform your daily routine.
+            </p>
+          </div>
+        </div>
+      </section>
       {/* Products Section Skeleton */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
