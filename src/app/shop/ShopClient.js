@@ -2,7 +2,70 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import ProductCard from '../../components/ProductCard';
+
+// Shopify client setup
+let shopifyClient = null;
+
+if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN) {
+  // Dynamic import for client-side only
+  import('shopify-buy').then((ShopifyBuy) => {
+    shopifyClient = ShopifyBuy.default.buildClient({
+      domain: process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN,
+      storefrontAccessToken: process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN,
+    });
+  });
+}
+
+// Format Shopify product for our components
+function formatShopifyProduct(shopifyProduct) {
+  const variant = shopifyProduct.variants[0];
+  const images = shopifyProduct.images || [];
+
+  // Extract price values - Shopify returns prices as objects
+  const getPrice = (priceObj) => {
+    if (!priceObj) return '0.00';
+    if (typeof priceObj === 'string') return priceObj;
+    if (typeof priceObj === 'object' && priceObj.amount) return priceObj.amount;
+    return '0.00';
+  };
+
+  const price = getPrice(variant?.price);
+  const compareAtPrice = getPrice(variant?.compareAtPrice);
+
+  return {
+    id: shopifyProduct.id,
+    name: shopifyProduct.title,
+    slug: shopifyProduct.handle,
+    price: price,
+    regular_price: compareAtPrice || price,
+    sale_price: price,
+    on_sale: compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price),
+    stock_status: variant?.available ? 'instock' : 'outofstock',
+    images: images.map((img) => ({
+      src: img.src || img.transformedSrc,
+      alt: img.altText || shopifyProduct.title,
+    })),
+    description: shopifyProduct.description,
+    vendor: shopifyProduct.vendor,
+    productType: shopifyProduct.productType,
+    shopifyId: shopifyProduct.id,
+    variantId: variant?.id,
+  };
+}
+
+// Get unique product types as categories
+function extractCategories(products) {
+  const types = [
+    ...new Set(products.map((p) => p.productType).filter(Boolean)),
+  ];
+  return types.map((type, index) => ({
+    id: index + 1,
+    name: type,
+    slug: type.toLowerCase().replace(/\s+/g, '-'),
+  }));
+}
 
 export default function ShopClient() {
   const [products, setProducts] = useState([]);
@@ -12,196 +75,293 @@ export default function ShopClient() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchShopifyData() {
       setLoading(true);
       setError(null);
-      
+
       try {
-        // Check if we have the required environment variables
-        if (!process.env.NEXT_PUBLIC_WORDPRESS_URL) {
-          throw new Error('WordPress URL not configured');
+        // Wait for Shopify client to be ready
+        if (!shopifyClient) {
+          // Initialize client if not ready
+          if (process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN) {
+            const ShopifyBuy = await import('shopify-buy');
+            shopifyClient = ShopifyBuy.default.buildClient({
+              domain: process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN,
+              storefrontAccessToken:
+                process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN,
+            });
+          } else {
+            throw new Error('Shopify credentials not configured');
+          }
         }
 
-        // For now, let's use fallback data since WooCommerce isn't set up yet
-        const fallbackProducts = [
-          {
-            id: 1,
-            name: "Habit Tracking Journal",
-            slug: "habit-tracking-journal",
-            price: "24.99",
-            regular_price: "29.99",
-            sale_price: "24.99",
-            on_sale: true,
-            stock_status: "instock",
-            images: [{
-              src: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop",
-              alt: "Habit Tracking Journal"
-            }],
-            categories: [{ id: 1, name: "Journals" }]
-          },
-          {
-            id: 2,
-            name: "Productivity Planner",
-            slug: "productivity-planner",
-            price: "19.99",
-            regular_price: "19.99",
-            on_sale: false,
-            stock_status: "instock",
-            images: [{
-              src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop",
-              alt: "Productivity Planner"
-            }],
-            categories: [{ id: 2, name: "Planners" }]
-          },
-          {
-            id: 3,
-            name: "Meditation Timer",
-            slug: "meditation-timer",
-            price: "34.99",
-            regular_price: "34.99",
-            on_sale: false,
-            stock_status: "instock",
-            images: [{
-              src: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop",
-              alt: "Meditation Timer"
-            }],
-            categories: [{ id: 3, name: "Wellness" }]
-          },
-          {
-            id: 4,
-            name: "Focus Blocks Set",
-            slug: "focus-blocks-set",
-            price: "15.99",
-            regular_price: "15.99",
-            on_sale: false,
-            stock_status: "instock",
-            images: [{
-              src: "https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=400&h=400&fit=crop",
-              alt: "Focus Blocks Set"
-            }],
-            categories: [{ id: 2, name: "Planners" }]
-          }
-        ];
+        // Fetch products from Shopify
+        const shopifyProducts = await shopifyClient.product.fetchAll();
+        console.log('Fetched Shopify products:', shopifyProducts);
 
-        const fallbackCategories = [
-          { id: 1, name: "Journals" },
-          { id: 2, name: "Planners" },
-          { id: 3, name: "Wellness" }
-        ];
+        if (!shopifyProducts || shopifyProducts.length === 0) {
+          // Use fallback products if no Shopify products
+          setProducts(getFallbackProducts());
+          setCategories(getFallbackCategories());
+          setError(
+            'No products found in Shopify store. Showing sample products.'
+          );
+          return;
+        }
+
+        // Format products
+        const formattedProducts = shopifyProducts.map(formatShopifyProduct);
+
+        // Extract categories from product types
+        const productCategories = extractCategories(formattedProducts);
 
         // Filter products if category is selected
-        const filteredProducts = selectedCategory 
-          ? fallbackProducts.filter(product => 
-              product.categories.some(cat => cat.id === selectedCategory)
+        const filteredProducts = selectedCategory
+          ? formattedProducts.filter(
+              (product) =>
+                product.productType &&
+                product.productType.toLowerCase().replace(/\s+/g, '-') ===
+                  selectedCategory
+            )
+          : formattedProducts;
+
+        setProducts(filteredProducts);
+        setCategories(productCategories);
+      } catch (error) {
+        console.error('Error fetching Shopify data:', error);
+        setError(error.message);
+
+        // Use fallback products on error
+        const fallbackProducts = getFallbackProducts();
+        const fallbackCategories = getFallbackCategories();
+
+        const filteredProducts = selectedCategory
+          ? fallbackProducts.filter((product) =>
+              product.categories.some((cat) => cat.id === selectedCategory)
             )
           : fallbackProducts;
 
         setProducts(filteredProducts);
         setCategories(fallbackCategories);
-        
-      } catch (error) {
-        console.error('Error fetching shop data:', error);
-        setError(error.message);
-        
-        // Even on error, show some products
-        setProducts([]);
-        setCategories([]);
       } finally {
         setLoading(false);
       }
     }
 
-    fetchData();
+    fetchShopifyData();
   }, [selectedCategory]);
+
+  // Fallback products for development/testing
+  function getFallbackProducts() {
+    return [
+      {
+        id: 'fallback-1',
+        name: 'Habit Tracking Journal - Premium Leather',
+        slug: 'habit-tracking-journal-premium',
+        price: '24.99',
+        regular_price: '29.99',
+        sale_price: '24.99',
+        on_sale: true,
+        stock_status: 'instock',
+        images: [
+          {
+            src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
+            alt: 'Premium Leather Habit Tracking Journal',
+          },
+        ],
+        categories: [{ id: 1, name: 'Journals' }],
+        productType: 'Journals',
+        description:
+          'Track your daily habits with this premium leather-bound journal.',
+      },
+      {
+        id: 'fallback-2',
+        name: '90-Day Productivity Planner',
+        slug: 'productivity-planner-90-day',
+        price: '19.99',
+        regular_price: '19.99',
+        on_sale: false,
+        stock_status: 'instock',
+        images: [
+          {
+            src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+            alt: '90-Day Productivity Planner',
+          },
+        ],
+        categories: [{ id: 2, name: 'Planners' }],
+        productType: 'Planners',
+        description:
+          'Transform your productivity with this 90-day planning system.',
+      },
+      {
+        id: 'fallback-3',
+        name: 'Meditation Timer with Chimes',
+        slug: 'meditation-timer-chimes',
+        price: '34.99',
+        regular_price: '34.99',
+        on_sale: false,
+        stock_status: 'instock',
+        images: [
+          {
+            src: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=400&fit=crop',
+            alt: 'Meditation Timer with Chimes',
+          },
+        ],
+        categories: [{ id: 3, name: 'Wellness' }],
+        productType: 'Wellness',
+        description:
+          'Enhance your meditation practice with gentle chime intervals.',
+      },
+      {
+        id: 'fallback-4',
+        name: 'Focus Time Blocking Set',
+        slug: 'focus-time-blocking-set',
+        price: '15.99',
+        regular_price: '18.99',
+        sale_price: '15.99',
+        on_sale: true,
+        stock_status: 'instock',
+        images: [
+          {
+            src: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=400&h=400&fit=crop',
+            alt: 'Focus Time Blocking Set',
+          },
+        ],
+        categories: [{ id: 2, name: 'Planners' }],
+        productType: 'Planners',
+        description:
+          'Visual time-blocking system to maximize your focus sessions.',
+      },
+    ];
+  }
+
+  function getFallbackCategories() {
+    return [
+      { id: 1, name: 'Journals', slug: 'journals' },
+      { id: 2, name: 'Planners', slug: 'planners' },
+      { id: 3, name: 'Wellness', slug: 'wellness' },
+    ];
+  }
 
   if (loading) {
     return <ShopPageSkeleton />;
   }
 
-  if (error) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-8 pt-16 lg:pt-20">
-        <div className="text-center py-12">
-          <h2 className="text-2xl font-bold text-[#1a1a1a] mb-4">
-            Shop Temporarily Unavailable
-          </h2>
-          <p className="text-gray-600 mb-6">
-            We're setting up our product catalog. Please check back soon!
-          </p>
-          <p className="text-sm text-gray-500">
-            Error: {error}
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="pt-16 lg:pt-20">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Page Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-[#1a1a1a] mb-4 font-anton uppercase">
-            HABIT FORMATION TOOLS
-          </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto font-roboto">
-            Discover scientifically-backed tools and products to help you build better habits 
-            and transform your daily routine.
-          </p>
-        </div>
-
-        {/* Category Filter */}
-        <div className="flex flex-wrap gap-4 mb-8 justify-center">
-          <button
-            onClick={() => setSelectedCategory('')}
-            className={`px-4 py-2 rounded-full transition-colors font-roboto ${
-              !selectedCategory 
-                ? 'bg-[#1a1a1a] text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
+      {/* Hero Section */}
+      <section className="py-20 bg-[#1a1a1a] text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
           >
-            All Products
-          </button>
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`px-4 py-2 rounded-full transition-colors font-roboto ${
-                selectedCategory === category.id
-                  ? 'bg-[#1a1a1a] text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
-
-        {/* Products Grid */}
-        {products.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg font-roboto">
-              {selectedCategory ? 'No products found in this category.' : 'No products available.'}
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 font-anton uppercase">
+              Habit Formation Tools
+            </h1>
+            <p className="text-xl text-gray-200 leading-relaxed">
+              Discover scientifically-backed tools and products to help you
+              build better habits and transform your daily routine.
             </p>
-          </div>
-        )}
-
-        {/* Coming Soon Notice */}
-        <div className="mt-16 text-center bg-[#DBDBDB] bg-opacity-20 rounded-xl p-8">
-          <h3 className="text-xl font-bold text-[#1a1a1a] mb-2 font-anton uppercase">
-            More Products Coming Soon
-          </h3>
-          <p className="text-gray-600 font-roboto">
-            We're carefully curating the best habit formation tools and will be adding more products regularly.
-          </p>
+            {error && <p className="text-sm text-gray-400 mt-4">{error}</p>}
+          </motion.div>
         </div>
-      </div>
+      </section>
+
+      {/* Products Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Category Filter */}
+          {categories.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="flex flex-wrap gap-4 mb-12 justify-center"
+            >
+              <button
+                onClick={() => setSelectedCategory('')}
+                className={`px-6 py-3 rounded-full transition-colors font-roboto text-sm font-medium ${
+                  !selectedCategory
+                    ? 'bg-[#1a1a1a] text-white'
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                All Products
+              </button>
+              {categories.map((category) => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.slug)}
+                  className={`px-6 py-3 rounded-full transition-colors font-roboto text-sm font-medium ${
+                    selectedCategory === category.slug
+                      ? 'bg-[#1a1a1a] text-white'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </motion.div>
+          )}
+
+          {/* Products Grid */}
+          {products.length > 0 ? (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+            >
+              {products.map((product, index) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: 0.5 + index * 0.1 }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="text-center py-12"
+            >
+              <p className="text-gray-500 text-lg font-roboto">
+                {selectedCategory
+                  ? 'No products found in this category.'
+                  : 'No products available.'}
+              </p>
+              {!error && (
+                <p className="text-gray-400 text-sm mt-2">
+                  Add products to your Shopify store to see them here.
+                </p>
+              )}
+            </motion.div>
+          )}
+
+          {/* Coming Soon Notice */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="mt-16 text-center bg-[#DBDBDB] bg-opacity-20 rounded-xl p-8"
+          >
+            <h3 className="text-xl font-bold text-[#1a1a1a] mb-2 font-anton uppercase">
+              More Products Coming Soon
+            </h3>
+            <p className="text-gray-600 font-roboto">
+              We're carefully curating the best habit formation tools and will
+              be adding more products regularly.
+            </p>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 }
@@ -209,31 +369,45 @@ export default function ShopClient() {
 function ShopPageSkeleton() {
   return (
     <div className="pt-16 lg:pt-20">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <div className="h-10 bg-gray-200 rounded w-96 mx-auto mb-4 animate-pulse"></div>
-          <div className="h-6 bg-gray-200 rounded w-[500px] mx-auto animate-pulse"></div>
+      {/* Hero Section Skeleton */}
+      <section className="py-20 bg-[#1a1a1a] text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="h-12 bg-gray-700 rounded w-96 mx-auto mb-6 animate-pulse"></div>
+          <div className="h-6 bg-gray-700 rounded w-[500px] mx-auto animate-pulse"></div>
         </div>
-        
-        <div className="flex gap-4 mb-8 justify-center">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-10 bg-gray-200 rounded-full w-24 animate-pulse"></div>
-          ))}
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
-              <div className="aspect-square bg-gray-200"></div>
-              <div className="p-4 space-y-3">
-                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                <div className="h-6 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
+      </section>
+
+      {/* Products Section Skeleton */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Category Filter Skeleton */}
+          <div className="flex gap-4 mb-12 justify-center">
+            {[...Array(4)].map((_, i) => (
+              <div
+                key={i}
+                className="h-12 bg-gray-200 rounded-full w-32 animate-pulse"
+              ></div>
+            ))}
+          </div>
+
+          {/* Products Grid Skeleton */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse"
+              >
+                <div className="aspect-square bg-gray-200"></div>
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                  <div className="h-10 bg-gray-200 rounded"></div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

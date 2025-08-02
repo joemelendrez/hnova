@@ -17,6 +17,7 @@
     "openai": "^4.77.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "shopify-buy": "^3.0.7",
     "tailwindcss": "^4"
   },
   "devDependencies": {
