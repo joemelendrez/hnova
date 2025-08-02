@@ -5,7 +5,7 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/:slug((?!blog|about|contact|shop|start-here|habit-tracker|success-stories|newsletter|resources|api|_next|logos).*)',
+        source: '/:slug((?!blog).*)',
         destination: '/blog/:slug',
         permanent: true, // 301 redirect for SEO
       },
