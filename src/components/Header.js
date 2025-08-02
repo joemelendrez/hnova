@@ -141,7 +141,7 @@ const Header = () => {
 
       <header
         className={`fixed left-0 right-0 top-0 transition-all duration-300 ease-in-out ${
-          scrolled ? 'bg-[#1a1a1a] shadow-lg backdrop-blur-sm' : 'bg-[#1a1a1a]'
+          scrolled ? 'bg-[#1a1a1a]/70 shadow-lg backdrop-blur-sm' : 'bg-[#1a1a1a]/90'
         } ${headerVisible ? 'translate-y-0' : '-translate-y-full'} ${
           mobileMenuOpen ? 'z-10' : 'z-40'
         }`}
@@ -181,7 +181,7 @@ const Header = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex lg:items-center lg:space-x-8">
+            <nav className="hidden lg:flex lg:items-center lg:space-x-8 ">
               {navigation.map((item) => (
                 <motion.div
                   key={item.name}
