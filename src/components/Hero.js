@@ -26,16 +26,16 @@ const Hero = () => {
     
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
-
+  
   // Preload critical images on component mount
   useEffect(() => {
     if (typeof window === 'undefined') return
-
+    
     // Preload the background image
     const img = new window.Image()
     img.onload = () => setImageLoaded(true)
     img.src = '/HabitBackground.webp'
-
+    
     // Preload low-quality placeholder if available
     const placeholderImg = new window.Image()
     placeholderImg.src = '/HabitBackground-placeholder.webp' // 10-20kb version
@@ -120,20 +120,27 @@ const Hero = () => {
             perspective: '1000px',
           }}
         >
-          <Image
-            src="/HabitBackground.webp"
-            alt="Habit formation background"
-            fill
-            className={`object-cover transition-opacity duration-500 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            priority
-            quality={85}
-            sizes="100vw"
-            placeholder="blur"
-            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-            onLoad={() => setImageLoaded(true)}
-          />
+          <div className="relative w-full h-full">
+            <Image
+              src="/HabitBackground.webp"
+              alt="Habit formation background"
+              fill
+              className={`object-cover transition-opacity duration-500 ${
+                imageLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+              priority
+              quality={85}
+              sizes="100vw"
+              placeholder="empty"
+              style={{
+                objectFit: 'cover',
+                width: '100%',
+                height: '100%',
+              }}
+              onLoad={() => setImageLoaded(true)}
+              onLoadingComplete={() => setImageLoaded(true)}
+            />
+          </div>
         </div>
       )}
 
