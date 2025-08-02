@@ -94,7 +94,7 @@ export default function CartDrawer() {
                         <Image
                           src={
                             item.variant?.image?.src ||
-                            '/placeholder-product.jpg'
+                            '/placeholder-product.webp'
                           }
                           alt={item.title}
                           fill
