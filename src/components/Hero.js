@@ -1,24 +1,15 @@
 'use client'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ArrowRight, Download, ShoppingBag } from 'lucide-react'
 import Button from './Button'
 
 const Hero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [currentSlide, setCurrentSlide] = useState(0)
   const parallaxRef = useRef(null)
   const rafRef = useRef(null)
   const scrollYRef = useRef(0)
-  
-  // Slideshow images for mobile
-  const slideImages = [
-    '/HabitBackground.webp',
-    '/HabitBackground2.webp', // Add more images
-    '/HabitBackground3.webp',
-    '/HabitBackground4.webp'
-  ]
   
   // Check if device is mobile (guarded for SSR)
   useEffect(() => {
@@ -33,17 +24,6 @@ const Hero = () => {
     
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
-  
-  // Auto-advance slideshow
-  useEffect(() => {
-    if (!isMobile) return
-    
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slideImages.length)
-    }, 5000) // Change slide every 5 seconds
-    
-    return () => clearInterval(interval)
-  }, [isMobile, slideImages.length])
   
   // Smooth parallax animation with RAF
   const updateParallax = useCallback(() => {
@@ -71,6 +51,7 @@ const Hero = () => {
       }
     }
     
+    // Use passive listener for better performance
     window.addEventListener('scroll', handleScroll, { passive: true })
     
     return () => {
@@ -100,51 +81,19 @@ const Hero = () => {
         </video>
       )}
 
-      {/* Mobile: Slideshow with Parallax */}
+      {/* Mobile: Smooth Parallax Image Background */}
       {isMobile && (
-        <div 
+        <div
           ref={parallaxRef}
-          className="absolute inset-0 will-change-transform"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
           style={{
+            backgroundImage: 'url(/HabitBackground3.webp)',
             height: '120%',
             top: '-10%',
             backfaceVisibility: 'hidden',
             perspective: '1000px',
           }}
-        >
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentSlide}
-              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-              style={{
-                backgroundImage: `url(${slideImages[currentSlide]})`,
-              }}
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1.05 }}
-              exit={{ opacity: 0, scale: 1 }}
-              transition={{ 
-                duration: 1.5,
-                ease: [0.25, 0.46, 0.45, 0.94]
-              }}
-            />
-          </AnimatePresence>
-          
-          {/* Slide Indicators */}
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-            {slideImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  index === currentSlide 
-                    ? 'bg-[#DBDBDB] w-6' 
-                    : 'bg-white/40 hover:bg-white/60'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
+        />
       )}
 
       {/* Desktop Fallback Background Image */}
