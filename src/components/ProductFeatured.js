@@ -27,11 +27,10 @@ const ProductFeatured = () => {
       try {
         // Dynamic import for client-side only
         const ShopifyBuy = await import('shopify-buy');
-
+        
         const shopifyClient = ShopifyBuy.default.buildClient({
           domain: process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN,
-          storefrontAccessToken:
-            process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN,
+          storefrontAccessToken: process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN,
         });
 
         console.log('🔄 Fetching featured products from Shopify...');
@@ -49,7 +48,7 @@ const ProductFeatured = () => {
         console.log(`✅ Found ${shopifyProducts.length} products`);
 
         // Format products for our component
-        const formattedProducts = shopifyProducts.map((product, index) =>
+        const formattedProducts = shopifyProducts.map((product, index) => 
           formatShopifyProduct(product, index)
         );
 
@@ -65,10 +64,11 @@ const ProductFeatured = () => {
 
         setProducts(featuredProducts);
         console.log('✅ Featured products set:', featuredProducts.length);
+
       } catch (error) {
         console.error('❌ Error fetching Shopify products:', error);
         setError(error.message);
-
+        
         // Fallback to mock data if Shopify fails
         setProducts(getFallbackProducts());
       } finally {
@@ -98,23 +98,22 @@ const ProductFeatured = () => {
     const compareAtPrice = getPrice(variant?.compareAtPrice);
 
     // Determine if product is featured (you can customize this logic)
-    const isFeatured =
-      index === 0 ||
-      shopifyProduct.tags?.includes('featured') ||
-      shopifyProduct.productType?.toLowerCase().includes('toolkit') ||
-      shopifyProduct.title?.toLowerCase().includes('complete');
+    const isFeatured = index === 0 || 
+                      shopifyProduct.tags?.includes('featured') ||
+                      shopifyProduct.productType?.toLowerCase().includes('toolkit') ||
+                      shopifyProduct.title?.toLowerCase().includes('complete');
 
     // Generate badge based on product data
     const getBadge = (product, isOnSale, createdAt) => {
       if (product.tags?.includes('bestseller')) return 'BESTSELLER';
       if (product.tags?.includes('new')) return 'NEW';
       if (isOnSale) return 'SALE';
-
+      
       // Auto-detect new products (created within last 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       if (new Date(createdAt) > thirtyDaysAgo) return 'NEW';
-
+      
       return null;
     };
 
@@ -130,8 +129,7 @@ const ProductFeatured = () => {
       return 50 + (seed % 300); // Review counts between 50 and 350
     };
 
-    const isOnSale =
-      compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price);
+    const isOnSale = compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price);
 
     return {
       id: shopifyProduct.id,
@@ -141,14 +139,9 @@ const ProductFeatured = () => {
       originalPrice: isOnSale ? compareAtPrice : null,
       rating: generateRating(shopifyProduct.id),
       reviewCount: generateReviewCount(shopifyProduct.id),
-      image:
-        images[0]?.src ||
-        images[0]?.transformedSrc ||
-        'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
+      image: images[0]?.src || images[0]?.transformedSrc || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
       badge: getBadge(shopifyProduct, isOnSale, shopifyProduct.createdAt),
-      description:
-        shopifyProduct.description ||
-        'High-quality product to help you build better habits.',
+      description: shopifyProduct.description || 'High-quality product to help you build better habits.',
       features: extractFeatures(shopifyProduct),
       isFeatured: isFeatured,
       shopifyId: shopifyProduct.id,
@@ -167,7 +160,7 @@ const ProductFeatured = () => {
     const bulletMatches = description.match(/[•·▪▫-]\s*([^\n•·▪▫-]+)/g);
     if (bulletMatches && bulletMatches.length > 0) {
       return bulletMatches
-        .map((match) => match.replace(/[•·▪▫-]\s*/, '').trim())
+        .map(match => match.replace(/[•·▪▫-]\s*/, '').trim())
         .slice(0, 4);
     }
 
@@ -175,43 +168,23 @@ const ProductFeatured = () => {
     const numberMatches = description.match(/\d+\.\s*([^\n\d]+)/g);
     if (numberMatches && numberMatches.length > 0) {
       return numberMatches
-        .map((match) => match.replace(/\d+\.\s*/, '').trim())
+        .map(match => match.replace(/\d+\.\s*/, '').trim())
         .slice(0, 4);
     }
 
     // Generate features based on product type/tags
     if (product.productType?.toLowerCase().includes('journal')) {
-      return [
-        'Daily Tracking Pages',
-        'Progress Charts',
-        'Reflection Prompts',
-        'Goal Setting Guide',
-      ];
+      return ['Daily Tracking Pages', 'Progress Charts', 'Reflection Prompts', 'Goal Setting Guide'];
     }
     if (product.productType?.toLowerCase().includes('toolkit')) {
-      return [
-        'Comprehensive Guide',
-        'Tracking Templates',
-        'Progress Charts',
-        'Bonus Resources',
-      ];
+      return ['Comprehensive Guide', 'Tracking Templates', 'Progress Charts', 'Bonus Resources'];
     }
     if (product.tags?.includes('digital')) {
-      return [
-        'Instant Download',
-        'Printable Format',
-        'Mobile Friendly',
-        'Lifetime Access',
-      ];
+      return ['Instant Download', 'Printable Format', 'Mobile Friendly', 'Lifetime Access'];
     }
 
     // Default features
-    return [
-      'Premium Quality',
-      'Expert Designed',
-      'Proven Results',
-      'Money-Back Guarantee',
-    ];
+    return ['Premium Quality', 'Expert Designed', 'Proven Results', 'Money-Back Guarantee'];
   }
 
   // Fallback products (your existing mock data as backup)
@@ -225,17 +198,10 @@ const ProductFeatured = () => {
         originalPrice: '129.99',
         rating: 4.8,
         reviewCount: 247,
-        image:
-          'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
+        image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
         badge: 'BESTSELLER',
-        description:
-          'Everything you need to build lasting habits: 90-day tracker, habit stacking guide, weekly planners, and progress charts.',
-        features: [
-          '90-Day Habit Tracker',
-          'Habit Stacking Guide',
-          'Weekly Planning Sheets',
-          'Progress Visualization',
-        ],
+        description: 'Everything you need to build lasting habits: 90-day tracker, habit stacking guide, weekly planners, and progress charts.',
+        features: ['90-Day Habit Tracker', 'Habit Stacking Guide', 'Weekly Planning Sheets', 'Progress Visualization'],
         isFeatured: true,
       },
       // ... your other fallback products
@@ -245,17 +211,13 @@ const ProductFeatured = () => {
   const ProductCard = ({ product, index }) => {
     const [addingToCart, setAddingToCart] = useState(false);
     const { addToCart, cartLoading } = useCart();
-
-    const isOnSale =
-      product.originalPrice &&
-      parseFloat(product.originalPrice) > parseFloat(product.price);
-
+    
+    const isOnSale = product.originalPrice && 
+                     parseFloat(product.originalPrice) > parseFloat(product.price);
+    
     const savings = isOnSale
-      ? (
-          ((parseFloat(product.originalPrice) - parseFloat(product.price)) /
-            parseFloat(product.originalPrice)) *
-          100
-        ).toFixed(0)
+      ? (((parseFloat(product.originalPrice) - parseFloat(product.price)) /
+          parseFloat(product.originalPrice)) * 100).toFixed(0)
       : 0;
 
     // Handle adding to cart
@@ -263,13 +225,7 @@ const ProductFeatured = () => {
       e.preventDefault(); // Prevent navigation
       e.stopPropagation(); // Stop event bubbling
 
-      if (
-        !product.available ||
-        addingToCart ||
-        cartLoading ||
-        !product.variantId
-      )
-        return;
+      if (!product.available || addingToCart || cartLoading || !product.variantId) return;
 
       setAddingToCart(true);
 
@@ -296,14 +252,13 @@ const ProductFeatured = () => {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 h-full flex flex-col">
           {/* Product Image - Make this a link */}
           <Link href={`/shop/products/${product.slug}`} className="block">
-            <div className="relative h-48 flex-shrink-0 bg-gray-100">
+            <div className="relative h-48 flex-shrink-0 bg-gray-100 flex items-center justify-center">
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
-                  e.target.src =
-                    'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop';
+                  e.target.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop';
                 }}
               />
 
@@ -338,9 +293,7 @@ const ProductFeatured = () => {
               {/* Out of Stock Overlay */}
               {!product.available && (
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
-                  <span className="text-white font-medium text-sm">
-                    Out of Stock
-                  </span>
+                  <span className="text-white font-medium text-sm">Out of Stock</span>
                 </div>
               )}
             </div>
@@ -392,12 +345,7 @@ const ProductFeatured = () => {
             {/* Add to Cart Button */}
             <button
               onClick={handleAddToCart}
-              disabled={
-                !product.available ||
-                addingToCart ||
-                cartLoading ||
-                !product.variantId
-              }
+              disabled={!product.available || addingToCart || cartLoading || !product.variantId}
               className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 mb-3 ${
                 product.available && product.variantId
                   ? addingToCart || cartLoading
@@ -445,10 +393,7 @@ const ProductFeatured = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div className="lg:col-span-2 lg:row-span-2 bg-white rounded-xl animate-pulse h-96"></div>
             {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="bg-white rounded-xl animate-pulse h-80"
-              ></div>
+              <div key={i} className="bg-white rounded-xl animate-pulse h-80"></div>
             ))}
           </div>
         </div>
@@ -528,9 +473,7 @@ const ProductFeatured = () => {
               <div className="flex items-center justify-center mb-2">
                 <Users className="h-8 w-8 text-[#1a1a1a] mr-2" />
                 <span className="text-3xl font-bold text-[#1a1a1a]">
-                  {products.length > 0
-                    ? `${Math.min(products.length * 2500, 10000)}+`
-                    : '10,000+'}
+                  {products.length > 0 ? `${Math.min(products.length * 2500, 10000)}+` : '10,000+'}
                 </span>
               </div>
               <p className="text-gray-600">Happy Customers</p>
@@ -540,12 +483,10 @@ const ProductFeatured = () => {
               <div className="flex items-center justify-center mb-2">
                 <Star className="h-8 w-8 text-yellow-500 mr-2 fill-current" />
                 <span className="text-3xl font-bold text-[#1a1a1a]">
-                  {products.length > 0
-                    ? (
-                        products.reduce((sum, p) => sum + p.rating, 0) /
-                        products.length
-                      ).toFixed(1)
-                    : '4.8'}
+                  {products.length > 0 
+                    ? (products.reduce((sum, p) => sum + p.rating, 0) / products.length).toFixed(1)
+                    : '4.8'
+                  }
                 </span>
               </div>
               <p className="text-gray-600">Average Rating</p>
