@@ -1,4 +1,4 @@
-// next.config.mjs - Fixed routing configuration
+// next.config.mjs - Fixed routing configuration with Shopify image support
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Image optimization
@@ -14,7 +14,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'your-wordpress-site.com', // Replace with your WordPress domain
+        hostname: 'cms.habitnova.com', // Replace with your WordPress domain
       },
       {
         protocol: 'https',
@@ -24,10 +24,44 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.cloudfront.net', // For CloudFront CDN
       },
+      // ADD SHOPIFY IMAGE DOMAINS
+      {
+        protocol: 'https',
+        hostname: 'cdn.shopify.com',
+        pathname: '/s/files/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.myshopify.com',
+        pathname: '/**',
+      },
+      // Add your specific Shopify store domain if you know it
+      // Replace 'your-store-name' with your actual store name
+      {
+        protocol: 'https',
+        hostname: 'your-store-name.myshopify.com',
+        pathname: '/**',
+      },
+      // Shopify's product image CDN patterns
+      {
+        protocol: 'https',
+        hostname: 'cdn.shopify.com',
+        pathname: '/shopifycloud/**',
+      },
+      // Alternative Shopify CDN pattern
+      {
+        protocol: 'https',
+        hostname: 'shopify-product-images.s3.amazonaws.com',
+        pathname: '/**',
+      },
     ],
 
     // Image caching
     minimumCacheTTL: 31536000, // 1 year
+    
+    // Allow SVG images (some Shopify stores use SVG)
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   // Custom redirects to handle URL structure properly
@@ -114,6 +148,11 @@ const nextConfig = {
           {
             key: 'X-Frame-Options',
             value: 'DENY',
+          },
+          // Add CORS headers for Shopify images
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
           },
         ],
       },
