@@ -18,9 +18,9 @@ export default function CartDrawer() {
     updateCartQuantity,
     proceedToCheckout,
   } = useCart();
-
+  
   const lineItems = checkout?.lineItems || [];
-
+  
   // Format price from Shopify price object with proper decimal places
   const formatPrice = (price) => {
     if (typeof price === 'object' && price.amount) {
@@ -31,7 +31,7 @@ export default function CartDrawer() {
     }
     return '0.00';
   };
-
+  
   return (
     <AnimatePresence>
       {cartOpen && (
@@ -93,7 +93,7 @@ export default function CartDrawer() {
                       className="flex gap-4 p-4 border border-gray-200 rounded-lg"
                     >
                       {/* Product Image */}
-                      <div className="relative w-16 h-16 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+                      <div className="relative w-16 h-16 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
                         <img
                           src={
                             item.variant?.image?.src ||
@@ -101,10 +101,9 @@ export default function CartDrawer() {
                             'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&h=100&fit=crop'
                           }
                           alt={item.title}
-                          className="w-full h-full object-cover object-center"
+                          className="max-w-full max-h-full object-contain"
                           onError={(e) => {
-                            e.target.src =
-                              'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&h=100&fit=crop';
+                            e.target.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&h=100&fit=crop';
                           }}
                         />
                       </div>
