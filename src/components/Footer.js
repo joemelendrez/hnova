@@ -1,38 +1,36 @@
-import Link from 'next/link'
-import { Twitter, Linkedin, Instagram, Youtube, Mail } from 'lucide-react'
+import Link from 'next/link';
+import { Twitter, Linkedin, Instagram, Youtube, Mail } from 'lucide-react';
 
 const Footer = () => {
-  const currentYear = new Date().getFullYear()
-  
+  const currentYear = new Date().getFullYear();
+
   const footerLinks = {
     explore: [
       { name: 'Blog', href: '/blog' },
       { name: 'About', href: '/about' },
       { name: 'Contact', href: '/contact' },
-      { name: 'Shop', href: '/shop' }
+      { name: 'Shop', href: '/shop' },
     ],
     resources: [
+      { name: 'Start Here Guide', href: '/start-here' },
       { name: 'Habit Tracker', href: '/habit-tracker' },
-      { name: 'Start Here', href: '/start-here' },
+      { name: 'Free Tools', href: '/tools' },
       { name: 'Success Stories', href: '/success-stories' },
-      { name: 'Free Tools', href: '/tools' }
     ],
     legal: [
       { name: 'Privacy Policy', href: '/privacy' },
       { name: 'Terms of Service', href: '/terms' },
       { name: 'Cookie Policy', href: '/cookies' },
-      { name: 'Affiliate Disclosure', href: '/affiliate-disclosure' }
-    ]
-  }
-  
+      { name: 'Affiliate Disclosure', href: '/affiliate' },
+    ],
+  };
+
   return (
     <footer className="bg-[#1a1a1a] text-white">
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        
         {/* Top Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-12">
-          
           {/* Brand & Newsletter */}
           <div>
             <div className="mb-6">
@@ -40,11 +38,12 @@ const Footer = () => {
                 Habit Nova
               </h2>
               <p className="text-gray-300 text-lg leading-relaxed max-w-md">
-                Evidence-based strategies to break bad habits and build life-changing routines. 
-                Transform your daily life with science-backed tools and insights.
+                Evidence-based strategies to break bad habits and build
+                life-changing routines. Transform your daily life with
+                science-backed tools and insights.
               </p>
             </div>
-            
+
             {/* Newsletter Signup */}
             <div className="mb-6">
               <h3 className="text-xl font-semibold text-white mb-3">
@@ -71,7 +70,6 @@ const Footer = () => {
 
           {/* Links Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-            
             {/* Explore */}
             <div>
               <h3 className="text-lg font-semibold text-[#DBDBDB] mb-4">
@@ -136,12 +134,11 @@ const Footer = () => {
       <div className="border-t border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            
             {/* Copyright */}
             <div className="text-sm text-gray-400">
               © {currentYear} Habit Nova. All rights reserved.
             </div>
-            
+
             {/* Social Media */}
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-400">Follow us</span>
@@ -188,7 +185,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
-  )
-}
+  );
+};
 
-export default Footer
+export default Footer;
