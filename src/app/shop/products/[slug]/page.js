@@ -220,7 +220,7 @@ export default function ProductPage({ params }) {
   return (
     <div className="pt-16 lg:pt-20">
       {/* Back Button - Same style as BlogPostClient */}
-              <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4"></div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4"></div>
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -323,11 +323,14 @@ export default function ProductPage({ params }) {
               {/* Price */}
               <div className="flex items-center gap-3">
                 <span className="text-3xl font-bold text-[#1a1a1a]">
-                  ${selectedVariant?.price}
+                  ${parseFloat(selectedVariant?.price || 0).toFixed(2)}
                 </span>
                 {isOnSale && (
                   <span className="text-xl text-gray-500 line-through">
-                    ${selectedVariant?.compareAtPrice}
+                    $
+                    {parseFloat(selectedVariant?.compareAtPrice || 0).toFixed(
+                      2
+                    )}
                   </span>
                 )}
               </div>

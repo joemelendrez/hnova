@@ -26,8 +26,9 @@ function formatShopifyProduct(shopifyProduct) {
   // Extract price values - Shopify returns prices as objects
   const getPrice = (priceObj) => {
     if (!priceObj) return '0.00';
-    if (typeof priceObj === 'string') return priceObj;
-    if (typeof priceObj === 'object' && priceObj.amount) return priceObj.amount;
+    if (typeof priceObj === 'string') return parseFloat(priceObj).toFixed(2);
+    if (typeof priceObj === 'object' && priceObj.amount)
+      return parseFloat(priceObj.amount).toFixed(2);
     return '0.00';
   };
 
@@ -275,7 +276,7 @@ export default function ShopClient() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-6 font-anton uppercase">
-              Habit Formation Tools.
+              Habit Formation Tools
             </h1>
             <p className="text-xl text-gray-200 leading-relaxed">
               Discover scientifically-backed tools and products to help you
@@ -387,18 +388,13 @@ function ShopPageSkeleton() {
   return (
     <div className="pt-16 lg:pt-20">
       {/* Hero Section Skeleton */}
-           <section className="py-20 bg-[#1a1a1a] text-white">
+      <section className="py-20 bg-[#1a1a1a] text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Habit Formation Tools.
-                        </h1>
-            <p className="text-xl text-gray-200 leading-relaxed mb-8">
-              Discover scientifically-backed tools and products to help you build better habits and transform your daily routine.
-            </p>
-          </div>
+          <div className="h-12 bg-gray-700 rounded w-96 mx-auto mb-6 animate-pulse"></div>
+          <div className="h-6 bg-gray-700 rounded w-[500px] mx-auto animate-pulse"></div>
         </div>
       </section>
+
       {/* Products Section Skeleton */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
