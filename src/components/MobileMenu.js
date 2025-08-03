@@ -199,13 +199,19 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                             </div>
                           </a>
 
-                          <div className="pt-4">
+<div className="pt-4">
                             <Link
                               href="/contact"
-                              className="flex w-full items-center justify-center rounded-lg bg-[#fe0000] px-4 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-gray-800"
+                              className="group relative flex w-full items-center justify-center rounded-lg border-2 border-[#1a1a1a] px-4 py-3 text-sm font-semibold text-[#1a1a1a] shadow-sm transition-all duration-300 overflow-hidden"
                               onClick={onClose}
                             >
-                              Get In Touch
+                              {/* Background overlay that slides in */}
+                              <div className="absolute inset-0 bg-[#1a1a1a] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-0" />
+
+                              {/* Content with proper z-index */}
+                              <div className="relative z-10 group-hover:text-white transition-colors duration-300">
+                                Get In Touch
+                              </div>
                             </Link>
                           </div>
                         </div>
