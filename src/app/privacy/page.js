@@ -27,17 +27,17 @@ export default function PrivacyPolicyPage() {
       </section>
 
       {/* Content */}
-      <section className="py-16 bg-white">
+      <section className="pb-10 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="prose prose-lg max-w-none">
-            <h2>1. Information We Collect</h2>
+          <div className="prose prose-xl max-w-none legal-content">
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">1. Information We Collect</h2>
 
-            <h3>Personal Information</h3>
-            <p>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">Personal Information</h3>
+            <p className="text-lg leading-relaxed mb-6">
               We collect information you provide directly to us, such as when
               you:
             </p>
-            <ul>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>Subscribe to our newsletter or email list</li>
               <li>Create an account or make a purchase</li>
               <li>Contact us through our contact form</li>
@@ -46,20 +46,20 @@ export default function PrivacyPolicyPage() {
               <li>Participate in surveys or contests</li>
             </ul>
 
-            <p>This information may include:</p>
-            <ul>
+            <p className="text-lg leading-relaxed mb-6">This information may include:</p>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>Name and email address</li>
               <li>Billing and shipping information</li>
               <li>Phone number</li>
               <li>Any other information you choose to provide</li>
             </ul>
 
-            <h3>Automatically Collected Information</h3>
-            <p>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">Automatically Collected Information</h3>
+            <p className="text-lg leading-relaxed mb-6">
               We automatically collect certain information when you visit our
               website:
             </p>
-            <ul>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>IP address and browser type</li>
               <li>Pages visited and time spent on our site</li>
               <li>Referring website or search terms</li>
@@ -67,10 +67,10 @@ export default function PrivacyPolicyPage() {
               <li>Cookies and similar tracking technologies</li>
             </ul>
 
-            <h2>2. How We Use Your Information</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">2. How We Use Your Information</h2>
 
-            <p>We use the information we collect to:</p>
-            <ul>
+            <p className="text-lg leading-relaxed mb-6">We use the information we collect to:</p>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>Provide, maintain, and improve our services</li>
               <li>
                 Send you newsletters, marketing communications, and updates
@@ -85,16 +85,16 @@ export default function PrivacyPolicyPage() {
               <li>Prevent fraud and ensure website security</li>
             </ul>
 
-            <h2>3. Information Sharing and Disclosure</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">3. Information Sharing and Disclosure</h2>
 
-            <p>We may share your information with:</p>
+            <p className="text-lg leading-relaxed mb-8">We may share your information with:</p>
 
-            <h3>Service Providers</h3>
-            <p>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">Service Providers</h3>
+            <p className="text-lg leading-relaxed mb-6">
               We work with third-party companies that help us operate our
               business:
             </p>
-            <ul>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>
                 <strong>Email Marketing:</strong> Mailchimp, ConvertKit (for
                 newsletters)
@@ -116,27 +116,27 @@ export default function PrivacyPolicyPage() {
               </li>
             </ul>
 
-            <h3>Affiliate Partners</h3>
-            <p>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">Affiliate Partners</h3>
+            <p className="text-lg leading-relaxed mb-8">
               We participate in affiliate marketing programs, including Amazon
               Associates. When you click on affiliate links and make purchases,
               we may receive commissions. This does not affect the price you
               pay.
             </p>
 
-            <h3>Legal Requirements</h3>
-            <p>We may disclose your information if required by law or to:</p>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">Legal Requirements</h3>
+            <p className="text-lg leading-relaxed mb-6">We may disclose your information if required by law or to:</p>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>Comply with legal processes</li>
               <li>Protect our rights and property</li>
               <li>Ensure user safety</li>
               <li>Investigate potential violations</li>
             </ul>
 
-            <h2>4. Cookies and Tracking Technologies</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">4. Cookies and Tracking Technologies</h2>
 
-            <p>We use cookies and similar technologies to:</p>
-            <ul>
+            <p className="text-lg leading-relaxed mb-6">We use cookies and similar technologies to:</p>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>Remember your preferences and settings</li>
               <li>Analyze website traffic and user behavior</li>
               <li>Provide personalized content and advertising</li>
@@ -144,18 +144,18 @@ export default function PrivacyPolicyPage() {
               <li>Track affiliate commissions</li>
             </ul>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-12">
               You can control cookies through your browser settings. However,
               disabling cookies may limit some website functionality.
             </p>
 
-            <h2>5. Data Security</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">5. Data Security</h2>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-6">
               We implement appropriate security measures to protect your
               personal information:
             </p>
-            <ul>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>SSL encryption for data transmission</li>
               <li>Secure servers and databases</li>
               <li>Regular security updates and monitoring</li>
@@ -163,23 +163,23 @@ export default function PrivacyPolicyPage() {
               <li>Employee training on data protection</li>
             </ul>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-12">
               However, no internet transmission is 100% secure. We cannot
               guarantee absolute security.
             </p>
 
-            <h2>6. Your Rights and Choices</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">6. Your Rights and Choices</h2>
 
-            <h3>Email Communications</h3>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">Email Communications</h3>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>Unsubscribe from marketing emails at any time</li>
               <li>Update your email preferences</li>
               <li>Request to be removed from our mailing list</li>
             </ul>
 
-            <h3>Data Access and Control</h3>
-            <p>You have the right to:</p>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">Data Access and Control</h3>
+            <p className="text-lg leading-relaxed mb-6">You have the right to:</p>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>Access your personal information</li>
               <li>Correct or update your information</li>
               <li>Request deletion of your data</li>
@@ -187,49 +187,49 @@ export default function PrivacyPolicyPage() {
               <li>Receive a copy of your data</li>
             </ul>
 
-            <h2>7. Children's Privacy</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">7. Children's Privacy</h2>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-12">
               Our website is not intended for children under 13. We do not
               knowingly collect personal information from children under 13. If
               we become aware that we have collected such information, we will
               delete it immediately.
             </p>
 
-            <h2>8. International Users</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">8. International Users</h2>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-12">
               Our website is operated from the United States. If you are
               accessing our site from outside the US, your information may be
               transferred to, stored, and processed in the United States. By
               using our website, you consent to this transfer.
             </p>
 
-            <h2>9. Changes to This Privacy Policy</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">9. Changes to This Privacy Policy</h2>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-6">
               We may update this Privacy Policy from time to time. We will
               notify you of any changes by:
             </p>
-            <ul>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>Posting the new Privacy Policy on this page</li>
               <li>Updating the "Last updated" date</li>
               <li>Sending an email notification for significant changes</li>
             </ul>
 
-            <h2>10. Contact Us</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">10. Contact Us</h2>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-6">
               If you have any questions about this Privacy Policy or our data
               practices, please contact us:
             </p>
-            <ul>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>
                 <strong>Email:</strong> privacy@habitnova.com
               </li>
               <li>
                 <strong>Contact Form:</strong>{' '}
-                <a href="/contact" className="text-[#1a1a1a] hover:underline">
+                <a href="/contact" className="text-[#1a1a1a] hover:underline font-medium">
                   habitnova.com/contact
                 </a>
               </li>
@@ -239,9 +239,9 @@ export default function PrivacyPolicyPage() {
               </li>
             </ul>
 
-            <div className="mt-12 p-6 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3">Quick Summary</h3>
-              <ul className="space-y-2 text-sm">
+            <div className="mt-16 p-8 bg-gray-50 rounded-xl">
+              <h3 className="text-xl font-semibold mb-6">Quick Summary</h3>
+              <ul className="space-y-4 text-lg leading-relaxed">
                 <li>• We collect information you provide and usage data</li>
                 <li>
                   • We use it to improve our services and communicate with you

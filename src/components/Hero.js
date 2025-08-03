@@ -1,67 +1,67 @@
-'use client'
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { motion } from 'framer-motion'
-import { ArrowRight, Download, ShoppingBag } from 'lucide-react'
-import Button from './Button'
+'use client';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { ArrowRight, Download, ShoppingBag } from 'lucide-react';
+import Button from './Button';
 
 const Hero = () => {
-  const [videoLoaded, setVideoLoaded] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const parallaxRef = useRef(null)
-  const rafRef = useRef(null)
-  const scrollYRef = useRef(0)
-  
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const parallaxRef = useRef(null);
+  const rafRef = useRef(null);
+  const scrollYRef = useRef(0);
+
   // Check if device is mobile (guarded for SSR)
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    
+    if (typeof window === 'undefined') return;
+
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-  
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   // Smooth parallax animation with RAF
   const updateParallax = useCallback(() => {
     if (parallaxRef.current) {
-      const offset = scrollYRef.current * 0.5
-      parallaxRef.current.style.transform = `translate3d(0, ${offset}px, 0)`
+      const offset = scrollYRef.current * 0.5;
+      parallaxRef.current.style.transform = `translate3d(0, ${offset}px, 0)`;
     }
-  }, [])
-  
+  }, []);
+
   // Optimized scroll handler with RAF
   useEffect(() => {
-    if (typeof window === 'undefined' || !isMobile) return
-    
-    let ticking = false
-    
+    if (typeof window === 'undefined' || !isMobile) return;
+
+    let ticking = false;
+
     const handleScroll = () => {
-      scrollYRef.current = window.scrollY
-      
+      scrollYRef.current = window.scrollY;
+
       if (!ticking) {
         rafRef.current = requestAnimationFrame(() => {
-          updateParallax()
-          ticking = false
-        })
-        ticking = true
+          updateParallax();
+          ticking = false;
+        });
+        ticking = true;
       }
-    }
-    
+    };
+
     // Use passive listener for better performance
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
     return () => {
-      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('scroll', handleScroll);
       if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current)
+        cancelAnimationFrame(rafRef.current);
       }
-    }
-  }, [isMobile, updateParallax])
-  
+    };
+  }, [isMobile, updateParallax]);
+
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
       {/* Desktop: Video Background */}
@@ -171,15 +171,22 @@ const Hero = () => {
             Get Free Guide
           </Button>
 
+          {/* Fixed Shop Tools Button with proper contrast */}
           <Button
             href="/shop"
             size="large"
             variant="outline"
-            className="group border-2 border-white/30 text-white hover:bg-white hover:text-[#1a1a1a] transition-all duration-300 min-w-[200px]"
+            className="group relative border-2 border-white/40 text-white hover:border-white transition-all duration-300 min-w-[200px] hover:shadow-lg backdrop-blur-sm overflow-hidden"
           >
-            <ShoppingBag className="mr-2 h-5 w-5" />
-            Shop Tools
-            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+            {/* Background overlay that slides in */}
+            <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-0" />
+
+            {/* Content with proper z-index */}
+            <div className="relative z-10 flex items-center justify-center group-hover:text-[#1a1a1a] transition-colors duration-300">
+              <ShoppingBag className="mr-2 h-5 w-5" />
+              Shop Tools
+              <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+            </div>
           </Button>
         </motion.div>
 
@@ -199,7 +206,7 @@ const Hero = () => {
         </motion.div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Hero
+export default Hero;

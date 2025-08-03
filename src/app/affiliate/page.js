@@ -1,4 +1,4 @@
-// src/app/affiliate-disclosure/page.js
+// src/app/affiliate/page.js
 export const metadata = {
   title: 'Affiliate Disclosure | Habit Nova',
   description:
@@ -22,14 +22,14 @@ export default function AffiliateDisclosurePage() {
       </section>
 
       {/* Content */}
-      <section className="py-16 bg-white">
+      <section className="py-10 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="prose prose-lg max-w-none">
-            <div className="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+          <div className="prose prose-xl max-w-none legal-content">
+            <div className="bg-blue-50 border-l-4 border-blue-400 p-8 mb-12 rounded-r-lg">
+              <h3 className="text-xl font-semibold text-blue-900 mb-4">
                 Important Disclosure
               </h3>
-              <p className="text-blue-800">
+              <p className="text-blue-800 text-lg leading-relaxed">
                 Habit Nova participates in affiliate marketing programs. This
                 means we may earn commissions when you purchase products through
                 our links, at no additional cost to you. We only recommend
@@ -38,37 +38,43 @@ export default function AffiliateDisclosurePage() {
               </p>
             </div>
 
-            <h2>1. What Are Affiliate Links?</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              1. What Are Affiliate Links?
+            </h2>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-8">
               Affiliate links are special tracking links that allow companies to
               identify when a sale comes from our website. When you click on an
               affiliate link and make a purchase, we may receive a small
               commission from the company.
             </p>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-12">
               <strong>Important:</strong> Using affiliate links does not cost
               you anything extra. The price you pay is exactly the same whether
               you use our link or go directly to the company's website.
             </p>
 
-            <h2>2. Our Affiliate Partners</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              2. Our Affiliate Partners
+            </h2>
 
-            <h3>Amazon Associates Program</h3>
-            <p>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">
+              Amazon Associates Program
+            </h3>
+            <p className="text-lg leading-relaxed mb-6">
               Habit Nova is a participant in the Amazon Services LLC Associates
               Program, an affiliate advertising program designed to provide a
               means for sites to earn advertising fees by advertising and
               linking to Amazon.com.
             </p>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-6">
               This means that when you click on certain links to Amazon products
               on our website and make a purchase, we may receive a small
               commission. Products we link to on Amazon include:
             </p>
-            <ul>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>Books on habit formation and psychology</li>
               <li>Journals and planners for habit tracking</li>
               <li>Productivity tools and accessories</li>
@@ -76,9 +82,13 @@ export default function AffiliateDisclosurePage() {
               <li>Organizational and time management tools</li>
             </ul>
 
-            <h3>Other Affiliate Programs</h3>
-            <p>We also participate in affiliate programs with:</p>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">
+              Other Affiliate Programs
+            </h3>
+            <p className="text-lg leading-relaxed mb-6">
+              We also participate in affiliate programs with:
+            </p>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>
                 <strong>Course Platforms:</strong> Udemy, Coursera, MasterClass
               </li>
@@ -101,11 +111,17 @@ export default function AffiliateDisclosurePage() {
               </li>
             </ul>
 
-            <h2>3. Our Recommendation Policy</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              3. Our Recommendation Policy
+            </h2>
 
-            <h3>Genuine Recommendations Only</h3>
-            <p>We maintain strict standards for our recommendations:</p>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">
+              Genuine Recommendations Only
+            </h3>
+            <p className="text-lg leading-relaxed mb-6">
+              We maintain strict standards for our recommendations:
+            </p>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>
                 <strong>Personal Use:</strong> We only recommend products we've
                 personally used or thoroughly researched
@@ -124,12 +140,14 @@ export default function AffiliateDisclosurePage() {
               </li>
             </ul>
 
-            <h3>Editorial Independence</h3>
-            <p>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">
+              Editorial Independence
+            </h3>
+            <p className="text-lg leading-relaxed mb-6">
               Our affiliate relationships do not influence our editorial
               content:
             </p>
-            <ul>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>We write honest reviews and opinions</li>
               <li>Affiliate commissions do not affect our recommendations</li>
               <li>We clearly mark sponsored content when applicable</li>
@@ -138,10 +156,14 @@ export default function AffiliateDisclosurePage() {
               </li>
             </ul>
 
-            <h2>4. How We Use Affiliate Income</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              4. How We Use Affiliate Income
+            </h2>
 
-            <p>Revenue from affiliate partnerships helps us:</p>
-            <ul>
+            <p className="text-lg leading-relaxed mb-6">
+              Revenue from affiliate partnerships helps us:
+            </p>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>
                 <strong>Create Free Content:</strong> Fund research and writing
                 of blog articles
@@ -164,11 +186,17 @@ export default function AffiliateDisclosurePage() {
               </li>
             </ul>
 
-            <h2>5. Identifying Affiliate Links</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              5. Identifying Affiliate Links
+            </h2>
 
-            <h3>Clear Disclosure</h3>
-            <p>We clearly identify affiliate content through:</p>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">
+              Clear Disclosure
+            </h3>
+            <p className="text-lg leading-relaxed mb-6">
+              We clearly identify affiliate content through:
+            </p>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>
                 <strong>Disclosure Statements:</strong> Written notices near
                 affiliate links
@@ -187,9 +215,13 @@ export default function AffiliateDisclosurePage() {
               </li>
             </ul>
 
-            <h3>Common Disclosure Language</h3>
-            <p>You may see these phrases indicating affiliate relationships:</p>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">
+              Common Disclosure Language
+            </h3>
+            <p className="text-lg leading-relaxed mb-6">
+              You may see these phrases indicating affiliate relationships:
+            </p>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>"This post contains affiliate links"</li>
               <li>
                 "We may earn a commission from purchases made through these
@@ -201,27 +233,39 @@ export default function AffiliateDisclosurePage() {
               <li>"Affiliate link" or "Sponsored link"</li>
             </ul>
 
-            <h2>6. Your Rights as a Reader</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              6. Your Rights as a Reader
+            </h2>
 
-            <h3>No Obligation</h3>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">
+              No Obligation
+            </h3>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>You are never obligated to purchase through our links</li>
               <li>You can find products independently if you prefer</li>
               <li>Our content provides value regardless of purchases</li>
             </ul>
 
-            <h3>Price Transparency</h3>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">
+              Price Transparency
+            </h3>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>Affiliate links do not increase your costs</li>
               <li>You'll see the same prices as direct customers</li>
               <li>Sale prices and discounts still apply</li>
             </ul>
 
-            <h2>7. Product Testing and Reviews</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              7. Product Testing and Reviews
+            </h2>
 
-            <h3>Our Review Process</h3>
-            <p>When reviewing products, we:</p>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">
+              Our Review Process
+            </h3>
+            <p className="text-lg leading-relaxed mb-6">
+              When reviewing products, we:
+            </p>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>
                 <strong>Test Personally:</strong> Use products for sufficient
                 time to form opinions
@@ -244,8 +288,10 @@ export default function AffiliateDisclosurePage() {
               </li>
             </ul>
 
-            <h3>Review Standards</h3>
-            <ul>
+            <h3 className="text-2xl font-semibold text-[#1a1a1a] mb-6 mt-12">
+              Review Standards
+            </h3>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>We never guarantee specific results from any product</li>
               <li>Individual experiences may vary</li>
               <li>We encourage reading multiple reviews before purchasing</li>
@@ -254,13 +300,15 @@ export default function AffiliateDisclosurePage() {
               </li>
             </ul>
 
-            <h2>8. FTC Compliance</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              8. FTC Compliance
+            </h2>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-6">
               We comply with Federal Trade Commission (FTC) guidelines regarding
               affiliate marketing:
             </p>
-            <ul>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>
                 <strong>Material Connection:</strong> We disclose all affiliate
                 relationships
@@ -279,20 +327,28 @@ export default function AffiliateDisclosurePage() {
               </li>
             </ul>
 
-            <h2>9. International Considerations</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              9. International Considerations
+            </h2>
 
-            <p>For international readers:</p>
-            <ul>
+            <p className="text-lg leading-relaxed mb-6">
+              For international readers:
+            </p>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>Affiliate programs may vary by country</li>
               <li>Some links may not work outside the US</li>
               <li>Local alternatives may be available</li>
               <li>Currency and shipping costs may differ</li>
             </ul>
 
-            <h2>10. Contact Us About Affiliates</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              10. Contact Us About Affiliates
+            </h2>
 
-            <p>If you have questions about our affiliate relationships:</p>
-            <ul>
+            <p className="text-lg leading-relaxed mb-6">
+              If you have questions about our affiliate relationships:
+            </p>
+            <ul className="text-lg leading-relaxed mb-12 space-y-3">
               <li>
                 <strong>Email:</strong> affiliates@habitnova.com
               </li>
@@ -308,31 +364,35 @@ export default function AffiliateDisclosurePage() {
               </li>
             </ul>
 
-            <h2>11. Changes to This Disclosure</h2>
+            <h2 className="text-3xl font-bold text-[#1a1a1a] mb-8 mt-16">
+              11. Changes to This Disclosure
+            </h2>
 
-            <p>We may update this disclosure to reflect:</p>
-            <ul>
+            <p className="text-lg leading-relaxed mb-6">
+              We may update this disclosure to reflect:
+            </p>
+            <ul className="text-lg leading-relaxed mb-8 space-y-3">
               <li>New affiliate partnerships</li>
               <li>Changes in FTC guidelines</li>
               <li>Updates to our policies</li>
             </ul>
 
-            <p>
+            <p className="text-lg leading-relaxed mb-12">
               Significant changes will be noted with an updated "Last modified"
               date.
             </p>
 
-            <div className="mt-12 p-6 bg-gray-50 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3">
+            <div className="mt-16 p-8 bg-gray-50 rounded-xl">
+              <h3 className="text-xl font-semibold mb-6">
                 Our Commitment to You
               </h3>
-              <p className="text-sm mb-3">
+              <p className="text-lg leading-relaxed mb-6">
                 We believe in complete transparency about our affiliate
                 relationships. Our goal is to help you build better habits, and
                 any commissions we earn help us continue creating valuable, free
                 content for our community.
               </p>
-              <ul className="space-y-2 text-sm">
+              <ul className="space-y-4 text-lg leading-relaxed">
                 <li>• We only recommend products we genuinely believe in</li>
                 <li>• Affiliate links never cost you extra money</li>
                 <li>• Our reviews are honest and unbiased</li>
@@ -341,8 +401,8 @@ export default function AffiliateDisclosurePage() {
               </ul>
             </div>
 
-            <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800">
+            <div className="mt-12 p-6 bg-yellow-50 border border-yellow-200 rounded-xl">
+              <p className="text-lg text-yellow-800">
                 <strong>Last Updated:</strong>{' '}
                 {new Date().toLocaleDateString('en-US', {
                   year: 'numeric',
