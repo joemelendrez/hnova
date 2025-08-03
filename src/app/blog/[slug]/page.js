@@ -1,4 +1,4 @@
-// src/app/blog/[slug]/page.js
+// src/app/blog/[slug]/page.js - Enhanced with better 404 handling
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import {
@@ -10,16 +10,24 @@ import {
 import BlogPostClient from '@/components/BlogPostClient';
 import BlogPostSkeleton from '@/components/BlogPostSkeleton';
 
-// Production caching strategy
+// Enhanced caching strategy for better error handling
 export const revalidate = 3600; // 1 hour cache
-export const dynamic = 'force-static'; // Pre-generate at build time
+export const dynamic = 'auto'; // Changed from 'force-static' to 'auto'
 export const dynamicParams = true; // Allow new posts without rebuild
 
 // Generate static params for all blog posts with error handling
 export async function generateStaticParams() {
   try {
     console.log('🔄 Generating static params for blog posts...');
-    const posts = await getAllPosts(100); // Get more posts for static generation
+
+    // Add timeout and better error handling
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout')), 10000)
+    );
+
+    const postsPromise = getAllPosts(50); // Reduced from 100 for better performance
+
+    const posts = await Promise.race([postsPromise, timeoutPromise]);
 
     if (!posts?.edges || posts.edges.length === 0) {
       console.warn('⚠️ No posts found for static generation');
@@ -36,6 +44,7 @@ export async function generateStaticParams() {
     return params;
   } catch (error) {
     console.error('❌ Error generating static params:', error);
+    // Return empty array instead of throwing - this allows the site to build
     return [];
   }
 }
@@ -58,7 +67,14 @@ export async function generateMetadata({ params }) {
 
   try {
     console.log(`🔍 Generating metadata for: ${slug}`);
-    const post = await getPostBySlug(slug);
+
+    // Add timeout for metadata generation
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Metadata timeout')), 5000)
+    );
+
+    const postPromise = getPostBySlug(slug);
+    const post = await Promise.race([postPromise, timeoutPromise]);
 
     if (!post) {
       console.log(`❌ Post not found for metadata: ${slug}`);
@@ -205,42 +221,60 @@ async function getRelatedPosts(post, maxPosts = 3) {
   try {
     console.log(`🔗 Fetching related posts for: ${post.title}`);
 
+    // Add timeout for related posts
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Related posts timeout')), 3000)
+    );
+
     // Try to get posts from the same category first
     if (post.categorySlug) {
-      const categoryPosts = await getPostsByCategory(
-        post.categorySlug,
-        maxPosts + 3
-      );
+      try {
+        const categoryPromise = getPostsByCategory(
+          post.categorySlug,
+          maxPosts + 3
+        );
+        const categoryPosts = await Promise.race([
+          categoryPromise,
+          timeoutPromise,
+        ]);
 
-      if (categoryPosts?.edges) {
-        const relatedFromCategory = categoryPosts.edges
-          .map((edge) => formatPostData(edge.node))
-          .filter((relatedPost) => relatedPost.slug !== post.slug) // Exclude current post
-          .slice(0, maxPosts);
+        if (categoryPosts?.edges) {
+          const relatedFromCategory = categoryPosts.edges
+            .map((edge) => formatPostData(edge.node))
+            .filter((relatedPost) => relatedPost.slug !== post.slug) // Exclude current post
+            .slice(0, maxPosts);
 
-        if (relatedFromCategory.length >= maxPosts) {
-          console.log(
-            `✅ Found ${relatedFromCategory.length} related posts from category`
-          );
-          return relatedFromCategory;
+          if (relatedFromCategory.length >= maxPosts) {
+            console.log(
+              `✅ Found ${relatedFromCategory.length} related posts from category`
+            );
+            return relatedFromCategory;
+          }
         }
+      } catch (categoryError) {
+        console.warn('⚠️ Category posts fetch failed:', categoryError);
       }
     }
 
     // Fallback: get recent posts if not enough category matches
     console.log('🔄 Falling back to recent posts for related content');
-    const recentPosts = await getAllPosts(maxPosts + 3);
+    try {
+      const recentPromise = getAllPosts(maxPosts + 3);
+      const recentPosts = await Promise.race([recentPromise, timeoutPromise]);
 
-    if (recentPosts?.edges) {
-      const relatedPosts = recentPosts.edges
-        .map((edge) => formatPostData(edge.node))
-        .filter((relatedPost) => relatedPost.slug !== post.slug)
-        .slice(0, maxPosts);
+      if (recentPosts?.edges) {
+        const relatedPosts = recentPosts.edges
+          .map((edge) => formatPostData(edge.node))
+          .filter((relatedPost) => relatedPost.slug !== post.slug)
+          .slice(0, maxPosts);
 
-      console.log(
-        `✅ Found ${relatedPosts.length} recent posts as related content`
-      );
-      return relatedPosts;
+        console.log(
+          `✅ Found ${relatedPosts.length} recent posts as related content`
+        );
+        return relatedPosts;
+      }
+    } catch (recentError) {
+      console.warn('⚠️ Recent posts fetch failed:', recentError);
     }
 
     return [];
@@ -263,8 +297,14 @@ export default async function BlogPostPage({ params }) {
   try {
     console.log(`📖 Loading blog post: ${slug}`);
 
-    // Fetch the main post
-    const post = await getPostBySlug(slug);
+    // Add timeout for the main post fetch
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Post fetch timeout')), 8000)
+    );
+
+    // Fetch the main post with timeout
+    const postPromise = getPostBySlug(slug);
+    const post = await Promise.race([postPromise, timeoutPromise]);
 
     if (!post) {
       console.log(`❌ Post not found: ${slug}`);
@@ -274,7 +314,7 @@ export default async function BlogPostPage({ params }) {
     const formattedPost = formatPostData(post);
     console.log(`✅ Post loaded: ${formattedPost.title}`);
 
-    // Fetch related posts with error handling
+    // Fetch related posts with error handling (non-blocking)
     let relatedPosts = [];
     try {
       relatedPosts = await getRelatedPosts(formattedPost, 3);
@@ -291,12 +331,50 @@ export default async function BlogPostPage({ params }) {
   } catch (error) {
     console.error(`❌ Error loading blog post ${slug}:`, error);
 
-    // Check if it's a network/API error vs missing post
+    // More specific error handling
+    if (error.message?.includes('timeout')) {
+      console.error('Request timeout - WordPress may be slow or unavailable');
+    }
+
     if (error.message?.includes('not found') || error.status === 404) {
       notFound();
     }
 
-    // For other errors, still show 404 but log for debugging
+    // For WordPress connection issues, show a user-friendly error
+    if (
+      error.message?.includes('GraphQL') ||
+      error.message?.includes('fetch')
+    ) {
+      return (
+        <div className="pt-16 lg:pt-20 min-h-screen flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto px-4">
+            <h1 className="text-2xl font-bold text-[#1a1a1a] mb-4">
+              Content Temporarily Unavailable
+            </h1>
+            <p className="text-gray-600 mb-6">
+              We're having trouble loading this blog post. Please try again in a
+              few moments.
+            </p>
+            <div className="space-y-3">
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full bg-[#1a1a1a] text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                Try Again
+              </button>
+              <a
+                href="/blog"
+                className="block w-full bg-gray-200 text-[#1a1a1a] px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                Back to Blog
+              </a>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // For other unexpected errors, still show 404 but log for debugging
     console.error('Unexpected error in blog post page:', error);
     notFound();
   }

@@ -1,18 +1,6 @@
-// next.config.mjs - Enhanced caching and performance configuration
+// next.config.mjs - Fixed routing configuration
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-// Redirects for blog slugs only
-  async redirects() {
-    return [
-      {
-        // Only redirect URLs that look like blog post slugs
-        // Must contain hyphens and be longer than 10 characters (typical blog post pattern)
-        source: '/:slug([a-z0-9]+-[a-z0-9-]+)',
-        destination: '/blog/:slug',
-        permanent: true, // 301 redirect for SEO
-      },
-    ];
-  },
   // Image optimization
   images: {
     // Enable image optimization
@@ -28,13 +16,45 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'your-wordpress-site.com', // Replace with your WordPress domain
       },
+      {
+        protocol: 'https',
+        hostname: '**.amazonaws.com', // For AWS hosted images
+      },
+      {
+        protocol: 'https',
+        hostname: '**.cloudfront.net', // For CloudFront CDN
+      },
     ],
 
     // Image caching
     minimumCacheTTL: 31536000, // 1 year
   },
 
-  // Headers for better caching
+  // Custom redirects to handle URL structure properly
+  async redirects() {
+    return [
+      // Handle old blog URL patterns if needed
+      {
+        source: '/blog/:slug*/page/:page',
+        destination: '/blog/:slug*',
+        permanent: true,
+      },
+      // Add any other redirects you need
+    ];
+  },
+
+  // URL rewrites to handle complex routing
+  async rewrites() {
+    return [
+      // Ensure blog posts with any length slug work correctly
+      {
+        source: '/blog/:slug*',
+        destination: '/blog/:slug*',
+      },
+    ];
+  },
+
+  // Headers for better caching and SEO
   async headers() {
     return [
       // Cache static assets aggressively
@@ -48,7 +68,7 @@ const nextConfig = {
         ],
       },
 
-      // Cache API responses
+      // Cache API responses with revalidation
       {
         source: '/api/:path*',
         headers: [
@@ -75,9 +95,20 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
         ],
       },
     ];
+  },
+
+  // Experimental features for better performance
+  experimental: {
+    // Enable optimizeCss for better CSS optimization
+    optimizeCss: true,
+
   },
 
   // Compress responses
@@ -121,10 +152,31 @@ const nextConfig = {
       };
     }
 
+    // Add support for reading .md files if needed
+    config.module.rules.push({
+      test: /\.md$/,
+      use: 'raw-loader',
+    });
 
     return config;
   },
 
+  // Environment variables available to the client
+  env: {
+    CUSTOM_KEY: process.env.CUSTOM_KEY,
+  },
+
+  // Page extensions (add this if you're using custom extensions)
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
+
+  // Trailing slash configuration
+  trailingSlash: false,
+
+  // Asset prefix for CDN (if using one)
+  // assetPrefix: process.env.NODE_ENV === 'production' ? 'https://cdn.habitnova.com' : '',
+
+  // Base path if deploying to a subdirectory
+  // basePath: '/blog',
 };
 
 export default nextConfig;
