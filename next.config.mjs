@@ -39,7 +39,7 @@ const nextConfig = {
       // Replace 'your-store-name' with your actual store name
       {
         protocol: 'https',
-        hostname: 'your-store-name.myshopify.com',
+        hostname: 'habitnova-co.myshopify.com',
         pathname: '/**',
       },
       // Shopify's product image CDN patterns
