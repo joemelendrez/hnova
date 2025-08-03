@@ -21,12 +21,15 @@ export default function CartDrawer() {
 
   const lineItems = checkout?.lineItems || [];
 
-  // Format price from Shopify price object
+  // Format price from Shopify price object with proper decimal places
   const formatPrice = (price) => {
     if (typeof price === 'object' && price.amount) {
-      return price.amount;
+      return parseFloat(price.amount).toFixed(2);
     }
-    return price || '0.00';
+    if (typeof price === 'string' || typeof price === 'number') {
+      return parseFloat(price || 0).toFixed(2);
+    }
+    return '0.00';
   };
 
   return (
@@ -90,15 +93,19 @@ export default function CartDrawer() {
                       className="flex gap-4 p-4 border border-gray-200 rounded-lg"
                     >
                       {/* Product Image */}
-                      <div className="relative w-16 h-16 flex-shrink-0">
-                        <Image
+                      <div className="relative w-16 h-16 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden">
+                        <img
                           src={
                             item.variant?.image?.src ||
-                            '/placeholder-product.webp'
+                            item.variant?.image?.transformedSrc ||
+                            'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&h=100&fit=crop'
                           }
                           alt={item.title}
-                          fill
-                          className="object-cover rounded-lg"
+                          className="w-full h-full object-cover object-center"
+                          onError={(e) => {
+                            e.target.src =
+                              'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=100&h=100&fit=crop';
+                          }}
                         />
                       </div>
 
@@ -113,7 +120,7 @@ export default function CartDrawer() {
                           </p>
                         )}
 
-                        {/* Price */}
+                        {/* Price with proper formatting */}
                         <p className="font-bold text-[#1a1a1a] mt-2">
                           ${formatPrice(item.variant?.price)}
                         </p>
@@ -125,7 +132,7 @@ export default function CartDrawer() {
                               updateCartQuantity(item.id, item.quantity - 1)
                             }
                             disabled={cartLoading || item.quantity <= 1}
-                            className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
+                            className="p-1 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Minus className="h-3 w-3" />
                           </button>
@@ -139,7 +146,7 @@ export default function CartDrawer() {
                               updateCartQuantity(item.id, item.quantity + 1)
                             }
                             disabled={cartLoading}
-                            className="p-1 hover:bg-gray-100 rounded disabled:opacity-50"
+                            className="p-1 hover:bg-gray-100 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             <Plus className="h-3 w-3" />
                           </button>
@@ -148,7 +155,7 @@ export default function CartDrawer() {
                           <button
                             onClick={() => removeFromCart(item.id)}
                             disabled={cartLoading}
-                            className="ml-auto text-red-500 hover:text-red-700 text-sm disabled:opacity-50"
+                            className="ml-auto text-red-500 hover:text-red-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Remove
                           </button>
@@ -163,7 +170,7 @@ export default function CartDrawer() {
             {/* Footer */}
             {lineItems.length > 0 && (
               <div className="border-t p-6 space-y-4">
-                {/* Subtotal */}
+                {/* Subtotal with proper formatting */}
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-medium">Subtotal:</span>
                   <span className="text-xl font-bold text-[#1a1a1a]">
@@ -180,7 +187,7 @@ export default function CartDrawer() {
                 <button
                   onClick={proceedToCheckout}
                   disabled={cartLoading}
-                  className="w-full bg-[#1a1a1a] text-white py-4 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="w-full bg-[#1a1a1a] text-white py-4 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {cartLoading ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

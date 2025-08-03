@@ -11,6 +11,7 @@ import {
   Zap,
   CheckCircle,
 } from 'lucide-react';
+import { useCart } from '../app/hooks/useShopifyCart';
 
 const ProductFeatured = () => {
   const [products, setProducts] = useState([]);
@@ -241,7 +242,10 @@ const ProductFeatured = () => {
     ];
   }
 
-  const ProductCard = ({ product, index, isFeatured = false }) => {
+  const ProductCard = ({ product, index }) => {
+    const [addingToCart, setAddingToCart] = useState(false);
+    const { addToCart, cartLoading } = useCart();
+
     const isOnSale =
       product.originalPrice &&
       parseFloat(product.originalPrice) > parseFloat(product.price);
@@ -254,33 +258,49 @@ const ProductFeatured = () => {
         ).toFixed(0)
       : 0;
 
+    // Handle adding to cart
+    const handleAddToCart = async (e) => {
+      e.preventDefault(); // Prevent navigation
+      e.stopPropagation(); // Stop event bubbling
+
+      if (
+        !product.available ||
+        addingToCart ||
+        cartLoading ||
+        !product.variantId
+      )
+        return;
+
+      setAddingToCart(true);
+
+      try {
+        await addToCart(product.variantId, 1);
+        console.log('Product added to cart successfully!');
+        // Optional: Show a toast notification here
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        alert('Error adding product to cart. Please try again.');
+      } finally {
+        setAddingToCart(false);
+      }
+    };
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay: index * 0.1 }}
-        className={`h-full ${isFeatured ? 'lg:col-span-2 lg:row-span-2' : ''}`}
+        className="h-full"
       >
-        <Link
-          href={`/shop/products/${product.slug}`}
-          className="group h-full block"
-        >
-          <div
-            className={`bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 h-full flex ${
-              isFeatured ? 'lg:flex-row' : 'flex-col'
-            }`}
-          >
-            {/* Product Image */}
-            <div
-              className={`relative ${
-                isFeatured ? 'lg:w-1/2 h-64 lg:h-auto' : 'h-48'
-              } flex-shrink-0`}
-            >
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 h-full flex flex-col">
+          {/* Product Image - Make this a link */}
+          <Link href={`/shop/products/${product.slug}`} className="block">
+            <div className="relative h-48 flex-shrink-0 bg-gray-100">
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
                 onError={(e) => {
                   e.target.src =
                     'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop';
@@ -289,7 +309,7 @@ const ProductFeatured = () => {
 
               {/* Badges */}
               {product.badge && (
-                <div className="absolute top-4 left-4">
+                <div className="absolute top-4 left-4 z-10">
                   <span
                     className={`px-3 py-1 text-xs font-bold rounded-full ${
                       product.badge === 'BESTSELLER'
@@ -308,7 +328,7 @@ const ProductFeatured = () => {
 
               {/* Sale Badge */}
               {isOnSale && (
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4 z-10">
                   <span className="bg-red-500 text-white px-2 py-1 text-xs font-bold rounded-full">
                     {savings}% OFF
                   </span>
@@ -317,102 +337,93 @@ const ProductFeatured = () => {
 
               {/* Out of Stock Overlay */}
               {!product.available && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
                   <span className="text-white font-medium text-sm">
                     Out of Stock
                   </span>
                 </div>
               )}
             </div>
+          </Link>
 
-            {/* Product Info - Keep your existing JSX structure */}
-            <div
-              className={`p-6 flex flex-col flex-grow ${
-                isFeatured ? 'lg:w-1/2' : ''
-              }`}
-            >
-              {/* Rating */}
-              <div className="flex items-center mb-3">
-                <div className="flex text-yellow-400 mr-2">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-4 w-4 ${
-                        i < Math.floor(product.rating) ? 'fill-current' : ''
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className="text-sm text-gray-600">
-                  {product.rating} ({product.reviewCount} reviews)
-                </span>
+          {/* Product Info */}
+          <div className="p-6 flex flex-col flex-grow">
+            {/* Rating */}
+            <div className="flex items-center mb-3">
+              <div className="flex text-yellow-400 mr-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-4 w-4 ${
+                      i < Math.floor(product.rating) ? 'fill-current' : ''
+                    }`}
+                  />
+                ))}
               </div>
+              <span className="text-sm text-gray-600">
+                {product.rating} ({product.reviewCount} reviews)
+              </span>
+            </div>
 
-              {/* Product Name */}
-              <h3
-                className={`font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors leading-tight ${
-                  isFeatured ? 'text-2xl' : 'text-lg'
-                }`}
-              >
+            {/* Product Name - Also a link */}
+            <Link href={`/shop/products/${product.slug}`}>
+              <h3 className="text-lg font-bold text-[#1a1a1a] mb-3 hover:text-gray-700 transition-colors leading-tight cursor-pointer">
                 {product.name}
               </h3>
+            </Link>
 
-              {/* Description */}
-              <p
-                className={`text-gray-600 mb-4 leading-relaxed flex-grow ${
-                  isFeatured ? 'text-base' : 'text-sm'
-                }`}
-              >
-                {product.description}
-              </p>
+            {/* Description */}
+            <p className="text-sm text-gray-600 mb-4 leading-relaxed flex-grow">
+              {product.description}
+            </p>
 
-              {/* Features (Featured product only) */}
-              {isFeatured && product.features && (
-                <div className="mb-6">
-                  <h4 className="font-semibold text-[#1a1a1a] mb-3">
-                    What's Included:
-                  </h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {product.features.map((feature, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center text-sm text-gray-700"
-                      >
-                        <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                        {feature}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            {/* Price */}
+            <div className="flex items-center mb-4">
+              <span className="text-xl font-bold text-[#1a1a1a]">
+                ${parseFloat(product.price).toFixed(2)}
+              </span>
+              {isOnSale && (
+                <span className="text-gray-500 line-through ml-2 text-lg">
+                  ${parseFloat(product.originalPrice).toFixed(2)}
+                </span>
               )}
-
-              {/* Price */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center">
-                  <span
-                    className={`font-bold text-[#1a1a1a] ${
-                      isFeatured ? 'text-2xl' : 'text-xl'
-                    }`}
-                  >
-                    ${product.price}
-                  </span>
-                  {isOnSale && (
-                    <span className="text-gray-500 line-through ml-2 text-lg">
-                      ${product.originalPrice}
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* CTA Button */}
-              <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700 mt-auto">
-                <ShoppingBag className="mr-2 h-5 w-5" />
-                {product.available ? 'View Product' : 'Out of Stock'}
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
-              </div>
             </div>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={
+                !product.available ||
+                addingToCart ||
+                cartLoading ||
+                !product.variantId
+              }
+              className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 mb-3 ${
+                product.available && product.variantId
+                  ? addingToCart || cartLoading
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-[#1a1a1a] hover:bg-gray-800 text-white transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              <ShoppingBag className="h-4 w-4" />
+              {addingToCart || cartLoading
+                ? 'Adding...'
+                : product.available && product.variantId
+                ? 'Add to Cart'
+                : 'Out of Stock'}
+            </button>
+
+            {/* View Details Link */}
+            <Link
+              href={`/shop/products/${product.slug}`}
+              className="flex items-center justify-center text-[#1a1a1a] font-medium hover:text-gray-700 transition-colors text-sm"
+            >
+              View Details
+              <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+            </Link>
           </div>
-        </Link>
+        </div>
       </motion.div>
     );
   };
@@ -468,8 +479,8 @@ const ProductFeatured = () => {
     );
   }
 
-  const featuredProduct = products.find((p) => p.isFeatured);
-  const otherProducts = products.filter((p) => !p.isFeatured);
+  const featuredProduct = null; // Remove featured product logic
+  const otherProducts = products; // All products are treated equally
 
   // Keep your existing render JSX structure - just replace the products data
   return (
@@ -496,20 +507,10 @@ const ProductFeatured = () => {
           </p>
         </motion.div>
 
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-12">
-          {/* Featured Product (Large) */}
-          {featuredProduct && (
-            <ProductCard
-              product={featuredProduct}
-              index={0}
-              isFeatured={true}
-            />
-          )}
-
-          {/* Other Products */}
-          {otherProducts.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index + 1} />
+        {/* Products Grid - Unified 4-column layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {products.map((product, index) => (
+            <ProductCard key={product.id} product={product} index={index} />
           ))}
         </div>
 
