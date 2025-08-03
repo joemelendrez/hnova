@@ -39,7 +39,23 @@ const nextConfig = {
         destination: '/blog/:slug*',
         permanent: true,
       },
-      // Add any other redirects you need
+
+      // Redirect URLs with 3+ hyphenated words to blog (likely blog posts)
+      // This matches URLs like: /10-daily-habits-of-6-figure-freelancers
+      // But NOT short URLs like: /about or /contact-us
+      {
+        source: '/:slug([a-z0-9]+-[a-z0-9]+-[a-z0-9-]+)',
+        destination: '/blog/:slug',
+        permanent: true,
+      },
+
+      // ADD YOUR SPECIFIC BLOG POST REDIRECTS HERE (if needed)
+      // Example format:
+      // {
+      //   source: '/your-blog-post-slug',
+      //   destination: '/blog/your-blog-post-slug',
+      //   permanent: true,
+      // },
     ];
   },
 
@@ -102,13 +118,6 @@ const nextConfig = {
         ],
       },
     ];
-  },
-
-  // Experimental features for better performance
-  experimental: {
-    // Enable optimizeCss for better CSS optimization
-    optimizeCss: true,
-
   },
 
   // Compress responses
