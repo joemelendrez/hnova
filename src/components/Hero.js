@@ -3,28 +3,84 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Download, ShoppingBag } from 'lucide-react';
 import Button from './Button';
+import { useLoading } from '../app/hooks/useLoading';
 
 const Hero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const parallaxRef = useRef(null);
   const rafRef = useRef(null);
   const scrollYRef = useRef(0);
-
+  const videoRef = useRef(null);
+  const { hideLoading } = useLoading();
+  
   // Check if device is mobile (guarded for SSR)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-
+    
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-
+    
     checkMobile();
     window.addEventListener('resize', checkMobile);
-
+    
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
+  
+  // Handle video loading with better error handling
+  useEffect(() => {
+    if (!isMobile && videoRef.current) {
+      const video = videoRef.current;
+      
+      const handleLoadedData = () => {
+        setVideoLoaded(true);
+        setVideoError(false);
+        // Hide loading screen once video is ready
+        setTimeout(() => {
+          hideLoading();
+        }, 500);
+      };
+      
+      const handleError = () => {
+        console.warn('Video failed to load, using fallback image');
+        setVideoError(true);
+        setVideoLoaded(false);
+        // Hide loading screen even if video fails
+        setTimeout(() => {
+          hideLoading();
+        }, 300);
+      };
+      
+      const handleCanPlay = () => {
+        // Ensure video actually starts playing
+        video.play().catch(() => {
+          console.warn('Video autoplay failed, using fallback');
+          setVideoError(true);
+        });
+      };
+      
+      video.addEventListener('loadeddata', handleLoadedData);
+      video.addEventListener('error', handleError);
+      video.addEventListener('canplay', handleCanPlay);
+      
+      // Preload the video
+      video.load();
+      
+      return () => {
+        video.removeEventListener('loadeddata', handleLoadedData);
+        video.removeEventListener('error', handleError);
+        video.removeEventListener('canplay', handleCanPlay);
+      };
+    } else if (isMobile) {
+      // On mobile, hide loading after a short delay since we're using static image
+      setTimeout(() => {
+        hideLoading();
+      }, 400);
+    }
+  }, [isMobile, hideLoading]);
+  
   // Smooth parallax animation with RAF
   const updateParallax = useCallback(() => {
     if (parallaxRef.current) {
@@ -32,16 +88,16 @@ const Hero = () => {
       parallaxRef.current.style.transform = `translate3d(0, ${offset}px, 0)`;
     }
   }, []);
-
+  
   // Optimized scroll handler with RAF
   useEffect(() => {
     if (typeof window === 'undefined' || !isMobile) return;
-
+    
     let ticking = false;
-
+    
     const handleScroll = () => {
       scrollYRef.current = window.scrollY;
-
+      
       if (!ticking) {
         rafRef.current = requestAnimationFrame(() => {
           updateParallax();
@@ -50,10 +106,10 @@ const Hero = () => {
         ticking = true;
       }
     };
-
+    
     // Use passive listener for better performance
     window.addEventListener('scroll', handleScroll, { passive: true });
-
+    
     return () => {
       window.removeEventListener('scroll', handleScroll);
       if (rafRef.current) {
@@ -61,20 +117,21 @@ const Hero = () => {
       }
     };
   }, [isMobile, updateParallax]);
-
+  
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
-      {/* Desktop: Video Background */}
+      {/* Desktop: Video Background with better handling */}
       {!isMobile && (
         <video
-          className="absolute inset-0 w-full h-full object-cover"
+          ref={videoRef}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+            videoLoaded && !videoError ? 'opacity-100' : 'opacity-0'
+          }`}
           autoPlay
           muted
           loop
           playsInline
-          preload="metadata"
-          onLoadedData={() => setVideoLoaded(true)}
-          style={{ display: videoLoaded ? 'block' : 'none' }}
+          preload="auto"
         >
           <source src="/HabitBackground.webm" type="video/webm" />
           <source src="/HabitBackground.mp4" type="video/mp4" />
@@ -96,13 +153,14 @@ const Hero = () => {
         />
       )}
 
-      {/* Desktop Fallback Background Image */}
+      {/* Desktop: Always-visible fallback background (no conditional rendering) */}
       {!isMobile && (
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
+            videoLoaded && !videoError ? 'opacity-0' : 'opacity-100'
+          }`}
           style={{
             backgroundImage: 'url(/HabitBackground.webp)',
-            display: videoLoaded ? 'none' : 'block',
           }}
         />
       )}
@@ -171,17 +229,13 @@ const Hero = () => {
             Get Free Guide
           </Button>
 
-          {/* Fixed Shop Tools Button with proper contrast */}
           <Button
             href="/shop"
             size="large"
             variant="outline"
             className="group relative border-2 border-white/40 text-white hover:border-white transition-all duration-300 min-w-[200px] hover:shadow-lg backdrop-blur-sm overflow-hidden"
           >
-            {/* Background overlay that slides in */}
             <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-0" />
-
-            {/* Content with proper z-index */}
             <div className="relative z-10 flex items-center justify-center group-hover:text-[#1a1a1a] transition-colors duration-300">
               <ShoppingBag className="mr-2 h-5 w-5" />
               Shop Tools
