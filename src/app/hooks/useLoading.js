@@ -1,4 +1,4 @@
-// src/app/hooks/useLoading.js - SSR-safe version
+// src/app/hooks/useLoading.js - Ultra-safe SSR version
 'use client';
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
@@ -9,22 +9,30 @@ export const LoadingProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState(null);
   const [isClient, setIsClient] = useState(false);
-  const pathname = usePathname();
   
-  // Prevent SSR issues
+  // Use try-catch for pathname to handle SSR edge cases
+  let pathname = '/';
+  try {
+    pathname = usePathname();
+  } catch (error) {
+    // Fallback for SSR or edge cases
+    console.log('Pathname not available during SSR');
+  }
+  
+  // Client-side detection
   useEffect(() => {
     setIsClient(true);
   }, []);
   
-  // Stable callback functions to prevent unnecessary re-renders
+  // Stable callback functions
   const showLoading = useCallback(() => {
-    if (isClient) {
+    if (typeof window !== 'undefined' && isClient) {
       setIsLoading(true);
     }
   }, [isClient]);
   
   const hideLoading = useCallback(() => {
-    if (isClient) {
+    if (typeof window !== 'undefined' && isClient) {
       if (loadingTimeout) {
         clearTimeout(loadingTimeout);
         setLoadingTimeout(null);
@@ -33,9 +41,9 @@ export const LoadingProvider = ({ children }) => {
     }
   }, [isClient, loadingTimeout]);
   
-  // Handle route changes with proper cleanup - only on client
+  // Handle route changes - only on client
   useEffect(() => {
-    if (!isClient) return;
+    if (!isClient || typeof window === 'undefined') return;
     
     // Clear any existing timeout
     if (loadingTimeout) {
@@ -45,18 +53,17 @@ export const LoadingProvider = ({ children }) => {
     // Show loading immediately on route change
     setIsLoading(true);
     
-    // Set a minimum loading time and maximum timeout
+    // Set timers
     const minLoadingTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 800); // Minimum 800ms loading
+    }, 800);
     
     const maxLoadingTimer = setTimeout(() => {
       setIsLoading(false);
-    }, 3000); // Maximum 3s loading
+    }, 3000);
     
     setLoadingTimeout(maxLoadingTimer);
     
-    // Cleanup function
     return () => {
       clearTimeout(minLoadingTimer);
       clearTimeout(maxLoadingTimer);
@@ -85,13 +92,11 @@ export const LoadingProvider = ({ children }) => {
   );
 };
 
-// SSR-safe hook with fallback
+// Ultra-safe hook that never throws
 export const useLoading = () => {
-  const context = useContext(LoadingContext);
-  
-  // Provide safe fallbacks for SSR
-  if (context === undefined) {
-    console.warn('useLoading must be used within a LoadingProvider. Providing fallback.');
+  // Add extra safety checks
+  if (typeof window === 'undefined') {
+    // Server-side fallback
     return {
       isLoading: false,
       showLoading: () => {},
@@ -99,5 +104,27 @@ export const useLoading = () => {
     };
   }
   
-  return context;
+  try {
+    const context = useContext(LoadingContext);
+    
+    if (context === undefined) {
+      // Fallback if no provider
+      console.warn('useLoading used outside provider, providing fallback');
+      return {
+        isLoading: false,
+        showLoading: () => {},
+        hideLoading: () => {},
+      };
+    }
+    
+    return context;
+  } catch (error) {
+    // Catch any unexpected errors
+    console.warn('Error in useLoading hook:', error);
+    return {
+      isLoading: false,
+      showLoading: () => {},
+      hideLoading: () => {},
+    };
+  }
 };
