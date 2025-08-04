@@ -9,15 +9,21 @@ const Hero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const parallaxRef = useRef(null);
   const rafRef = useRef(null);
   const scrollYRef = useRef(0);
   const videoRef = useRef(null);
   const { hideLoading } = useLoading();
   
+  // Prevent hydration mismatch with React 19
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
   // Check if device is mobile (guarded for SSR)
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!mounted || typeof window === 'undefined') return;
     
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -27,59 +33,63 @@ const Hero = () => {
     window.addEventListener('resize', checkMobile);
     
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
+  }, [mounted]);
   
   // Handle video loading with better error handling
   useEffect(() => {
-    if (!isMobile && videoRef.current) {
-      const video = videoRef.current;
-      
-      const handleLoadedData = () => {
-        setVideoLoaded(true);
-        setVideoError(false);
-        // Hide loading screen once video is ready
-        setTimeout(() => {
+    if (!mounted || !videoRef.current || isMobile) {
+      // On mobile or before mount, hide loading after a short delay
+      if (mounted && isMobile) {
+        const timer = setTimeout(() => {
           hideLoading();
-        }, 500);
-      };
-      
-      const handleError = () => {
-        console.warn('Video failed to load, using fallback image');
-        setVideoError(true);
-        setVideoLoaded(false);
-        // Hide loading screen even if video fails
-        setTimeout(() => {
-          hideLoading();
-        }, 300);
-      };
-      
-      const handleCanPlay = () => {
-        // Ensure video actually starts playing
-        video.play().catch(() => {
-          console.warn('Video autoplay failed, using fallback');
-          setVideoError(true);
-        });
-      };
-      
-      video.addEventListener('loadeddata', handleLoadedData);
-      video.addEventListener('error', handleError);
-      video.addEventListener('canplay', handleCanPlay);
-      
-      // Preload the video
-      video.load();
-      
-      return () => {
-        video.removeEventListener('loadeddata', handleLoadedData);
-        video.removeEventListener('error', handleError);
-        video.removeEventListener('canplay', handleCanPlay);
-      };
-    } else if (isMobile) {
-      // On mobile, hide loading after a short delay since we're using static image
+        }, 400);
+        return () => clearTimeout(timer);
+      }
+      return;
+    }
+    
+    const video = videoRef.current;
+    
+    const handleLoadedData = () => {
+      setVideoLoaded(true);
+      setVideoError(false);
+      // Hide loading screen once video is ready
       setTimeout(() => {
         hideLoading();
-      }, 400);
-    }
-  }, [isMobile, hideLoading]);
+      }, 500);
+    };
+    
+    const handleError = () => {
+      console.warn('Video failed to load, using fallback image');
+      setVideoError(true);
+      setVideoLoaded(false);
+      // Hide loading screen even if video fails
+      setTimeout(() => {
+        hideLoading();
+      }, 300);
+    };
+    
+    const handleCanPlay = () => {
+      // Ensure video actually starts playing
+      video.play().catch(() => {
+        console.warn('Video autoplay failed, using fallback');
+        setVideoError(true);
+      });
+    };
+    
+    video.addEventListener('loadeddata', handleLoadedData);
+    video.addEventListener('error', handleError);
+    video.addEventListener('canplay', handleCanPlay);
+    
+    // Preload the video
+    video.load();
+    
+    return () => {
+      video.removeEventListener('loadeddata', handleLoadedData);
+      video.removeEventListener('error', handleError);
+      video.removeEventListener('canplay', handleCanPlay);
+    };
+  }, [mounted, isMobile, hideLoading]);
   
   // Smooth parallax animation with RAF
   const updateParallax = useCallback(() => {
@@ -91,7 +101,7 @@ const Hero = () => {
   
   // Optimized scroll handler with RAF
   useEffect(() => {
-    if (typeof window === 'undefined' || !isMobile) return;
+    if (!mounted || typeof window === 'undefined' || !isMobile) return;
     
     let ticking = false;
     
@@ -116,7 +126,17 @@ const Hero = () => {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [isMobile, updateParallax]);
+  }, [mounted, isMobile, updateParallax]);
+  
+  // Don't render until mounted to prevent hydration issues
+  if (!mounted) {
+    return (
+      <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
+        {/* Placeholder content */}
+        <div className="absolute inset-0 bg-black/60" />
+      </section>
+    );
+  }
   
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
@@ -153,7 +173,7 @@ const Hero = () => {
         />
       )}
 
-      {/* Desktop: Always-visible fallback background (no conditional rendering) */}
+      {/* Desktop: Always-visible fallback background */}
       {!isMobile && (
         <div
           className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
