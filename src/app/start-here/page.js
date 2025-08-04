@@ -79,7 +79,7 @@ export default function StartHerePage() {
 
   if (isSubmitted) {
     return (
-      <div className="pt-16 lg:pt-20 min-h-screen bg-gradient-to-br from-[#1a1a1a] to-gray-800 text-white flex items-center">
+      <div className="pt-16 lg:pt-20 min-h-screen bg-[#1a1a1a] text-white flex items-center">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -94,7 +94,7 @@ export default function StartHerePage() {
               Check Your Email!
             </h1>
             
-            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto">
+            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto font-anton">
               We've sent your <strong>Complete Habit Formation Guide</strong> to your inbox. 
               Check your email (and spam folder) for the download link.
             </p>
