@@ -94,7 +94,7 @@ export default function StartHerePage() {
               Check Your Email!
             </h1>
             
-            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto font-anton">
+            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto">
               We've sent your <strong>Complete Habit Formation Guide</strong> to your inbox. 
               Check your email (and spam folder) for the download link.
             </p>
