@@ -19,26 +19,36 @@ export default function StartHerePage() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
 
-    // Simulate API call - Replace with your actual email capture service
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Here you would integrate with:
-      // - ConvertKit
-      // - Mailchimp
-      // - EmailOctopus
-      // - Your backend API
-      
-      console.log('Email submitted:', email);
+      // Call Mailchimp API integration
+      const response = await fetch('/api/subscribe-simple', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Something went wrong');
+      }
+
+      // Success! Show email confirmation message
       setIsSubmitted(true);
       setEmail('');
+      
     } catch (error) {
-      console.error('Error submitting email:', error);
+      console.error('Error subscribing:', error);
+      setError(error.message || 'Failed to subscribe. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -77,6 +87,7 @@ export default function StartHerePage() {
     }
   ];
 
+  // Success state - Email sent confirmation
   if (isSubmitted) {
     return (
       <div className="pt-16 lg:pt-20 min-h-screen bg-[#1a1a1a] text-white flex items-center">
@@ -87,7 +98,7 @@ export default function StartHerePage() {
             transition={{ duration: 0.6 }}
           >
             <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-8">
-              <CheckCircle className="h-10 w-10 text-white" />
+              <Mail className="h-10 w-10 text-white" />
             </div>
             
             <h1 className="text-4xl md:text-5xl font-anton uppercase mb-6">
@@ -95,40 +106,54 @@ export default function StartHerePage() {
             </h1>
             
             <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto">
-              We've sent your <strong>Complete Habit Formation Guide</strong> to your inbox. 
-              Check your email (and spam folder) for the download link.
+              We've sent your <strong>Complete Habit Formation Guide</strong> directly to your inbox. 
+              The PDF will arrive within the next few minutes.
             </p>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-8 max-w-md mx-auto">
-              <h3 className="font-semibold mb-3">What's Next?</h3>
+              <h3 className="font-semibold mb-3">What to do next:</h3>
               <div className="space-y-2 text-left">
                 <div className="flex items-center">
                   <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-                  <span className="text-sm">Download your guide</span>
+                  <span className="text-sm">Check your email (including spam/promotions)</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-                  <span className="text-sm">Start with the 21-day plan</span>
+                  <span className="text-sm">Download the PDF attachment</span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-                  <span className="text-sm">Join our weekly newsletter</span>
+                  <span className="text-sm">Start with the 21-day plan today</span>
                 </div>
               </div>
+            </div>
+
+            <div className="bg-blue-900/20 border border-blue-400 rounded-xl p-6 mb-8 max-w-lg mx-auto">
+              <div className="flex items-center justify-center mb-3">
+                <Mail className="h-5 w-5 text-blue-400 mr-2" />
+                <span className="text-blue-300 font-semibold">Email sent to:</span>
+              </div>
+              <p className="text-white text-lg font-medium">{email || 'your email address'}</p>
             </div>
 
             <Button
               href="/blog"
               variant="cta"
               size="large"
-              className="mb-4"
+              className="mb-6"
             >
               Explore Our Blog
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
 
             <p className="text-sm text-gray-400">
-              Didn't receive the email? <button className="text-[#DBDBDB] hover:underline">Click here to resend</button>
+              Didn't receive the email? Check your spam folder or{' '}
+              <button 
+                onClick={() => setIsSubmitted(false)} 
+                className="text-[#DBDBDB] hover:underline"
+              >
+                try again
+              </button>
             </p>
           </motion.div>
         </div>
@@ -168,7 +193,7 @@ export default function StartHerePage() {
                 </div>
               </div>
               <p className="text-sm text-gray-300">
-                Limited time: Get instant access to our 47-page guide
+                Limited time: Get instant access to our 25-page guide
               </p>
             </div>
           </motion.div>
@@ -188,7 +213,17 @@ export default function StartHerePage() {
               Get Your Free Guide Now
             </h2>
 
+            <p className="text-lg text-gray-600 mb-8">
+              Enter your email and we'll send the PDF directly to your inbox
+            </p>
+
             <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+              {error && (
+                <div className="text-red-500 text-sm mb-4 text-center bg-red-50 p-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+              
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <input
                   type="email"
@@ -200,7 +235,7 @@ export default function StartHerePage() {
                 />
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || !email}
                   className="bg-[#DBDBDB] hover:bg-gray-300 text-[#1a1a1a] px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-w-[120px]"
                 >
                   {isLoading ? (
@@ -209,8 +244,8 @@ export default function StartHerePage() {
                     </div>
                   ) : (
                     <>
-                      <Download className="inline h-4 w-4 mr-2" />
-                      Get Guide
+                      <Mail className="inline h-4 w-4 mr-2" />
+                      Send Guide
                     </>
                   )}
                 </button>
@@ -219,7 +254,7 @@ export default function StartHerePage() {
               <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
                 <div className="flex items-center">
                   <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
-                  Instant download
+                  Instant delivery
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
@@ -249,7 +284,7 @@ export default function StartHerePage() {
               What's Inside Your Guide
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              47 pages of actionable strategies, proven frameworks, and practical tools
+              25 pages of actionable strategies, proven frameworks, and practical tools
             </p>
           </motion.div>
 
@@ -336,10 +371,16 @@ export default function StartHerePage() {
             </h2>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Download your free guide now and start your transformation today.
+              Get your free guide delivered straight to your email and start your transformation today.
             </p>
 
             <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+              {error && (
+                <div className="text-red-500 text-sm mb-4 text-center bg-red-50 p-3 rounded-lg">
+                  {error}
+                </div>
+              )}
+              
               <div className="flex flex-col sm:flex-row gap-4 mb-4">
                 <input
                   type="email"
@@ -351,7 +392,7 @@ export default function StartHerePage() {
                 />
                 <button
                   type="submit"
-                  disabled={isLoading}
+                  disabled={isLoading || !email}
                   className="bg-[#DBDBDB] hover:bg-gray-300 text-[#1a1a1a] px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
