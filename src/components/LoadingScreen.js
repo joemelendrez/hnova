@@ -7,7 +7,7 @@ const LoadingScreen = ({ isVisible = true }) => {
 
   return (
     <motion.div
-      className="fixed inset-0 bg-[#DBDBDB] flex items-center justify-center z-[9999]"
+      className="fixed inset-0 bg-[#1a1a1a] flex items-center justify-center z-[9999]"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
@@ -17,7 +17,7 @@ const LoadingScreen = ({ isVisible = true }) => {
         {[0, 1, 2].map((index) => (
           <motion.div
             key={index}
-            className="w-4 h-4 bg-[#f10000] rounded-full"
+            className="w-2 h-2 bg-[#f10000] rounded-full"
             animate={{
               scale: [1, 1.2, 1],
               opacity: [0.7, 1, 0.7],
