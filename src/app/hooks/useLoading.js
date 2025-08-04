@@ -1,55 +1,73 @@
-// src/app/hooks/useLoading.js
+// src/app/hooks/useLoading.js - React 19 compatible
 'use client';
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
-const LoadingContext = createContext();
+const LoadingContext = createContext(undefined);
 
 export const LoadingProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingTimeout, setLoadingTimeout] = useState(null);
   const pathname = usePathname();
-
-  // Show loading on route changes
+  
+  // Stable callback functions to prevent unnecessary re-renders
+  const showLoading = useCallback(() => {
+    setIsLoading(true);
+  }, []);
+  
+  const hideLoading = useCallback(() => {
+    if (loadingTimeout) {
+      clearTimeout(loadingTimeout);
+      setLoadingTimeout(null);
+    }
+    setIsLoading(false);
+  }, [loadingTimeout]);
+  
+  // Handle route changes with proper cleanup
   useEffect(() => {
     // Clear any existing timeout
     if (loadingTimeout) {
       clearTimeout(loadingTimeout);
     }
-
+    
     // Show loading immediately on route change
     setIsLoading(true);
-
+    
     // Set a minimum loading time and maximum timeout
-    const minLoadingTime = setTimeout(() => {
+    const minLoadingTimer = setTimeout(() => {
       setIsLoading(false);
     }, 800); // Minimum 800ms loading
-
-    const maxLoadingTime = setTimeout(() => {
+    
+    const maxLoadingTimer = setTimeout(() => {
       setIsLoading(false);
     }, 3000); // Maximum 3s loading
-
-    setLoadingTimeout(maxLoadingTime);
-
+    
+    setLoadingTimeout(maxLoadingTimer);
+    
+    // Cleanup function
     return () => {
-      clearTimeout(minLoadingTime);
-      clearTimeout(maxLoadingTime);
+      clearTimeout(minLoadingTimer);
+      clearTimeout(maxLoadingTimer);
     };
-  }, [pathname]);
-
-  const showLoading = () => {
-    setIsLoading(true);
+  }, [pathname]); // Remove loadingTimeout from dependencies to avoid infinite loop
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (loadingTimeout) {
+        clearTimeout(loadingTimeout);
+      }
+    };
+  }, [loadingTimeout]);
+  
+  const contextValue = {
+    isLoading,
+    showLoading,
+    hideLoading,
   };
-
-  const hideLoading = () => {
-    if (loadingTimeout) {
-      clearTimeout(loadingTimeout);
-    }
-    setIsLoading(false);
-  };
-
+  
   return (
-    <LoadingContext.Provider value={{ isLoading, showLoading, hideLoading }}>
+    <LoadingContext.Provider value={contextValue}>
       {children}
     </LoadingContext.Provider>
   );
@@ -57,7 +75,7 @@ export const LoadingProvider = ({ children }) => {
 
 export const useLoading = () => {
   const context = useContext(LoadingContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useLoading must be used within a LoadingProvider');
   }
   return context;

@@ -1,6 +1,14 @@
-// next.config.mjs - Fixed routing configuration with Shopify image support
+// next.config.mjs - Fixed for Next.js 15 and Framer Motion compatibility
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // React 19 and Next.js 15 compatibility
+  experimental: {
+    // Enable optimizations for React 19
+    reactCompiler: false,
+    // Better tree shaking for framer-motion
+    optimizePackageImports: ['framer-motion', 'lucide-react'],
+  },
+
   // Image optimization
   images: {
     // Enable image optimization
@@ -14,7 +22,7 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'cms.habitnova.com', // Replace with your WordPress domain
+        hostname: 'your-wordpress-site.com', // Replace with your WordPress domain
       },
       {
         protocol: 'https',
@@ -24,44 +32,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.cloudfront.net', // For CloudFront CDN
       },
-      // ADD SHOPIFY IMAGE DOMAINS
-      {
-        protocol: 'https',
-        hostname: 'cdn.shopify.com',
-        pathname: '/s/files/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.myshopify.com',
-        pathname: '/**',
-      },
-      // Add your specific Shopify store domain if you know it
-      // Replace 'your-store-name' with your actual store name
-      {
-        protocol: 'https',
-        hostname: 'habitnova-co.myshopify.com',
-        pathname: '/**',
-      },
-      // Shopify's product image CDN patterns
-      {
-        protocol: 'https',
-        hostname: 'cdn.shopify.com',
-        pathname: '/shopifycloud/**',
-      },
-      // Alternative Shopify CDN pattern
-      {
-        protocol: 'https',
-        hostname: 'shopify-product-images.s3.amazonaws.com',
-        pathname: '/**',
-      },
     ],
 
     // Image caching
     minimumCacheTTL: 31536000, // 1 year
-    
-    // Allow SVG images (some Shopify stores use SVG)
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
   // Custom redirects to handle URL structure properly
@@ -75,21 +49,11 @@ const nextConfig = {
       },
 
       // Redirect URLs with 3+ hyphenated words to blog (likely blog posts)
-      // This matches URLs like: /10-daily-habits-of-6-figure-freelancers
-      // But NOT short URLs like: /about or /contact-us
       {
         source: '/:slug([a-z0-9]+-[a-z0-9]+-[a-z0-9-]+)',
         destination: '/blog/:slug',
         permanent: true,
       },
-
-      // ADD YOUR SPECIFIC BLOG POST REDIRECTS HERE (if needed)
-      // Example format:
-      // {
-      //   source: '/your-blog-post-slug',
-      //   destination: '/blog/your-blog-post-slug',
-      //   permanent: true,
-      // },
     ];
   },
 
@@ -149,11 +113,6 @@ const nextConfig = {
             key: 'X-Frame-Options',
             value: 'DENY',
           },
-          // Add CORS headers for Shopify images
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
         ],
       },
     ];
@@ -171,14 +130,30 @@ const nextConfig = {
   // Enable React strict mode
   reactStrictMode: true,
 
-  // Webpack optimizations
+  // Webpack optimizations for React 19 and Framer Motion 12+
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
+    // Fix for Framer Motion with Next.js 15 and React 19
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'framer-motion': require.resolve('framer-motion'),
+      };
+    }
+
     // Optimize bundle splitting
     if (!isServer) {
       config.optimization.splitChunks = {
         ...config.optimization.splitChunks,
         cacheGroups: {
           ...config.optimization.splitChunks.cacheGroups,
+
+          // Separate framer-motion into its own chunk
+          framerMotion: {
+            test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+            name: 'framer-motion',
+            chunks: 'all',
+            priority: 30,
+          },
 
           // Separate vendor chunks for better caching
           vendor: {
@@ -214,17 +189,11 @@ const nextConfig = {
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
 
-  // Page extensions (add this if you're using custom extensions)
+  // Page extensions
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
 
   // Trailing slash configuration
   trailingSlash: false,
-
-  // Asset prefix for CDN (if using one)
-  // assetPrefix: process.env.NODE_ENV === 'production' ? 'https://cdn.habitnova.com' : '',
-
-  // Base path if deploying to a subdirectory
-  // basePath: '/blog',
 };
 
 export default nextConfig;
