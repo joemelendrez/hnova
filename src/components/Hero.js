@@ -3,28 +3,71 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Download, ShoppingBag } from 'lucide-react';
 import Button from './Button';
+import { useRouteLoading } from './RouteLoadingProvider';
 
 const Hero = () => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const parallaxRef = useRef(null);
   const rafRef = useRef(null);
   const scrollYRef = useRef(0);
-
+  const videoRef = useRef(null);
+  const { setIsLoading } = useRouteLoading();
+  
+  // Prevent hydration issues
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  
   // Check if device is mobile (guarded for SSR)
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-
+    if (!mounted || typeof window === 'undefined') return;
+    
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-
+    
     checkMobile();
     window.addEventListener('resize', checkMobile);
-
+    
     return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
+  }, [mounted]);
+  
+  // Handle video loading
+  useEffect(() => {
+    if (!mounted || isMobile || !videoRef.current) {
+      // Hide loading for mobile or if no video
+      if (mounted) {
+        setTimeout(() => setIsLoading(false), 400);
+      }
+      return;
+    }
+    
+    const video = videoRef.current;
+    
+    const handleLoadedData = () => {
+      setVideoLoaded(true);
+      // Hide loading screen once video is ready
+      setTimeout(() => setIsLoading(false), 500);
+    };
+    
+    const handleError = () => {
+      console.warn('Video failed to load, using fallback image');
+      setVideoLoaded(false);
+      // Hide loading even on error
+      setTimeout(() => setIsLoading(false), 300);
+    };
+    
+    video.addEventListener('loadeddata', handleLoadedData);
+    video.addEventListener('error', handleError);
+    
+    return () => {
+      video.removeEventListener('loadeddata', handleLoadedData);
+      video.removeEventListener('error', handleError);
+    };
+  }, [mounted, isMobile, setIsLoading]);
+  
   // Smooth parallax animation with RAF
   const updateParallax = useCallback(() => {
     if (parallaxRef.current) {
@@ -32,16 +75,16 @@ const Hero = () => {
       parallaxRef.current.style.transform = `translate3d(0, ${offset}px, 0)`;
     }
   }, []);
-
+  
   // Optimized scroll handler with RAF
   useEffect(() => {
-    if (typeof window === 'undefined' || !isMobile) return;
-
+    if (!mounted || typeof window === 'undefined' || !isMobile) return;
+    
     let ticking = false;
-
+    
     const handleScroll = () => {
       scrollYRef.current = window.scrollY;
-
+      
       if (!ticking) {
         rafRef.current = requestAnimationFrame(() => {
           updateParallax();
@@ -50,31 +93,41 @@ const Hero = () => {
         ticking = true;
       }
     };
-
+    
     // Use passive listener for better performance
     window.addEventListener('scroll', handleScroll, { passive: true });
-
+    
     return () => {
       window.removeEventListener('scroll', handleScroll);
       if (rafRef.current) {
         cancelAnimationFrame(rafRef.current);
       }
     };
-  }, [isMobile, updateParallax]);
-
+  }, [mounted, isMobile, updateParallax]);
+  
+  // Don't render until mounted
+  if (!mounted) {
+    return (
+      <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
+        <div className="absolute inset-0 bg-black/60" />
+      </section>
+    );
+  }
+  
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
       {/* Desktop: Video Background */}
       {!isMobile && (
         <video
-          className="absolute inset-0 w-full h-full object-cover"
+          ref={videoRef}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+            videoLoaded ? 'opacity-100' : 'opacity-0'
+          }`}
           autoPlay
           muted
           loop
           playsInline
           preload="metadata"
-          onLoadedData={() => setVideoLoaded(true)}
-          style={{ display: videoLoaded ? 'block' : 'none' }}
         >
           <source src="/HabitBackground.webm" type="video/webm" />
           <source src="/HabitBackground.mp4" type="video/mp4" />
@@ -96,13 +149,14 @@ const Hero = () => {
         />
       )}
 
-      {/* Desktop Fallback Background Image */}
+      {/* Desktop: Fallback Background Image */}
       {!isMobile && (
         <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
+            videoLoaded ? 'opacity-0' : 'opacity-100'
+          }`}
           style={{
             backgroundImage: 'url(/HabitBackground.webp)',
-            display: videoLoaded ? 'none' : 'block',
           }}
         />
       )}
@@ -171,17 +225,13 @@ const Hero = () => {
             Get Free Guide
           </Button>
 
-          {/* Fixed Shop Tools Button with proper contrast */}
           <Button
             href="/shop"
             size="large"
             variant="outline"
             className="group relative border-2 border-white/40 text-white hover:border-white transition-all duration-300 min-w-[200px] hover:shadow-lg backdrop-blur-sm overflow-hidden"
           >
-            {/* Background overlay that slides in */}
             <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left z-0" />
-
-            {/* Content with proper z-index */}
             <div className="relative z-10 flex items-center justify-center group-hover:text-[#1a1a1a] transition-colors duration-300">
               <ShoppingBag className="mr-2 h-5 w-5" />
               Shop Tools
