@@ -139,7 +139,7 @@ export default function StartHerePage() {
   return (
     <div className="pt-16 lg:pt-20">
       {/* Hero Section */}
-      <section className="py-20 bg-gradient-to-br from-[#1a1a1a] to-gray-800 text-white">
+      <section className="py-20 bg-[#1a1a1a] text-white">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -152,7 +152,7 @@ export default function StartHerePage() {
 
             <h1 className="text-4xl md:text-6xl font-anton uppercase mb-6 leading-tight">
               The Complete
-              <span className="block text-[#DBDBDB]">Habit Formation Guide</span>
+              <span className="block text-[#DBDBDB] font-anton">Habit Formation Guide</span>
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed max-w-3xl mx-auto">
