@@ -12,7 +12,6 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { useCart } from '../app/hooks/useShopifyCart';
-import ProductCard from './ProductCard';
 
 const ProductFeatured = () => {
   const [products, setProducts] = useState([]);
@@ -118,19 +117,17 @@ const ProductFeatured = () => {
       return null;
     };
 
-    // Manual review data for your products (temporary solution)
-    const getProductReviews = (productHandle) => {
-      const reviews = {
-        'habit-formation-toolkit': { rating: 4.8, reviewCount: 247 },
-        'digital-detox-journal': { rating: 4.6, reviewCount: 189 },
-        'productivity-power-pack': { rating: 4.9, reviewCount: 156 },
-        'mindfulness-habit-kit': { rating: 4.7, reviewCount: 203 },
-        // Add your actual product handles here
-      };
-      return reviews[productHandle] || { rating: 4.5, reviewCount: 125 };
+    // Generate rating (you can replace this with actual review data)
+    const generateRating = (productId) => {
+      // Generate consistent "fake" rating based on product ID
+      const seed = productId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+      return 4.2 + (seed % 8) / 10; // Ratings between 4.2 and 4.9
     };
 
-    const reviewData = getProductReviews(shopifyProduct.handle);
+    const generateReviewCount = (productId) => {
+      const seed = productId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+      return 50 + (seed % 300); // Review counts between 50 and 350
+    };
 
     const isOnSale = compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price);
 
@@ -140,8 +137,8 @@ const ProductFeatured = () => {
       slug: shopifyProduct.handle,
       price: price,
       originalPrice: isOnSale ? compareAtPrice : null,
-      rating: reviewData.rating,
-      reviewCount: reviewData.reviewCount,
+      rating: generateRating(shopifyProduct.id),
+      reviewCount: generateReviewCount(shopifyProduct.id),
       image: images[0]?.src || images[0]?.transformedSrc || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
       badge: getBadge(shopifyProduct, isOnSale, shopifyProduct.createdAt),
       description: shopifyProduct.description || 'High-quality product to help you build better habits.',
@@ -211,8 +208,173 @@ const ProductFeatured = () => {
     ];
   }
 
-  // Remove the custom ProductCard since we're using the shared one
-  // const ProductCard = ({ product, index }) => { ... }
+  const ProductCard = ({ product, index }) => {
+    const [addingToCart, setAddingToCart] = useState(false);
+    const { addToCart, cartLoading } = useCart();
+    
+    const isOnSale = product.originalPrice && 
+                     parseFloat(product.originalPrice) > parseFloat(product.price);
+    
+    const savings = isOnSale
+      ? (((parseFloat(product.originalPrice) - parseFloat(product.price)) /
+          parseFloat(product.originalPrice)) * 100).toFixed(0)
+      : 0;
+
+    // Handle adding to cart
+    const handleAddToCart = async (e) => {
+      e.preventDefault(); // Prevent navigation
+      e.stopPropagation(); // Stop event bubbling
+
+      if (!product.available || addingToCart || cartLoading || !product.variantId) return;
+
+      setAddingToCart(true);
+
+      try {
+        await addToCart(product.variantId, 1);
+        console.log('Product added to cart successfully!');
+        // Optional: Show a toast notification here
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        alert('Error adding product to cart. Please try again.');
+      } finally {
+        setAddingToCart(false);
+      }
+    };
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6, delay: index * 0.1 }}
+        className="h-full"
+      >
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 h-full flex flex-col">
+          {/* Product Image - Make this a link */}
+          <Link href={`/shop/products/${product.slug}`} className="block">
+            <div className="relative h-48 flex-shrink-0 bg-gray-100 flex items-center justify-center">
+              <img
+                src={product.image}
+                alt={product.name}
+                className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop';
+                }}
+              />
+
+              {/* Badges */}
+              {product.badge && (
+                <div className="absolute top-4 left-4 z-10">
+                  <span
+                    className={`px-3 py-1 text-xs font-bold rounded-full ${
+                      product.badge === 'BESTSELLER'
+                        ? 'bg-[#1a1a1a] text-white'
+                        : product.badge === 'NEW'
+                        ? 'bg-blue-600 text-white'
+                        : product.badge === 'SALE'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-gray-600 text-white'
+                    }`}
+                  >
+                    {product.badge}
+                  </span>
+                </div>
+              )}
+
+              {/* Sale Badge */}
+              {isOnSale && (
+                <div className="absolute top-4 right-4 z-10">
+                  <span className="bg-red-500 text-white px-2 py-1 text-xs font-bold rounded-full">
+                    {savings}% OFF
+                  </span>
+                </div>
+              )}
+
+              {/* Out of Stock Overlay */}
+              {!product.available && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+                  <span className="text-white font-medium text-sm">Out of Stock</span>
+                </div>
+              )}
+            </div>
+          </Link>
+
+          {/* Product Info */}
+          <div className="p-6 flex flex-col flex-grow">
+            {/* Rating */}
+            <div className="flex items-center mb-3">
+              <div className="flex text-yellow-400 mr-2">
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-4 w-4 ${
+                      i < Math.floor(product.rating) ? 'fill-current' : ''
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-gray-600">
+                {product.rating} ({product.reviewCount} reviews)
+              </span>
+            </div>
+
+            {/* Product Name - Also a link */}
+            <Link href={`/shop/products/${product.slug}`}>
+              <h3 className="text-lg font-bold text-[#1a1a1a] mb-3 hover:text-gray-700 transition-colors leading-tight cursor-pointer">
+                {product.name}
+              </h3>
+            </Link>
+
+            {/* Description */}
+            <p className="text-sm text-gray-600 mb-4 leading-relaxed flex-grow">
+              {product.description}
+            </p>
+
+            {/* Price */}
+            <div className="flex items-center mb-4">
+              <span className="text-xl font-bold text-[#1a1a1a]">
+                ${parseFloat(product.price).toFixed(2)}
+              </span>
+              {isOnSale && (
+                <span className="text-gray-500 line-through ml-2 text-lg">
+                  ${parseFloat(product.originalPrice).toFixed(2)}
+                </span>
+              )}
+            </div>
+
+            {/* Add to Cart Button */}
+            <button
+              onClick={handleAddToCart}
+              disabled={!product.available || addingToCart || cartLoading || !product.variantId}
+              className={`w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all duration-200 mb-3 ${
+                product.available && product.variantId
+                  ? addingToCart || cartLoading
+                    ? 'bg-gray-400 text-white cursor-not-allowed'
+                    : 'bg-[#1a1a1a] hover:bg-gray-800 text-white transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+            >
+              <ShoppingBag className="h-4 w-4" />
+              {addingToCart || cartLoading
+                ? 'Adding...'
+                : product.available && product.variantId
+                ? 'Add to Cart'
+                : 'Out of Stock'}
+            </button>
+
+            {/* View Details Link */}
+            <Link
+              href={`/shop/products/${product.slug}`}
+              className="flex items-center justify-center text-[#1a1a1a] font-medium hover:text-gray-700 transition-colors text-sm"
+            >
+              View Details
+              <ArrowRight className="ml-1 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
 
   // Loading state (keep your existing loading JSX)
   if (loading) {
@@ -293,7 +455,7 @@ const ProductFeatured = () => {
         {/* Products Grid - Unified 4-column layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {products.map((product, index) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} index={index} />
           ))}
         </div>
 
@@ -303,7 +465,7 @@ const ProductFeatured = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
           className="bg-white rounded-xl p-8 mb-12"
         >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
@@ -345,7 +507,7 @@ const ProductFeatured = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.4 }}
+          transition={{ duration: 0.6, delay: 1.0 }}
           className="text-center"
         >
           <Link
@@ -362,7 +524,7 @@ const ProductFeatured = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.6 }}
+          transition={{ duration: 0.6, delay: 1.2 }}
           className="mt-16 bg-[#1a1a1a] rounded-xl p-8 text-white text-center"
         >
           <div className="max-w-3xl mx-auto">
