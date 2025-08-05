@@ -17,7 +17,7 @@ import {
   Shield,
   RotateCcw,
 } from 'lucide-react';
-import { useCart } from '../../../hooks/useShopifyCart';
+import { useCart } from '../app/hooks/useShopifyCart';
 
 // Initialize Shopify client
 let shopifyClient = null;
