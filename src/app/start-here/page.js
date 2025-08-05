@@ -1,17 +1,17 @@
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Download, 
-  CheckCircle, 
-  ArrowRight, 
-  BookOpen, 
-  Target, 
+import {
+  Download,
+  CheckCircle,
+  ArrowRight,
+  BookOpen,
+  Target,
   Zap,
   Mail,
   FileText,
   Calendar,
-  BarChart3
+  BarChart3,
 } from 'lucide-react';
 import Button from '@/components/Button';
 
@@ -27,8 +27,8 @@ export default function StartHerePage() {
     setError('');
 
     try {
-      // Call Mailchimp API integration
-      const response = await fetch('/api/subscribe-simple', {
+      // Call ConvertKit API integration
+      const response = await fetch('/api/subscribe-convertkit', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,8 +44,7 @@ export default function StartHerePage() {
 
       // Success! Show email confirmation message
       setIsSubmitted(true);
-      setEmail('');
-      
+      // Keep email in state to show in confirmation
     } catch (error) {
       console.error('Error subscribing:', error);
       setError(error.message || 'Failed to subscribe. Please try again.');
@@ -58,33 +57,38 @@ export default function StartHerePage() {
     {
       icon: <Target className="h-6 w-6" />,
       title: 'The Science of Habit Formation',
-      description: 'Understand the neurological basis of habits and why willpower fails'
+      description:
+        'Understand the neurological basis of habits and why willpower fails',
     },
     {
       icon: <Zap className="h-6 w-6" />,
       title: 'The 4-Step Habit Loop',
-      description: 'Master the cue-routine-reward-tracking system that creates lasting change'
+      description:
+        'Master the cue-routine-reward-tracking system that creates lasting change',
     },
     {
       icon: <Calendar className="h-6 w-6" />,
       title: '21-Day Quick Start Plan',
-      description: 'A proven roadmap to build your first keystone habit in 3 weeks'
+      description:
+        'A proven roadmap to build your first keystone habit in 3 weeks',
     },
     {
       icon: <BarChart3 className="h-6 w-6" />,
       title: 'Habit Stacking Templates',
-      description: 'Ready-to-use frameworks to link new habits to existing routines'
+      description:
+        'Ready-to-use frameworks to link new habits to existing routines',
     },
     {
       icon: <FileText className="h-6 w-6" />,
       title: 'Progress Tracking Sheets',
-      description: 'Printable trackers and worksheets to monitor your transformation'
+      description:
+        'Printable trackers and worksheets to monitor your transformation',
     },
     {
       icon: <BookOpen className="h-6 w-6" />,
       title: 'Troubleshooting Guide',
-      description: 'Solutions for the 7 most common habit-building obstacles'
-    }
+      description: 'Solutions for the 7 most common habit-building obstacles',
+    },
   ];
 
   // Success state - Email sent confirmation
@@ -100,14 +104,15 @@ export default function StartHerePage() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-8">
               <Mail className="h-10 w-10 text-white" />
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl font-anton uppercase mb-6">
               Check Your Email!
             </h1>
-            
+
             <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto">
-              We've sent your <strong>Complete Habit Formation Guide</strong> directly to your inbox. 
-              The PDF will arrive within the next few minutes.
+              We've sent your <strong>Complete Habit Formation Guide</strong>{' '}
+              directly to your inbox. Your welcome email with the PDF download
+              link should arrive within the next few minutes.
             </p>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-8 max-w-md mx-auto">
@@ -115,15 +120,27 @@ export default function StartHerePage() {
               <div className="space-y-2 text-left">
                 <div className="flex items-center">
                   <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-                  <span className="text-sm">Check your email (including spam/promotions)</span>
+                  <span className="text-sm">
+                    Check your email (including spam/promotions)
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-                  <span className="text-sm">Download the PDF attachment</span>
+                  <span className="text-sm">
+                    Click the download link in the email
+                  </span>
                 </div>
                 <div className="flex items-center">
                   <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-                  <span className="text-sm">Start with the 21-day plan today</span>
+                  <span className="text-sm">
+                    Start with the 21-day plan today
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                  <span className="text-sm">
+                    Watch for follow-up tips over the next few weeks
+                  </span>
                 </div>
               </div>
             </div>
@@ -131,25 +148,25 @@ export default function StartHerePage() {
             <div className="bg-blue-900/20 border border-blue-400 rounded-xl p-6 mb-8 max-w-lg mx-auto">
               <div className="flex items-center justify-center mb-3">
                 <Mail className="h-5 w-5 text-blue-400 mr-2" />
-                <span className="text-blue-300 font-semibold">Email sent to:</span>
+                <span className="text-blue-300 font-semibold">
+                  Email sent to:
+                </span>
               </div>
-              <p className="text-white text-lg font-medium">{email || 'your email address'}</p>
+              <p className="text-white text-lg font-medium">{email}</p>
             </div>
 
-            <Button
-              href="/blog"
-              variant="cta"
-              size="large"
-              className="mb-6"
-            >
+            <Button href="/blog" variant="cta" size="large" className="mb-6">
               Explore Our Blog
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
 
             <p className="text-sm text-gray-400">
               Didn't receive the email? Check your spam folder or{' '}
-              <button 
-                onClick={() => setIsSubmitted(false)} 
+              <button
+                onClick={() => {
+                  setIsSubmitted(false);
+                  setEmail(''); // Clear email for retry
+                }}
                 className="text-[#DBDBDB] hover:underline"
               >
                 try again
@@ -177,19 +194,25 @@ export default function StartHerePage() {
 
             <h1 className="text-4xl md:text-6xl font-anton uppercase mb-6 leading-tight">
               The Complete
-              <span className="block text-[#DBDBDB] font-anton">Habit Formation Guide</span>
+              <span className="block text-[#DBDBDB] font-anton">
+                Habit Formation Guide
+              </span>
             </h1>
 
             <p className="text-xl md:text-2xl text-gray-300 mb-8 leading-relaxed max-w-3xl mx-auto">
-              The science-backed system that <strong>67,000+ people</strong> have used to build 
-              lasting habits and transform their lives.
+              The science-backed system that <strong>67,000+ people</strong>{' '}
+              have used to build lasting habits and transform their lives.
             </p>
 
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-8 max-w-md mx-auto">
               <div className="flex items-center justify-center mb-4">
                 <div className="flex items-center">
-                  <span className="text-3xl font-bold text-[#DBDBDB]">FREE</span>
-                  <span className="text-lg text-gray-300 ml-2 line-through">$47</span>
+                  <span className="text-3xl font-bold text-[#DBDBDB]">
+                    FREE
+                  </span>
+                  <span className="text-lg text-gray-300 ml-2 line-through">
+                    $47
+                  </span>
                 </div>
               </div>
               <p className="text-sm text-gray-300">
@@ -214,16 +237,17 @@ export default function StartHerePage() {
             </h2>
 
             <p className="text-lg text-gray-600 mb-8">
-              Enter your email and we'll send the PDF directly to your inbox
+              Enter your email and we'll send the PDF download link directly to
+              your inbox
             </p>
 
             <form onSubmit={handleSubmit} className="max-w-md mx-auto">
               {error && (
-                <div className="text-red-500 text-sm mb-4 text-center bg-red-50 p-3 rounded-lg">
+                <div className="text-red-500 text-sm mb-4 text-center bg-red-50 p-3 rounded-lg border border-red-200">
                   {error}
                 </div>
               )}
-              
+
               <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <input
                   type="email"
@@ -284,7 +308,8 @@ export default function StartHerePage() {
               What's Inside Your Guide
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              25 pages of actionable strategies, proven frameworks, and practical tools
+              25 pages of actionable strategies, proven frameworks, and
+              practical tools
             </p>
           </motion.div>
 
@@ -299,9 +324,7 @@ export default function StartHerePage() {
                 className="bg-white rounded-xl p-6 hover:shadow-lg transition-shadow duration-300"
               >
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-[#1a1a1a] rounded-lg mb-4">
-                  <div className="text-white">
-                    {item.icon}
-                  </div>
+                  <div className="text-white">{item.icon}</div>
                 </div>
                 <h3 className="text-lg font-bold text-[#1a1a1a] mb-3">
                   {item.title}
@@ -330,24 +353,31 @@ export default function StartHerePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#DBDBDB] mb-2">67,000+</div>
+                <div className="text-3xl font-bold text-[#DBDBDB] mb-2">
+                  67,000+
+                </div>
                 <div className="text-gray-300">Guides Downloaded</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#DBDBDB] mb-2">89%</div>
+                <div className="text-3xl font-bold text-[#DBDBDB] mb-2">
+                  89%
+                </div>
                 <div className="text-gray-300">Success Rate</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-[#DBDBDB] mb-2">4.9/5</div>
+                <div className="text-3xl font-bold text-[#DBDBDB] mb-2">
+                  4.9/5
+                </div>
                 <div className="text-gray-300">Average Rating</div>
               </div>
             </div>
 
             <div className="max-w-2xl mx-auto">
               <blockquote className="text-lg italic text-gray-300 mb-4">
-                "This guide completely changed how I approach habits. I've successfully built 5 new 
-                habits in the last 3 months using the techniques inside. The habit stacking method 
-                alone is worth the download!"
+                "This guide completely changed how I approach habits. I've
+                successfully built 5 new habits in the last 3 months using the
+                techniques inside. The habit stacking method alone is worth the
+                download!"
               </blockquote>
               <cite className="text-[#DBDBDB] font-semibold">
                 — Sarah M., Digital Marketing Manager
@@ -371,16 +401,17 @@ export default function StartHerePage() {
             </h2>
 
             <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              Get your free guide delivered straight to your email and start your transformation today.
+              Get your free guide delivered straight to your email and start
+              your transformation today.
             </p>
 
             <form onSubmit={handleSubmit} className="max-w-md mx-auto">
               {error && (
-                <div className="text-red-500 text-sm mb-4 text-center bg-red-50 p-3 rounded-lg">
+                <div className="text-red-500 text-sm mb-4 text-center bg-red-50 p-3 rounded-lg border border-red-200">
                   {error}
                 </div>
               )}
-              
+
               <div className="flex flex-col sm:flex-row gap-4 mb-4">
                 <input
                   type="email"
@@ -407,7 +438,8 @@ export default function StartHerePage() {
             </form>
 
             <p className="text-sm text-gray-500">
-              No spam. We respect your privacy and you can unsubscribe at any time.
+              No spam. We respect your privacy and you can unsubscribe at any
+              time.
             </p>
           </motion.div>
         </div>
