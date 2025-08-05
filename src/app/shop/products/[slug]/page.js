@@ -16,6 +16,7 @@ import {
   Truck,
   Shield,
   RotateCcw,
+  ChevronDown,
 } from 'lucide-react';
 import { useCart } from '../../../hooks/useShopifyCart';
 
@@ -39,6 +40,7 @@ export default function ProductPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState(false);
   const [error, setError] = useState(null);
+  const [showVariantDropdown, setShowVariantDropdown] = useState(false);
 
   const { addToCart, cartLoading } = useCart();
 
@@ -136,17 +138,33 @@ export default function ProductPage({ params }) {
           variants: [
             {
               id: 'variant-1',
-              title: 'Default',
+              title: 'Standard Edition',
               price: '24.99',
               compareAtPrice: '29.99',
               available: true,
+              selectedOptions: [],
+            },
+            {
+              id: 'variant-2',
+              title: 'Premium Leather',
+              price: '39.99',
+              compareAtPrice: '49.99',
+              available: true,
+              selectedOptions: [],
+            },
+            {
+              id: 'variant-3',
+              title: 'Deluxe Bundle',
+              price: '59.99',
+              compareAtPrice: null,
+              available: false,
               selectedOptions: [],
             },
           ],
         });
         setSelectedVariant({
           id: 'variant-1',
-          title: 'Default',
+          title: 'Standard Edition',
           price: '24.99',
           compareAtPrice: '29.99',
           available: true,
@@ -160,6 +178,12 @@ export default function ProductPage({ params }) {
     fetchProduct();
   }, [params.slug]);
 
+  // Handle variant selection
+  const handleVariantChange = (variant) => {
+    setSelectedVariant(variant);
+    setShowVariantDropdown(false);
+  };
+
   // Handle add to cart
   const handleAddToCart = async () => {
     if (!selectedVariant || !selectedVariant.available) return;
@@ -170,6 +194,7 @@ export default function ProductPage({ params }) {
       // Could show success message here
     } catch (err) {
       console.error('Error adding to cart:', err);
+      alert('Error adding product to cart. Please try again.');
     } finally {
       setAddingToCart(false);
     }
@@ -189,24 +214,13 @@ export default function ProductPage({ params }) {
           <p className="text-gray-600 mb-6">
             The product you're looking for doesn't exist.
           </p>
-                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4"></div>
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="bg-[#DBDBDB] bg-opacity-10 hover:bg-opacity-20 transition-colors duration-200 py-6 mb-8">
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-              <Link
-                href="/shop"
-                className="inline-flex items-center text-gray-600 hover:text-[#1a1a1a] transition-colors duration-200 font-medium"
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back to Shop
-              </Link>
-            </div>
-          </div>
-        </motion.div>
+          <Link
+            href="/shop"
+            className="inline-flex items-center bg-[#1a1a1a] text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Shop
+          </Link>
         </div>
       </div>
     );
@@ -217,10 +231,11 @@ export default function ProductPage({ params }) {
     parseFloat(selectedVariant.compareAtPrice) >
       parseFloat(selectedVariant.price);
 
+  const hasMultipleVariants = product?.variants?.length > 1;
+
   return (
     <div className="pt-16 lg:pt-20">
-      {/* Back Button - Same style as BlogPostClient */}
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-4"></div>
+      {/* Back Button */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -347,6 +362,76 @@ export default function ProductPage({ params }) {
                 {product.description}
               </p>
             </motion.div>
+
+            {/* Variant Selection */}
+            {hasMultipleVariants && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                className="space-y-3"
+              >
+                <label className="block text-sm font-medium text-gray-700">
+                  Select Variant:
+                </label>
+                <div className="relative">
+                  <button
+                    onClick={() => setShowVariantDropdown(!showVariantDropdown)}
+                    className="w-full flex items-center justify-between p-4 border border-gray-300 rounded-lg hover:border-gray-400 transition-colors bg-white"
+                  >
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">{selectedVariant?.title}</span>
+                      <span className="text-sm text-gray-600">
+                        ${parseFloat(selectedVariant?.price || 0).toFixed(2)}
+                        {!selectedVariant?.available && (
+                          <span className="text-red-500 ml-2">Out of Stock</span>
+                        )}
+                      </span>
+                    </div>
+                    <ChevronDown 
+                      className={`h-5 w-5 transform transition-transform ${
+                        showVariantDropdown ? 'rotate-180' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {/* Variant Dropdown */}
+                  {showVariantDropdown && (
+                    <div className="absolute top-full left-0 right-0 z-10 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      {product.variants.map((variant) => (
+                        <button
+                          key={variant.id}
+                          onClick={() => handleVariantChange(variant)}
+                          className={`w-full text-left p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 ${
+                            selectedVariant?.id === variant.id ? 'bg-gray-50' : ''
+                          } ${!variant.available ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          disabled={!variant.available}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <div className="font-medium">{variant.title}</div>
+                              <div className="text-sm text-gray-600">
+                                ${parseFloat(variant.price).toFixed(2)}
+                                {variant.compareAtPrice && (
+                                  <span className="ml-2 line-through text-gray-400">
+                                    ${parseFloat(variant.compareAtPrice).toFixed(2)}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            {!variant.available && (
+                              <span className="text-sm text-red-500 font-medium">
+                                Out of Stock
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
 
             {/* Quantity & Add to Cart */}
             <motion.div
