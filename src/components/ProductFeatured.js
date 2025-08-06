@@ -80,7 +80,7 @@ const ProductFeatured = () => {
     fetchFeaturedProducts();
   }, []);
 
-  // Format Shopify product for our component
+  // Format Shopify product for our component - Updated with variants
   function formatShopifyProduct(shopifyProduct, index = 0) {
     const variant = shopifyProduct.variants[0];
     const images = shopifyProduct.images || [];
@@ -131,7 +131,6 @@ const ProductFeatured = () => {
     };
 
     const reviewData = getProductReviews(shopifyProduct.handle);
-
     const isOnSale = compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price);
 
     return {
@@ -139,9 +138,18 @@ const ProductFeatured = () => {
       name: shopifyProduct.title,
       slug: shopifyProduct.handle,
       price: price,
+      regular_price: compareAtPrice || price,
+      sale_price: price,
+      on_sale: isOnSale,
       originalPrice: isOnSale ? compareAtPrice : null,
       rating: reviewData.rating,
       reviewCount: reviewData.reviewCount,
+      stock_status: variant?.available ? 'instock' : 'outofstock',
+      images: images.map((img) => ({
+        src: img.src || img.transformedSrc,
+        alt: img.altText || shopifyProduct.title,
+      })),
+      // Keep legacy image property for backward compatibility
       image: images[0]?.src || images[0]?.transformedSrc || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
       badge: getBadge(shopifyProduct, isOnSale, shopifyProduct.createdAt),
       description: shopifyProduct.description || 'High-quality product to help you build better habits.',
@@ -150,6 +158,20 @@ const ProductFeatured = () => {
       shopifyId: shopifyProduct.id,
       variantId: variant?.id,
       available: variant?.available || false,
+      vendor: shopifyProduct.vendor,
+      productType: shopifyProduct.productType,
+      // Include full variant data for cart functionality and product pages
+      variants: shopifyProduct.variants.map((v) => ({
+        id: v.id,
+        title: v.title,
+        price: getPrice(v.price),
+        compareAtPrice: getPrice(v.compareAtPrice),
+        available: v.available,
+        // Add any other variant properties you need
+        weight: v.weight,
+        sku: v.sku,
+        selectedOptions: v.selectedOptions || [],
+      })),
     };
   }
 
@@ -190,7 +212,7 @@ const ProductFeatured = () => {
     return ['Premium Quality', 'Expert Designed', 'Proven Results', 'Money-Back Guarantee'];
   }
 
-  // Fallback products (your existing mock data as backup)
+  // Updated fallback products with variant data
   function getFallbackProducts() {
     return [
       {
@@ -198,23 +220,153 @@ const ProductFeatured = () => {
         name: 'The Complete Habit Formation Toolkit',
         slug: 'habit-formation-toolkit',
         price: '89.99',
+        regular_price: '129.99',
+        sale_price: '89.99',
+        on_sale: true,
         originalPrice: '129.99',
         rating: 4.8,
         reviewCount: 247,
+        stock_status: 'instock',
+        images: [
+          {
+            src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
+            alt: 'Complete Habit Formation Toolkit',
+          },
+        ],
         image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
         badge: 'BESTSELLER',
         description: 'Everything you need to build lasting habits: 90-day tracker, habit stacking guide, weekly planners, and progress charts.',
         features: ['90-Day Habit Tracker', 'Habit Stacking Guide', 'Weekly Planning Sheets', 'Progress Visualization'],
         isFeatured: true,
+        shopifyId: 'fallback-1',
+        variantId: 'fallback-variant-1',
+        available: true,
+        productType: 'Toolkit',
+        variants: [
+          {
+            id: 'fallback-variant-1',
+            title: 'Default Title',
+            price: '89.99',
+            compareAtPrice: '129.99',
+            available: true,
+          },
+        ],
       },
-      // ... your other fallback products
+      {
+        id: 'fallback-2',
+        name: 'Digital Detox Journal',
+        slug: 'digital-detox-journal',
+        price: '24.99',
+        regular_price: '24.99',
+        sale_price: '24.99',
+        on_sale: false,
+        originalPrice: null,
+        rating: 4.6,
+        reviewCount: 189,
+        stock_status: 'instock',
+        images: [
+          {
+            src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+            alt: 'Digital Detox Journal',
+          },
+        ],
+        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+        badge: 'NEW',
+        description: 'Break free from digital overwhelm with guided prompts and tracking sheets.',
+        features: ['30-Day Challenge', 'Screen Time Tracker', 'Mindfulness Exercises', 'Progress Charts'],
+        isFeatured: false,
+        shopifyId: 'fallback-2',
+        variantId: 'fallback-variant-2',
+        available: true,
+        productType: 'Journal',
+        variants: [
+          {
+            id: 'fallback-variant-2',
+            title: 'Default Title',
+            price: '24.99',
+            compareAtPrice: null,
+            available: true,
+          },
+        ],
+      },
+      {
+        id: 'fallback-3',
+        name: 'Productivity Power Pack',
+        slug: 'productivity-power-pack',
+        price: '49.99',
+        regular_price: '49.99',
+        sale_price: '49.99',
+        on_sale: false,
+        originalPrice: null,
+        rating: 4.9,
+        reviewCount: 156,
+        stock_status: 'instock',
+        images: [
+          {
+            src: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=400&h=400&fit=crop',
+            alt: 'Productivity Power Pack',
+          },
+        ],
+        image: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=400&h=400&fit=crop',
+        badge: null,
+        description: 'Complete productivity system with time-blocking templates and focus techniques.',
+        features: ['Time Blocking Templates', 'Focus Sessions Guide', 'Weekly Reviews', 'Goal Setting Framework'],
+        isFeatured: false,
+        shopifyId: 'fallback-3',
+        variantId: 'fallback-variant-3',
+        available: true,
+        productType: 'Planner',
+        variants: [
+          {
+            id: 'fallback-variant-3',
+            title: 'Default Title',
+            price: '49.99',
+            compareAtPrice: null,
+            available: true,
+          },
+        ],
+      },
+      {
+        id: 'fallback-4',
+        name: 'Mindfulness Habit Kit',
+        slug: 'mindfulness-habit-kit',
+        price: '34.99',
+        regular_price: '39.99',
+        sale_price: '34.99',
+        on_sale: true,
+        originalPrice: '39.99',
+        rating: 4.7,
+        reviewCount: 203,
+        stock_status: 'instock',
+        images: [
+          {
+            src: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=400&fit=crop',
+            alt: 'Mindfulness Habit Kit',
+          },
+        ],
+        image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=400&fit=crop',
+        badge: 'SALE',
+        description: 'Develop mindfulness habits with guided meditations and reflection exercises.',
+        features: ['Guided Meditations', 'Daily Reflections', 'Breathing Exercises', 'Progress Tracking'],
+        isFeatured: false,
+        shopifyId: 'fallback-4',
+        variantId: 'fallback-variant-4',
+        available: true,
+        productType: 'Wellness',
+        variants: [
+          {
+            id: 'fallback-variant-4',
+            title: 'Default Title',
+            price: '34.99',
+            compareAtPrice: '39.99',
+            available: true,
+          },
+        ],
+      },
     ];
   }
 
-  // Remove the custom ProductCard since we're using the shared one
-  // const ProductCard = ({ product, index }) => { ... }
-
-  // Loading state (keep your existing loading JSX)
+  // Loading state
   if (loading) {
     return (
       <section className="py-20 bg-[#DBDBDB] bg-opacity-10">
@@ -262,14 +414,10 @@ const ProductFeatured = () => {
     );
   }
 
-  const featuredProduct = null; // Remove featured product logic
-  const otherProducts = products; // All products are treated equally
-
-  // Keep your existing render JSX structure - just replace the products data
   return (
     <section className="py-20 bg-[#b9b9bd] bg-opacity-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header - Keep existing */}
+        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -313,8 +461,6 @@ const ProductFeatured = () => {
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </motion.div>
-
-       
       </div>
     </section>
   );
