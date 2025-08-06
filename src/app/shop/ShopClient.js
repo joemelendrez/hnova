@@ -18,7 +18,7 @@ if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN) {
   });
 }
 
-// Format Shopify product for our components
+// Enhanced format Shopify product to match product page format
 function formatShopifyProduct(shopifyProduct) {
   const variant = shopifyProduct.variants[0];
   const images = shopifyProduct.images || [];
@@ -35,6 +35,34 @@ function formatShopifyProduct(shopifyProduct) {
   const price = getPrice(variant?.price);
   const compareAtPrice = getPrice(variant?.compareAtPrice);
 
+  // Map variant images - Enhanced to match product page functionality
+  const mapVariantImages = (variants, productImages) => {
+    return variants.map((v) => {
+      let variantImage = null;
+      
+      // Check if variant has an associated image
+      if (v.image) {
+        variantImage = {
+          id: v.image.id,
+          src: v.image.src || v.image.transformedSrc,
+          alt: v.image.altText || shopifyProduct.title,
+        };
+      }
+      
+      return {
+        id: v.id,
+        title: v.title,
+        price: getPrice(v.price),
+        compareAtPrice: getPrice(v.compareAtPrice),
+        available: v.available,
+        selectedOptions: v.selectedOptions || [],
+        image: variantImage, // Add variant-specific image
+        weight: v.weight,
+        sku: v.sku,
+      };
+    });
+  };
+
   return {
     id: shopifyProduct.id,
     name: shopifyProduct.title,
@@ -47,20 +75,18 @@ function formatShopifyProduct(shopifyProduct) {
     images: images.map((img) => ({
       src: img.src || img.transformedSrc,
       alt: img.altText || shopifyProduct.title,
+      id: img.id,
     })),
+    // Keep legacy image property for backward compatibility
+    image: images[0]?.src || images[0]?.transformedSrc,
     description: shopifyProduct.description,
     vendor: shopifyProduct.vendor,
     productType: shopifyProduct.productType,
+    tags: shopifyProduct.tags || [],
     shopifyId: shopifyProduct.id,
-    variantId: variant?.id, // This is crucial for cart functionality
-    // Include full variant data for individual product pages
-    variants: shopifyProduct.variants.map((v) => ({
-      id: v.id,
-      title: v.title,
-      price: getPrice(v.price),
-      compareAtPrice: getPrice(v.compareAtPrice),
-      available: v.available,
-    })),
+    variantId: variant?.id,
+    // Include full variant data with enhanced mapping
+    variants: mapVariantImages(shopifyProduct.variants, images),
   };
 }
 
@@ -120,7 +146,7 @@ export default function ShopClient() {
 
         // Format products
         const formattedProducts = shopifyProducts.map(formatShopifyProduct);
-        console.log('Formatted products with variant IDs:', formattedProducts);
+        console.log('Formatted products with enhanced variant data:', formattedProducts);
 
         // Extract categories from product types
         const productCategories = extractCategories(formattedProducts);
@@ -147,7 +173,7 @@ export default function ShopClient() {
 
         const filteredProducts = selectedCategory
           ? fallbackProducts.filter((product) =>
-              product.categories.some((cat) => cat.slug === selectedCategory)
+              product.categories?.some((cat) => cat.slug === selectedCategory)
             )
           : fallbackProducts;
 
@@ -161,12 +187,12 @@ export default function ShopClient() {
     fetchShopifyData();
   }, [selectedCategory]);
 
-  // Fallback products for development/testing
+  // Enhanced fallback products with full variant support
   function getFallbackProducts() {
     return [
       {
         id: 'fallback-1',
-        name: 'Habit Tracking Journal - Premium Leather',
+        name: 'Habit Tracking Journal - Premium Edition',
         slug: 'habit-tracking-journal-premium',
         price: '24.99',
         regular_price: '29.99',
@@ -176,15 +202,51 @@ export default function ShopClient() {
         images: [
           {
             src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
-            alt: 'Premium Leather Habit Tracking Journal',
+            alt: 'Habit Tracking Journal - Black',
+            id: 'img-1',
+          },
+          {
+            src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+            alt: 'Habit Tracking Journal - Blue',
+            id: 'img-2',
           },
         ],
+        image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
         categories: [{ id: 1, name: 'Journals', slug: 'journals' }],
         productType: 'Journals',
-        description:
-          'Track your daily habits with this premium leather-bound journal.',
-        variantId: 'fallback-variant-1', // Add variant ID for fallback products
+        description: 'Transform your daily routine with this scientifically-designed habit tracking journal.',
+        vendor: 'Habit Nova',
+        tags: ['habit-tracking', 'productivity', 'journal'],
+        variantId: 'fallback-variant-1',
         shopifyId: 'fallback-1',
+        variants: [
+          {
+            id: 'fallback-variant-1',
+            title: 'Black Edition',
+            price: '24.99',
+            compareAtPrice: '29.99',
+            available: true,
+            selectedOptions: [{ name: 'Color', value: 'Black' }],
+            image: {
+              src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
+              alt: 'Habit Tracking Journal - Black',
+              id: 'img-1',
+            },
+          },
+          {
+            id: 'fallback-variant-1b',
+            title: 'Blue Edition',
+            price: '24.99',
+            compareAtPrice: '29.99',
+            available: true,
+            selectedOptions: [{ name: 'Color', value: 'Blue' }],
+            image: {
+              src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+              alt: 'Habit Tracking Journal - Blue',
+              id: 'img-2',
+            },
+          },
+        ],
       },
       {
         id: 'fallback-2',
@@ -192,20 +254,34 @@ export default function ShopClient() {
         slug: 'productivity-planner-90-day',
         price: '19.99',
         regular_price: '19.99',
+        sale_price: '19.99',
         on_sale: false,
         stock_status: 'instock',
         images: [
           {
             src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
             alt: '90-Day Productivity Planner',
+            id: 'img-3',
           },
         ],
+        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
         categories: [{ id: 2, name: 'Planners', slug: 'planners' }],
         productType: 'Planners',
-        description:
-          'Transform your productivity with this 90-day planning system.',
+        description: 'Transform your productivity with this 90-day planning system.',
+        vendor: 'Habit Nova',
+        tags: ['productivity', 'planner'],
         variantId: 'fallback-variant-2',
         shopifyId: 'fallback-2',
+        variants: [
+          {
+            id: 'fallback-variant-2',
+            title: 'Standard Edition',
+            price: '19.99',
+            compareAtPrice: null,
+            available: true,
+            selectedOptions: [],
+          },
+        ],
       },
       {
         id: 'fallback-3',
@@ -213,20 +289,34 @@ export default function ShopClient() {
         slug: 'meditation-timer-chimes',
         price: '34.99',
         regular_price: '34.99',
+        sale_price: '34.99',
         on_sale: false,
         stock_status: 'instock',
         images: [
           {
             src: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=400&fit=crop',
             alt: 'Meditation Timer with Chimes',
+            id: 'img-4',
           },
         ],
+        image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=400&fit=crop',
         categories: [{ id: 3, name: 'Wellness', slug: 'wellness' }],
         productType: 'Wellness',
-        description:
-          'Enhance your meditation practice with gentle chime intervals.',
+        description: 'Enhance your meditation practice with gentle chime intervals.',
+        vendor: 'Mindful Tools',
+        tags: ['meditation', 'wellness'],
         variantId: 'fallback-variant-3',
         shopifyId: 'fallback-3',
+        variants: [
+          {
+            id: 'fallback-variant-3',
+            title: 'Standard Timer',
+            price: '34.99',
+            compareAtPrice: null,
+            available: true,
+            selectedOptions: [],
+          },
+        ],
       },
       {
         id: 'fallback-4',
@@ -240,15 +330,51 @@ export default function ShopClient() {
         images: [
           {
             src: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=400&h=400&fit=crop',
-            alt: 'Focus Time Blocking Set',
+            alt: 'Focus Time Blocking Set - Red',
+            id: 'img-5',
+          },
+          {
+            src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
+            alt: 'Focus Time Blocking Set - Black',
+            id: 'img-6',
           },
         ],
+        image: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=400&h=400&fit=crop',
         categories: [{ id: 2, name: 'Planners', slug: 'planners' }],
         productType: 'Planners',
-        description:
-          'Visual time-blocking system to maximize your focus sessions.',
+        description: 'Visual time-blocking system to maximize your focus sessions.',
+        vendor: 'Focus Tools',
+        tags: ['productivity', 'focus'],
         variantId: 'fallback-variant-4',
         shopifyId: 'fallback-4',
+        variants: [
+          {
+            id: 'fallback-variant-4',
+            title: 'Red Set',
+            price: '15.99',
+            compareAtPrice: '18.99',
+            available: true,
+            selectedOptions: [{ name: 'Color', value: 'Red' }],
+            image: {
+              src: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=400&h=400&fit=crop',
+              alt: 'Focus Time Blocking Set - Red',
+              id: 'img-5',
+            },
+          },
+          {
+            id: 'fallback-variant-4b',
+            title: 'Black Set',
+            price: '15.99',
+            compareAtPrice: '18.99',
+            available: false,
+            selectedOptions: [{ name: 'Color', value: 'Black' }],
+            image: {
+              src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
+              alt: 'Focus Time Blocking Set - Black',
+              id: 'img-6',
+            },
+          },
+        ],
       },
     ];
   }

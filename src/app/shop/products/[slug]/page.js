@@ -595,24 +595,12 @@ export default function ProductPage({ params }) {
               </div>
             </motion.div>
 
-            {/* Description */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="prose prose-gray max-w-none"
-            >
-              <p className="text-gray-700 leading-relaxed">
-                {product.description}
-              </p>
-            </motion.div>
-
             {/* Quick Variant Options */}
             {variantOptions.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.45 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
                 className="space-y-4"
               >
                 {variantOptions.map(option => (
@@ -661,6 +649,18 @@ export default function ProductPage({ params }) {
                 ))}
               </motion.div>
             )}
+
+            {/* Description */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.45 }}
+              className="prose prose-gray max-w-none"
+            >
+              <p className="text-gray-700 leading-relaxed">
+                {product.description}
+              </p>
+            </motion.div>
 
             {/* Variant Selection Dropdown (for complex variants) */}
             {hasMultipleVariants && variantOptions.length === 0 && (
