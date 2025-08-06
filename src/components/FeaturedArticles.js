@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { Clock, ArrowRight, TrendingUp, Zap } from 'lucide-react';
-import { BlogPostImage, HeroImage } from './OptimizedWordPressImage';
+import { BlogPostImage, HeroImage } from './OptimizedWordpressImage';
 import {
   getFeaturedPosts,
   getAllPosts,

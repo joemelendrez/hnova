@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Loader } from 'lucide-react';
 
-const OptimizedWordPressImage = ({
+const OptimizedWordpressImage = ({
   src,
   alt,
   width,
@@ -195,4 +195,4 @@ export const ContentImage = ({ src, alt, className = '' }) => {
   );
 };
 
-export default OptimizedWordPressImage;
+export default OptimizedWordpressImage;
