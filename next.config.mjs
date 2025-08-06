@@ -124,9 +124,9 @@ const nextConfig = {
           },
         ],
       },
-      // Cache background images and videos
+      // Cache background images and videos (fixed regex - no capturing groups)
       {
-        source: '/(.*\\.(webp|mp4|webm|jpg|jpeg|png))',
+        source: '/:path*\\.(webp|mp4|webm|jpg|jpeg|png)',
         headers: [
           {
             key: 'Cache-Control',
