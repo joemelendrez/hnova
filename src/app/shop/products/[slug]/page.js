@@ -398,7 +398,7 @@ export default function ProductPage({ params }) {
           </p>
           <Link
             href="/shop"
-            className="inline-flex items-center bg-[#1a1a1a] text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors pt-4"
+            className="inline-flex items-center bg-[#1a1a1a] text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors mt-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Shop
