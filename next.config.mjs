@@ -1,110 +1,97 @@
-// next.config.mjs - Fixed routing configuration with Shopify image support
+// next.config.mjs - Optimized for WordPress images
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Image optimization
   images: {
-    // Enable image optimization
+    // Enable modern formats
     formats: ['image/webp', 'image/avif'],
 
-    // Allow images from external domains
+    // Device sizes for responsive images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    
+    // Image sizes for different use cases
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 512, 640, 750, 828, 1080, 1200],
+
+    // Quality settings
+    quality: 85,
+
+    // Allow images from WordPress and CDN domains
     remotePatterns: [
+      // WordPress.com CDN (i0, i1, i2.wp.com)
       {
         protocol: 'https',
-        hostname: 'images.unsplash.com',
+        hostname: 'i0.wp.com',
+        port: '',
+        pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'i1.wp.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i2.wp.com',
+        port: '',
+        pathname: '/**',
+      },
+      // Direct WordPress site (replace with your actual domain)
       {
         protocol: 'https',
         hostname: 'cms.habitnova.com', // Replace with your WordPress domain
+        port: '',
+        pathname: '/wp-content/uploads/**',
       },
+      // Bluehost WordPress sites pattern
       {
         protocol: 'https',
-        hostname: '**.amazonaws.com', // For AWS hosted images
-      },
-      {
-        protocol: 'https',
-        hostname: '**.cloudfront.net', // For CloudFront CDN
-      },
-      // ADD SHOPIFY IMAGE DOMAINS
-      {
-        protocol: 'https',
-        hostname: 'cdn.shopify.com',
-        pathname: '/s/files/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.myshopify.com',
+        hostname: '*.bluehost.com',
+        port: '',
         pathname: '/**',
       },
-      // Add your specific Shopify store domain if you know it
-      // Replace 'your-store-name' with your actual store name
+      // Generic WordPress hosting patterns
       {
         protocol: 'https',
-        hostname: 'habitnova-co.myshopify.com',
+        hostname: '*.wordpress.com',
+        port: '',
         pathname: '/**',
       },
-      // Shopify's product image CDN patterns
       {
         protocol: 'https',
-        hostname: 'cdn.shopify.com',
-        pathname: '/shopifycloud/**',
+        hostname: '*.wpengine.com',
+        port: '',
+        pathname: '/**',
       },
-      // Alternative Shopify CDN pattern
+      // Unsplash for fallback images
       {
         protocol: 'https',
-        hostname: 'shopify-product-images.s3.amazonaws.com',
+        hostname: 'images.unsplash.com',
+        port: '',
+        pathname: '/**',
+      },
+      // AWS S3 (if using for WordPress media)
+      {
+        protocol: 'https',
+        hostname: '*.amazonaws.com',
+        port: '',
         pathname: '/**',
       },
     ],
 
-    // Image caching
-    minimumCacheTTL: 31536000, // 1 year
+    // Cache images for 1 year
+    minimumCacheTTL: 31536000,
     
-    // Allow SVG images (some Shopify stores use SVG)
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Disable dangerous SVG handling for security
+    dangerouslyAllowSVG: false,
   },
 
-  // Custom redirects to handle URL structure properly
-  async redirects() {
-    return [
-      // Handle old blog URL patterns if needed
-      {
-        source: '/blog/:slug*/page/:page',
-        destination: '/blog/:slug*',
-        permanent: true,
-      },
+  // Optimize bundle and caching
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
 
-      // Redirect URLs with 3+ hyphenated words to blog (likely blog posts)
-      // This matches URLs like: /10-daily-habits-of-6-figure-freelancers
-      // But NOT short URLs like: /about or /contact-us
-      {
-        source: '/:slug([a-z0-9]+-[a-z0-9]+-[a-z0-9-]+)',
-        destination: '/blog/:slug',
-        permanent: true,
-      },
-
-      // ADD YOUR SPECIFIC BLOG POST REDIRECTS HERE (if needed)
-      // Example format:
-      // {
-      //   source: '/your-blog-post-slug',
-      //   destination: '/blog/your-blog-post-slug',
-      //   permanent: true,
-      // },
-    ];
-  },
-
-  // URL rewrites to handle complex routing
-  async rewrites() {
-    return [
-      // Ensure blog posts with any length slug work correctly
-      {
-        source: '/blog/:slug*',
-        destination: '/blog/:slug*',
-      },
-    ];
-  },
-
-  // Headers for better caching and SEO
+  // Custom headers for better caching
   async headers() {
     return [
       // Cache static assets aggressively
@@ -117,19 +104,17 @@ const nextConfig = {
           },
         ],
       },
-
-      // Cache API responses with revalidation
+      // Cache images with revalidation
       {
-        source: '/api/:path*',
+        source: '/_next/image/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, s-maxage=300, stale-while-revalidate=86400',
+            value: 'public, max-age=86400, stale-while-revalidate=604800',
           },
         ],
       },
-
-      // Security and performance headers
+      // Performance and security headers
       {
         source: '/(.*)',
         headers: [
@@ -145,31 +130,10 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
-          {
-            key: 'X-Frame-Options',
-            value: 'DENY',
-          },
-          // Add CORS headers for Shopify images
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
         ],
       },
     ];
   },
-
-  // Compress responses
-  compress: true,
-
-  // Generate static pages at build time
-  output: 'standalone',
-
-  // PoweredBy header removal
-  poweredByHeader: false,
-
-  // Enable React strict mode
-  reactStrictMode: true,
 
   // Webpack optimizations
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
@@ -179,52 +143,18 @@ const nextConfig = {
         ...config.optimization.splitChunks,
         cacheGroups: {
           ...config.optimization.splitChunks.cacheGroups,
-
-          // Separate vendor chunks for better caching
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
             priority: 10,
             chunks: 'all',
           },
-
-          // Separate common chunks
-          common: {
-            minChunks: 2,
-            chunks: 'all',
-            name: 'common',
-            priority: 5,
-            enforce: true,
-          },
         },
       };
     }
 
-    // Add support for reading .md files if needed
-    config.module.rules.push({
-      test: /\.md$/,
-      use: 'raw-loader',
-    });
-
     return config;
   },
-
-  // Environment variables available to the client
-  env: {
-    CUSTOM_KEY: process.env.CUSTOM_KEY,
-  },
-
-  // Page extensions (add this if you're using custom extensions)
-  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
-
-  // Trailing slash configuration
-  trailingSlash: false,
-
-  // Asset prefix for CDN (if using one)
-  // assetPrefix: process.env.NODE_ENV === 'production' ? 'https://cdn.habitnova.com' : '',
-
-  // Base path if deploying to a subdirectory
-  // basePath: '/blog',
 };
 
 export default nextConfig;
