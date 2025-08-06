@@ -288,7 +288,7 @@ export default function ProductCard({ product }) {
                         }}
                         className={`px-2 py-1 text-xs border rounded transition-colors ${
                           isSelected
-                            ? 'border-gray-900 bg-gray-900 text-black'
+                            ? 'border-gray-900 bg-gray-900 text-white'
                             : 'border-gray-300 hover:border-gray-400'
                         }`}
                         title={value}
