@@ -1,4 +1,4 @@
-// next.config.mjs - Optimized for WordPress images
+// next.config.mjs - Fixed configuration for Netlify deployment
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Image optimization
@@ -12,8 +12,7 @@ const nextConfig = {
     // Image sizes for different use cases
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 512, 640, 750, 828, 1080, 1200],
 
-    // Quality settings
-    quality: 85,
+    // REMOVED INVALID 'quality' KEY - This is set per-image, not globally
 
     // Allow images from WordPress and CDN domains
     remotePatterns: [
@@ -77,6 +76,17 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Shopify domains (if using shop)
+      {
+        protocol: 'https',
+        hostname: 'cdn.shopify.com',
+        pathname: '/s/files/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.myshopify.com',
+        pathname: '/**',
+      },
     ],
 
     // Cache images for 1 year
@@ -114,6 +124,16 @@ const nextConfig = {
           },
         ],
       },
+      // Cache background images and videos
+      {
+        source: '/(.*\\.(webp|mp4|webm|jpg|jpeg|png))',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
       // Performance and security headers
       {
         source: '/(.*)',
@@ -131,6 +151,37 @@ const nextConfig = {
             value: 'origin-when-cross-origin',
           },
         ],
+      },
+    ];
+  },
+
+  // Custom redirects for blog posts and URL structure
+  async redirects() {
+    return [
+      // Handle old blog URL patterns if needed
+      {
+        source: '/blog/:slug*/page/:page',
+        destination: '/blog/:slug*',
+        permanent: true,
+      },
+      // Redirect URLs with 3+ hyphenated words to blog (likely blog posts)
+      // This matches URLs like: /10-daily-habits-of-6-figure-freelancers
+      // But NOT short URLs like: /about or /contact-us
+      {
+        source: '/:slug([a-z0-9]+-[a-z0-9]+-[a-z0-9-]+)',
+        destination: '/blog/:slug',
+        permanent: true,
+      },
+    ];
+  },
+
+  // URL rewrites to handle complex routing
+  async rewrites() {
+    return [
+      // Ensure blog posts with any length slug work correctly
+      {
+        source: '/blog/:slug*',
+        destination: '/blog/:slug*',
       },
     ];
   },
@@ -155,6 +206,16 @@ const nextConfig = {
 
     return config;
   },
+
+  // Page extensions
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
+
+  // Trailing slash configuration
+  trailingSlash: false,
+
+  // For Netlify deployment - use standalone for better performance
+  // Remove output: 'export' if you want to use Netlify's Next.js runtime
+  // output: 'export', // Uncomment this line only if you need static export
 };
 
 export default nextConfig;
