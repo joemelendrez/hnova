@@ -1,82 +1,30 @@
-// next.config.mjs - Fixed configuration for Netlify deployment
+// next.config.mjs - Fixed routing configuration with Shopify image support
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Image optimization
   images: {
-    // Enable modern formats
+    // Enable image optimization
     formats: ['image/webp', 'image/avif'],
 
-    // Device sizes for responsive images
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
-    
-    // Image sizes for different use cases
-    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384, 512, 640, 750, 828, 1080, 1200],
-
-    // REMOVED INVALID 'quality' KEY - This is set per-image, not globally
-
-    // Allow images from WordPress and CDN domains
+    // Allow images from external domains
     remotePatterns: [
-      // WordPress.com CDN (i0, i1, i2.wp.com)
-      {
-        protocol: 'https',
-        hostname: 'i0.wp.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i1.wp.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'i2.wp.com',
-        port: '',
-        pathname: '/**',
-      },
-      // Direct WordPress site (replace with your actual domain)
-      {
-        protocol: 'https',
-        hostname: 'cms.habitnova.com', // Replace with your WordPress domain
-        port: '',
-        pathname: '/wp-content/uploads/**',
-      },
-      // Bluehost WordPress sites pattern
-      {
-        protocol: 'https',
-        hostname: '*.bluehost.com',
-        port: '',
-        pathname: '/**',
-      },
-      // Generic WordPress hosting patterns
-      {
-        protocol: 'https',
-        hostname: '*.wordpress.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.wpengine.com',
-        port: '',
-        pathname: '/**',
-      },
-      // Unsplash for fallback images
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-        port: '',
-        pathname: '/**',
       },
-      // AWS S3 (if using for WordPress media)
       {
         protocol: 'https',
-        hostname: '*.amazonaws.com',
-        port: '',
-        pathname: '/**',
+        hostname: 'cms.habitnova.com', // Replace with your WordPress domain
       },
-      // Shopify domains (if using shop)
+      {
+        protocol: 'https',
+        hostname: '**.amazonaws.com', // For AWS hosted images
+      },
+      {
+        protocol: 'https',
+        hostname: '**.cloudfront.net', // For CloudFront CDN
+      },
+      // ADD SHOPIFY IMAGE DOMAINS
       {
         protocol: 'https',
         hostname: 'cdn.shopify.com',
@@ -84,24 +32,79 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: '*.myshopify.com',
+        hostname: '**.myshopify.com',
+        pathname: '/**',
+      },
+      // Add your specific Shopify store domain if you know it
+      // Replace 'your-store-name' with your actual store name
+      {
+        protocol: 'https',
+        hostname: 'habitnova-co.myshopify.com',
+        pathname: '/**',
+      },
+      // Shopify's product image CDN patterns
+      {
+        protocol: 'https',
+        hostname: 'cdn.shopify.com',
+        pathname: '/shopifycloud/**',
+      },
+      // Alternative Shopify CDN pattern
+      {
+        protocol: 'https',
+        hostname: 'shopify-product-images.s3.amazonaws.com',
         pathname: '/**',
       },
     ],
 
-    // Cache images for 1 year
-    minimumCacheTTL: 31536000,
+    // Image caching
+    minimumCacheTTL: 31536000, // 1 year
     
-    // Disable dangerous SVG handling for security
-    dangerouslyAllowSVG: false,
+    // Allow SVG images (some Shopify stores use SVG)
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
 
-  // Optimize bundle and caching
-  compress: true,
-  poweredByHeader: false,
-  reactStrictMode: true,
+  // Custom redirects to handle URL structure properly
+  async redirects() {
+    return [
+      // Handle old blog URL patterns if needed
+      {
+        source: '/blog/:slug*/page/:page',
+        destination: '/blog/:slug*',
+        permanent: true,
+      },
 
-  // Custom headers for better caching
+      // Redirect URLs with 3+ hyphenated words to blog (likely blog posts)
+      // This matches URLs like: /10-daily-habits-of-6-figure-freelancers
+      // But NOT short URLs like: /about or /contact-us
+      {
+        source: '/:slug([a-z0-9]+-[a-z0-9]+-[a-z0-9-]+)',
+        destination: '/blog/:slug',
+        permanent: true,
+      },
+
+      // ADD YOUR SPECIFIC BLOG POST REDIRECTS HERE (if needed)
+      // Example format:
+      // {
+      //   source: '/your-blog-post-slug',
+      //   destination: '/blog/your-blog-post-slug',
+      //   permanent: true,
+      // },
+    ];
+  },
+
+  // URL rewrites to handle complex routing
+  async rewrites() {
+    return [
+      // Ensure blog posts with any length slug work correctly
+      {
+        source: '/blog/:slug*',
+        destination: '/blog/:slug*',
+      },
+    ];
+  },
+
+  // Headers for better caching and SEO
   async headers() {
     return [
       // Cache static assets aggressively
@@ -114,27 +117,19 @@ const nextConfig = {
           },
         ],
       },
-      // Cache images with revalidation
+
+      // Cache API responses with revalidation
       {
-        source: '/_next/image/:path*',
+        source: '/api/:path*',
         headers: [
           {
             key: 'Cache-Control',
-            value: 'public, max-age=86400, stale-while-revalidate=604800',
+            value: 'public, s-maxage=300, stale-while-revalidate=86400',
           },
         ],
       },
-      // Cache background images and videos (fixed regex - no capturing groups)
-      {
-        source: '/:path*\\.(webp|mp4|webm|jpg|jpeg|png)',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-      // Performance and security headers
+
+      // Security and performance headers
       {
         source: '/(.*)',
         headers: [
@@ -150,41 +145,31 @@ const nextConfig = {
             key: 'Referrer-Policy',
             value: 'origin-when-cross-origin',
           },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY',
+          },
+          // Add CORS headers for Shopify images
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
         ],
       },
     ];
   },
 
-  // Custom redirects for blog posts and URL structure
-  async redirects() {
-    return [
-      // Handle old blog URL patterns if needed
-      {
-        source: '/blog/:slug*/page/:page',
-        destination: '/blog/:slug*',
-        permanent: true,
-      },
-      // Redirect URLs with 3+ hyphenated words to blog (likely blog posts)
-      // This matches URLs like: /10-daily-habits-of-6-figure-freelancers
-      // But NOT short URLs like: /about or /contact-us
-      {
-        source: '/:slug([a-z0-9]+-[a-z0-9]+-[a-z0-9-]+)',
-        destination: '/blog/:slug',
-        permanent: true,
-      },
-    ];
-  },
+  // Compress responses
+  compress: true,
 
-  // URL rewrites to handle complex routing
-  async rewrites() {
-    return [
-      // Ensure blog posts with any length slug work correctly
-      {
-        source: '/blog/:slug*',
-        destination: '/blog/:slug*',
-      },
-    ];
-  },
+  // Generate static pages at build time
+  output: 'standalone',
+
+  // PoweredBy header removal
+  poweredByHeader: false,
+
+  // Enable React strict mode
+  reactStrictMode: true,
 
   // Webpack optimizations
   webpack: (config, { buildId, dev, isServer, defaultLoaders, webpack }) => {
@@ -194,28 +179,52 @@ const nextConfig = {
         ...config.optimization.splitChunks,
         cacheGroups: {
           ...config.optimization.splitChunks.cacheGroups,
+
+          // Separate vendor chunks for better caching
           vendor: {
             test: /[\\/]node_modules[\\/]/,
             name: 'vendors',
             priority: 10,
             chunks: 'all',
           },
+
+          // Separate common chunks
+          common: {
+            minChunks: 2,
+            chunks: 'all',
+            name: 'common',
+            priority: 5,
+            enforce: true,
+          },
         },
       };
     }
 
+    // Add support for reading .md files if needed
+    config.module.rules.push({
+      test: /\.md$/,
+      use: 'raw-loader',
+    });
+
     return config;
   },
 
-  // Page extensions
+  // Environment variables available to the client
+  env: {
+    CUSTOM_KEY: process.env.CUSTOM_KEY,
+  },
+
+  // Page extensions (add this if you're using custom extensions)
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
 
   // Trailing slash configuration
   trailingSlash: false,
 
-  // For Netlify deployment - use standalone for better performance
-  // Remove output: 'export' if you want to use Netlify's Next.js runtime
-  // output: 'export', // Uncomment this line only if you need static export
+  // Asset prefix for CDN (if using one)
+  // assetPrefix: process.env.NODE_ENV === 'production' ? 'https://cdn.habitnova.com' : '',
+
+  // Base path if deploying to a subdirectory
+  // basePath: '/blog',
 };
 
 export default nextConfig;
