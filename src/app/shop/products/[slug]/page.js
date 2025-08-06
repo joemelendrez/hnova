@@ -388,7 +388,7 @@ export default function ProductPage({ params }) {
 
   if (error && !product) {
     return (
-      <div className="pt-16 lg:pt-20 min-h-screen flex items-center justify-center">
+      <div className="pt-20 lg:pt-20 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#1a1a1a] mb-4">
             Product Not Found
