@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -17,6 +17,9 @@ import {
   Shield,
   RotateCcw,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
 } from 'lucide-react';
 import { useCart } from '../../../hooks/useShopifyCart';
 
@@ -36,15 +39,17 @@ export default function ProductPage({ params }) {
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedImage, setSelectedImage] = useState(0);
+  const [currentImages, setCurrentImages] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState(false);
   const [error, setError] = useState(null);
   const [showVariantDropdown, setShowVariantDropdown] = useState(false);
+  const [imageZoomed, setImageZoomed] = useState(false);
 
   const { addToCart, cartLoading } = useCart();
 
-  // Format Shopify product
+  // Format Shopify product with enhanced variant image mapping
   function formatShopifyProduct(shopifyProduct) {
     const images = shopifyProduct.images || [];
 
@@ -60,6 +65,7 @@ export default function ProductPage({ params }) {
       images: images.map((img) => ({
         src: img.src || img.transformedSrc,
         alt: img.altText || shopifyProduct.title,
+        id: img.id,
       })),
       variants: shopifyProduct.variants.map((variant) => ({
         id: variant.id,
@@ -75,9 +81,110 @@ export default function ProductPage({ params }) {
           : null,
         available: variant.available,
         selectedOptions: variant.selectedOptions || [],
+        // Include variant image if available
+        image: variant.image ? {
+          src: variant.image.src || variant.image.transformedSrc,
+          alt: variant.image.altText || variant.title,
+          id: variant.image.id,
+        } : null,
       })),
     };
   }
+
+  // Get variant-specific images
+  const getVariantImages = (variant) => {
+    if (!variant || !product) return product?.images || [];
+
+    // Method 1: Direct variant image
+    if (variant.image) {
+      return [variant.image, ...product.images.filter(img => img.id !== variant.image.id)];
+    }
+
+    // Method 2: Map by variant options (color, style, etc.)
+    if (variant.selectedOptions && product.images.length > 1) {
+      const matchedImages = [];
+      const remainingImages = [...product.images];
+
+      for (const option of variant.selectedOptions) {
+        const optionValue = option.value.toLowerCase();
+        
+        // Look for image with matching alt text
+        const altMatch = remainingImages.find(img => {
+          const altText = (img.alt || '').toLowerCase();
+          return altText.includes(optionValue) || 
+                 altText.includes(option.name.toLowerCase());
+        });
+
+        if (altMatch) {
+          matchedImages.push(altMatch);
+          const index = remainingImages.indexOf(altMatch);
+          remainingImages.splice(index, 1);
+        }
+
+        // Look for image with matching filename/src
+        const srcMatch = remainingImages.find(img => {
+          const filename = (img.src || '').toLowerCase();
+          return filename.includes(optionValue);
+        });
+
+        if (srcMatch && !matchedImages.includes(srcMatch)) {
+          matchedImages.push(srcMatch);
+          const index = remainingImages.indexOf(srcMatch);
+          remainingImages.splice(index, 1);
+        }
+      }
+
+      if (matchedImages.length > 0) {
+        return [...matchedImages, ...remainingImages];
+      }
+    }
+
+    // Method 3: Map by variant index
+    if (product.variants.length > 1 && product.images.length > 1) {
+      const variantIndex = product.variants.findIndex(v => v.id === variant.id);
+      if (variantIndex >= 0 && variantIndex < product.images.length) {
+        const primaryImage = product.images[variantIndex];
+        const otherImages = product.images.filter((_, index) => index !== variantIndex);
+        return [primaryImage, ...otherImages];
+      }
+    }
+
+    // Method 4: Map by SKU or title patterns
+    if (variant.sku || variant.title) {
+      const searchTerms = [
+        variant.sku?.toLowerCase(),
+        variant.title?.toLowerCase(),
+      ].filter(Boolean);
+
+      for (const term of searchTerms) {
+        const matchingImage = product.images.find(img => {
+          const altText = (img.alt || '').toLowerCase();
+          const filename = (img.src || '').toLowerCase();
+          
+          return altText.includes(term) || filename.includes(term);
+        });
+
+        if (matchingImage) {
+          const otherImages = product.images.filter(img => img !== matchingImage);
+          return [matchingImage, ...otherImages];
+        }
+      }
+    }
+
+    // Fallback to all product images
+    return product.images;
+  };
+
+  // Update images when variant changes
+  useEffect(() => {
+    if (selectedVariant && product) {
+      const variantImages = getVariantImages(selectedVariant);
+      setCurrentImages(variantImages);
+      setSelectedImage(0); // Reset to first image when variant changes
+    } else if (product) {
+      setCurrentImages(product.images);
+    }
+  }, [selectedVariant, product]);
 
   // Fetch product data
   useEffect(() => {
@@ -115,7 +222,7 @@ export default function ProductPage({ params }) {
         console.error('Error fetching product:', err);
         setError(err.message);
 
-        // Fallback product for development
+        // Enhanced fallback product with variant images
         setProduct({
           id: 'fallback-1',
           title: 'Habit Tracking Journal - Premium Edition',
@@ -128,47 +235,87 @@ export default function ProductPage({ params }) {
           images: [
             {
               src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&h=600&fit=crop',
-              alt: 'Habit Tracking Journal',
+              alt: 'Habit Tracking Journal - Black',
+              id: 'img-1',
             },
             {
               src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=600&fit=crop',
+              alt: 'Habit Tracking Journal - Blue',
+              id: 'img-2',
+            },
+            {
+              src: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=600&h=600&fit=crop',
               alt: 'Journal interior pages',
+              id: 'img-3',
+            },
+            {
+              src: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&h=600&fit=crop',
+              alt: 'Premium leather version',
+              id: 'img-4',
             },
           ],
           variants: [
             {
               id: 'variant-1',
-              title: 'Standard Edition',
+              title: 'Standard Edition - Black',
               price: '24.99',
               compareAtPrice: '29.99',
               available: true,
-              selectedOptions: [],
+              selectedOptions: [{ name: 'Color', value: 'Black' }],
+              image: {
+                src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&h=600&fit=crop',
+                alt: 'Habit Tracking Journal - Black',
+                id: 'img-1',
+              },
             },
             {
               id: 'variant-2',
+              title: 'Standard Edition - Blue',
+              price: '24.99',
+              compareAtPrice: '29.99',
+              available: true,
+              selectedOptions: [{ name: 'Color', value: 'Blue' }],
+              image: {
+                src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=600&fit=crop',
+                alt: 'Habit Tracking Journal - Blue',
+                id: 'img-2',
+              },
+            },
+            {
+              id: 'variant-3',
               title: 'Premium Leather',
               price: '39.99',
               compareAtPrice: '49.99',
               available: true,
-              selectedOptions: [],
+              selectedOptions: [{ name: 'Material', value: 'Leather' }],
+              image: {
+                src: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=600&h=600&fit=crop',
+                alt: 'Premium leather version',
+                id: 'img-4',
+              },
             },
             {
-              id: 'variant-3',
+              id: 'variant-4',
               title: 'Deluxe Bundle',
               price: '59.99',
               compareAtPrice: null,
               available: false,
-              selectedOptions: [],
+              selectedOptions: [{ name: 'Type', value: 'Bundle' }],
             },
           ],
         });
         setSelectedVariant({
           id: 'variant-1',
-          title: 'Standard Edition',
+          title: 'Standard Edition - Black',
           price: '24.99',
           compareAtPrice: '29.99',
           available: true,
-          selectedOptions: [],
+          selectedOptions: [{ name: 'Color', value: 'Black' }],
+          image: {
+            src: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&h=600&fit=crop',
+            alt: 'Habit Tracking Journal - Black',
+            id: 'img-1',
+          },
         });
       } finally {
         setLoading(false);
@@ -182,6 +329,19 @@ export default function ProductPage({ params }) {
   const handleVariantChange = (variant) => {
     setSelectedVariant(variant);
     setShowVariantDropdown(false);
+  };
+
+  // Handle image navigation
+  const nextImage = () => {
+    setSelectedImage((prev) => 
+      prev === currentImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevImage = () => {
+    setSelectedImage((prev) => 
+      prev === 0 ? currentImages.length - 1 : prev - 1
+    );
   };
 
   // Handle add to cart
@@ -198,6 +358,28 @@ export default function ProductPage({ params }) {
     } finally {
       setAddingToCart(false);
     }
+  };
+
+  // Get variant options for quick selection
+  const getVariantOptions = () => {
+    if (!product?.variants || product.variants.length <= 1) return [];
+    
+    const options = {};
+    product.variants.forEach(variant => {
+      if (variant.selectedOptions) {
+        variant.selectedOptions.forEach(option => {
+          if (!options[option.name]) {
+            options[option.name] = new Set();
+          }
+          options[option.name].add(option.value);
+        });
+      }
+    });
+    
+    return Object.entries(options).map(([name, values]) => ({
+      name,
+      values: Array.from(values)
+    }));
   };
 
   if (loading) {
@@ -232,6 +414,7 @@ export default function ProductPage({ params }) {
       parseFloat(selectedVariant.price);
 
   const hasMultipleVariants = product?.variants?.length > 1;
+  const variantOptions = getVariantOptions();
 
   return (
     <div className="pt-16 lg:pt-20">
@@ -264,36 +447,97 @@ export default function ProductPage({ params }) {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.6 }}
-              className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100"
+              className="relative aspect-square overflow-hidden rounded-2xl bg-gray-100 group cursor-zoom-in"
+              onClick={() => setImageZoomed(true)}
             >
-              <Image
-                src={
-                  product.images[selectedImage]?.src ||
-                  '/placeholder-product.webp'
-                }
-                alt={product.images[selectedImage]?.alt || product.title}
-                fill
-                className="object-cover"
-                priority
-              />
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentImages[selectedImage]?.src}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="w-full h-full"
+                >
+                  <Image
+                    src={
+                      currentImages[selectedImage]?.src ||
+                      '/placeholder-product.webp'
+                    }
+                    alt={currentImages[selectedImage]?.alt || product.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    priority
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Sale Badge */}
               {isOnSale && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-medium">
                   Sale
                 </div>
               )}
+
+              {/* Zoom Icon */}
+              <div className="absolute top-4 right-4 p-2 bg-white bg-opacity-80 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                <ZoomIn className="h-4 w-4" />
+              </div>
+
+              {/* Navigation arrows for multiple images */}
+              {currentImages.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage();
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-white bg-opacity-80 rounded-full shadow-md hover:bg-opacity-100 transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage();
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-white bg-opacity-80 rounded-full shadow-md hover:bg-opacity-100 transition-all opacity-0 group-hover:opacity-100"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+
+              {/* Image indicators */}
+              {currentImages.length > 1 && (
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                  {currentImages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedImage(index);
+                      }}
+                      className={`w-2 h-2 rounded-full transition-all ${
+                        index === selectedImage ? 'bg-white' : 'bg-white bg-opacity-50'
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </motion.div>
 
             {/* Thumbnail Images */}
-            {product.images.length > 1 && (
-              <div className="flex gap-4 overflow-x-auto">
-                {product.images.map((image, index) => (
+            {currentImages.length > 1 && (
+              <div className="flex gap-4 overflow-x-auto pb-2">
+                {currentImages.map((image, index) => (
                   <button
-                    key={index}
+                    key={`${image.src}-${index}`}
                     onClick={() => setSelectedImage(index)}
                     className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-colors ${
                       selectedImage === index
                         ? 'border-[#1a1a1a]'
-                        : 'border-gray-200'
+                        : 'border-gray-200 hover:border-gray-400'
                     }`}
                   >
                     <Image
@@ -363,8 +607,63 @@ export default function ProductPage({ params }) {
               </p>
             </motion.div>
 
-            {/* Variant Selection */}
-            {hasMultipleVariants && (
+            {/* Quick Variant Options */}
+            {variantOptions.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.45 }}
+                className="space-y-4"
+              >
+                {variantOptions.map(option => (
+                  <div key={option.name}>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      {option.name}:
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {option.values.map(value => {
+                        const isSelected = selectedVariant?.selectedOptions?.some(
+                          opt => opt.name === option.name && opt.value === value
+                        );
+                        
+                        const variantWithOption = product.variants.find(v =>
+                          v.selectedOptions?.some(opt => 
+                            opt.name === option.name && opt.value === value
+                          )
+                        );
+                        
+                        return (
+                          <button
+                            key={value}
+                            onClick={() => {
+                              if (variantWithOption) {
+                                handleVariantChange(variantWithOption);
+                              }
+                            }}
+                            disabled={!variantWithOption?.available}
+                            className={`px-4 py-2 text-sm border rounded-lg transition-colors ${
+                              isSelected
+                                ? 'border-[#1a1a1a] bg-[#1a1a1a] text-white'
+                                : variantWithOption?.available
+                                ? 'border-gray-300 hover:border-gray-400'
+                                : 'border-gray-200 text-gray-400 cursor-not-allowed'
+                            }`}
+                          >
+                            {value}
+                            {!variantWithOption?.available && (
+                              <span className="ml-1 text-xs">(Out of Stock)</span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+            )}
+
+            {/* Variant Selection Dropdown (for complex variants) */}
+            {hasMultipleVariants && variantOptions.length === 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -519,6 +818,76 @@ export default function ProductPage({ params }) {
           </div>
         </div>
       </div>
+
+      {/* Image Zoom Modal */}
+      <AnimatePresence>
+        {imageZoomed && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center p-4"
+            onClick={() => setImageZoomed(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.5 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.5 }}
+              className="relative max-w-4xl max-h-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Image
+                src={currentImages[selectedImage]?.src || '/placeholder-product.webp'}
+                alt={currentImages[selectedImage]?.alt || product.title}
+                width={800}
+                height={800}
+                className="object-contain max-w-full max-h-full"
+              />
+              
+              {/* Close button */}
+              <button
+                onClick={() => setImageZoomed(false)}
+                className="absolute top-4 right-4 p-2 bg-white bg-opacity-20 rounded-full hover:bg-opacity-30 transition-colors"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+
+              {/* Navigation for zoomed view */}
+              {currentImages.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage();
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white bg-opacity-20 rounded-full hover:bg-opacity-30 transition-colors"
+                  >
+                    <ChevronLeft className="h-6 w-6 text-white" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage();
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white bg-opacity-20 rounded-full hover:bg-opacity-30 transition-colors"
+                  >
+                    <ChevronRight className="h-6 w-6 text-white" />
+                  </button>
+                </>
+              )}
+
+              {/* Image counter */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white bg-opacity-20 rounded-full px-4 py-2">
+                <span className="text-white text-sm">
+                  {selectedImage + 1} / {currentImages.length}
+                </span>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
