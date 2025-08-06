@@ -388,7 +388,7 @@ export default function ProductPage({ params }) {
 
   if (error && !product) {
     return (
-      <div className="pt-20 lg:pt-20 min-h-screen flex items-center justify-center">
+      <div className="pt-16 lg:pt-20 min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-[#1a1a1a] mb-4">
             Product Not Found
@@ -398,7 +398,7 @@ export default function ProductPage({ params }) {
           </p>
           <Link
             href="/shop"
-            className="inline-flex items-center bg-[#1a1a1a] text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center bg-[#1a1a1a] text-white px-6 py-3 rounded-lg hover:bg-gray-800 transition-colors pt-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Shop
@@ -595,12 +595,24 @@ export default function ProductPage({ params }) {
               </div>
             </motion.div>
 
+            {/* Description */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="prose prose-gray max-w-none"
+            >
+              <p className="text-gray-700 leading-relaxed">
+                {product.description}
+              </p>
+            </motion.div>
+
             {/* Quick Variant Options */}
             {variantOptions.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
+                transition={{ duration: 0.6, delay: 0.45 }}
                 className="space-y-4"
               >
                 {variantOptions.map(option => (
@@ -649,18 +661,6 @@ export default function ProductPage({ params }) {
                 ))}
               </motion.div>
             )}
-
-            {/* Description */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.45 }}
-              className="prose prose-gray max-w-none"
-            >
-              <p className="text-gray-700 leading-relaxed">
-                {product.description}
-              </p>
-            </motion.div>
 
             {/* Variant Selection Dropdown (for complex variants) */}
             {hasMultipleVariants && variantOptions.length === 0 && (
