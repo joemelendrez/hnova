@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Download,
@@ -20,6 +20,16 @@ export default function StartHerePage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Scroll to top when success page shows
+  useEffect(() => {
+    if (isSubmitted) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  }, [isSubmitted]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -94,85 +104,87 @@ export default function StartHerePage() {
   // Success state - Email sent confirmation
   if (isSubmitted) {
     return (
-      <div className="pt-16 lg:pt-20 min-h-screen bg-[#1a1a1a] text-white flex items-center">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-          >
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-8">
-              <Mail className="h-10 w-10 text-white" />
-            </div>
+      <div className="pt-16 lg:pt-20 min-h-screen bg-[#1a1a1a] text-white">
+        <div className="py-20">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-8">
+                <Mail className="h-10 w-10 text-white" />
+              </div>
 
-            <h1 className="text-4xl md:text-5xl font-anton uppercase mb-6">
-              Check Your Email!
-            </h1>
+              <h1 className="text-4xl md:text-5xl font-anton uppercase mb-6">
+                Check Your Email!
+              </h1>
 
-            <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto">
-              We've sent your <strong>Complete Habit Formation Guide</strong>{' '}
-              directly to your inbox. Your welcome email with the PDF download
-              link should arrive within the next few minutes.
-            </p>
+              <p className="text-xl text-gray-300 mb-8 leading-relaxed max-w-2xl mx-auto">
+                We've sent your <strong>Complete Habit Formation Guide</strong>{' '}
+                directly to your inbox. Your welcome email with the PDF download
+                link should arrive within the next few minutes.
+              </p>
 
-            <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-8 max-w-md mx-auto">
-              <h3 className="font-semibold mb-3">What to do next:</h3>
-              <div className="space-y-2 text-left">
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-                  <span className="text-sm">
-                    Check your email (including spam/promotions)
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-                  <span className="text-sm">
-                    Click the download link in the email
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-                  <span className="text-sm">
-                    Start with the 21-day plan today
-                  </span>
-                </div>
-                <div className="flex items-center">
-                  <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
-                  <span className="text-sm">
-                    Watch for follow-up tips over the next few weeks
-                  </span>
+              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-8 max-w-md mx-auto">
+                <h3 className="font-semibold mb-3">What to do next:</h3>
+                <div className="space-y-2 text-left">
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                    <span className="text-sm">
+                      Check your email (including spam/promotions)
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                    <span className="text-sm">
+                      Click the download link in the email
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                    <span className="text-sm">
+                      Start with the 21-day plan today
+                    </span>
+                  </div>
+                  <div className="flex items-center">
+                    <CheckCircle className="h-4 w-4 text-green-400 mr-2" />
+                    <span className="text-sm">
+                      Watch for follow-up tips over the next few weeks
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="bg-blue-900/20 border border-blue-400 rounded-xl p-6 mb-8 max-w-lg mx-auto">
-              <div className="flex items-center justify-center mb-3">
-                <Mail className="h-5 w-5 text-blue-400 mr-2" />
-                <span className="text-blue-300 font-semibold">
-                  Email sent to:
-                </span>
+              <div className="bg-blue-900/20 border border-blue-400 rounded-xl p-6 mb-8 max-w-lg mx-auto">
+                <div className="flex items-center justify-center mb-3">
+                  <Mail className="h-5 w-5 text-blue-400 mr-2" />
+                  <span className="text-blue-300 font-semibold">
+                    Email sent to:
+                  </span>
+                </div>
+                <p className="text-white text-lg font-medium">{email}</p>
               </div>
-              <p className="text-white text-lg font-medium">{email}</p>
-            </div>
 
-            <Button href="/blog" variant="cta" size="large" className="mb-6">
-              Explore Our Blog
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+              <Button href="/blog" variant="cta" size="large" className="mb-6">
+                Explore Our Blog
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
 
-            <p className="text-sm text-gray-400">
-              Didn't receive the email? Check your spam folder or{' '}
-              <button
-                onClick={() => {
-                  setIsSubmitted(false);
-                  setEmail(''); // Clear email for retry
-                }}
-                className="text-[#DBDBDB] hover:underline"
-              >
-                try again
-              </button>
-            </p>
-          </motion.div>
+              <p className="text-sm text-gray-400">
+                Didn't receive the email? Check your spam folder or{' '}
+                <button
+                  onClick={() => {
+                    setIsSubmitted(false);
+                    setEmail(''); // Clear email for retry
+                  }}
+                  className="text-[#DBDBDB] hover:underline"
+                >
+                  try again
+                </button>
+              </p>
+            </motion.div>
+          </div>
         </div>
       </div>
     );
