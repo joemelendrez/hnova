@@ -14,27 +14,27 @@ const Hero = () => {
   const scrollYRef = useRef(0);
   const videoRef = useRef(null);
   const { setIsLoading } = useRouteLoading();
-  
+
   // Prevent hydration issues
   useEffect(() => {
     setMounted(true);
   }, []);
-  
+
   // Check if device is mobile (guarded for SSR)
   useEffect(() => {
     if (!mounted || typeof window === 'undefined') return;
-    
+
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
+
     return () => window.removeEventListener('resize', checkMobile);
   }, [mounted]);
-  
-  // Handle video loading
+
+  // Handle video loading for desktop only
   useEffect(() => {
     if (!mounted || isMobile || !videoRef.current) {
       // Hide loading for mobile or if no video
@@ -43,48 +43,48 @@ const Hero = () => {
       }
       return;
     }
-    
+
     const video = videoRef.current;
-    
+
     const handleLoadedData = () => {
       setVideoLoaded(true);
       // Hide loading screen once video is ready
       setTimeout(() => setIsLoading(false), 500);
     };
-    
+
     const handleError = () => {
       console.warn('Video failed to load, using fallback image');
       setVideoLoaded(false);
       // Hide loading even on error
       setTimeout(() => setIsLoading(false), 300);
     };
-    
+
     video.addEventListener('loadeddata', handleLoadedData);
     video.addEventListener('error', handleError);
-    
+
     return () => {
       video.removeEventListener('loadeddata', handleLoadedData);
       video.removeEventListener('error', handleError);
     };
   }, [mounted, isMobile, setIsLoading]);
-  
-  // Smooth parallax animation with RAF
+
+  // Smooth parallax animation with RAF (mobile only)
   const updateParallax = useCallback(() => {
     if (parallaxRef.current) {
       const offset = scrollYRef.current * 0.5;
       parallaxRef.current.style.transform = `translate3d(0, ${offset}px, 0)`;
     }
   }, []);
-  
-  // Optimized scroll handler with RAF
+
+  // Optimized scroll handler with RAF (mobile only)
   useEffect(() => {
     if (!mounted || typeof window === 'undefined' || !isMobile) return;
-    
+
     let ticking = false;
-    
+
     const handleScroll = () => {
       scrollYRef.current = window.scrollY;
-      
+
       if (!ticking) {
         rafRef.current = requestAnimationFrame(() => {
           updateParallax();
@@ -93,10 +93,10 @@ const Hero = () => {
         ticking = true;
       }
     };
-    
+
     // Use passive listener for better performance
     window.addEventListener('scroll', handleScroll, { passive: true });
-    
+
     return () => {
       window.removeEventListener('scroll', handleScroll);
       if (rafRef.current) {
@@ -104,34 +104,47 @@ const Hero = () => {
       }
     };
   }, [mounted, isMobile, updateParallax]);
-  
-  // Don't render until mounted
+
+  // Don't render until mounted to prevent hydration mismatch
   if (!mounted) {
     return (
       <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
         <div className="absolute inset-0 bg-black/60" />
+        {/* Render nothing until we know if it's mobile or desktop */}
       </section>
     );
   }
-  
+
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
       {/* Desktop: Video Background */}
       {!isMobile && (
-        <video
-          ref={videoRef}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-            videoLoaded ? 'opacity-100' : 'opacity-0'
-          }`}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-        >
-          <source src="/HabitBackground.webm" type="video/webm" />
-          <source src="/HabitBackground.mp4" type="video/mp4" />
-        </video>
+        <>
+          <video
+            ref={videoRef}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+              videoLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+          >
+            <source src="/HabitBackground.webm" type="video/webm" />
+            <source src="/HabitBackground.mp4" type="video/mp4" />
+          </video>
+
+          {/* Desktop: Fallback Background Image (only show if video fails to load) */}
+          <div
+            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
+              videoLoaded ? 'opacity-0' : 'opacity-100'
+            }`}
+            style={{
+              backgroundImage: 'url(/HabitBackground.webp)',
+            }}
+          />
+        </>
       )}
 
       {/* Mobile: Smooth Parallax Image Background */}
@@ -145,18 +158,6 @@ const Hero = () => {
             top: '-10%',
             backfaceVisibility: 'hidden',
             perspective: '1000px',
-          }}
-        />
-      )}
-
-      {/* Desktop: Fallback Background Image */}
-      {!isMobile && (
-        <div
-          className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
-            videoLoaded ? 'opacity-0' : 'opacity-100'
-          }`}
-          style={{
-            backgroundImage: 'url(/HabitBackground.webp)',
           }}
         />
       )}
