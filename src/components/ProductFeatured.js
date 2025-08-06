@@ -98,6 +98,34 @@ const ProductFeatured = () => {
     const price = getPrice(variant?.price);
     const compareAtPrice = getPrice(variant?.compareAtPrice);
 
+    // Map variant images - Shopify variants can have associated images
+    const mapVariantImages = (variants, productImages) => {
+      return variants.map((v) => {
+        let variantImage = null;
+        
+        // Check if variant has an associated image
+        if (v.image) {
+          variantImage = {
+            id: v.image.id,
+            src: v.image.src || v.image.transformedSrc,
+            alt: v.image.altText || shopifyProduct.title,
+          };
+        }
+        
+        return {
+          id: v.id,
+          title: v.title,
+          price: getPrice(v.price),
+          compareAtPrice: getPrice(v.compareAtPrice),
+          available: v.available,
+          weight: v.weight,
+          sku: v.sku,
+          selectedOptions: v.selectedOptions || [],
+          image: variantImage, // Add variant-specific image
+        };
+      });
+    };
+
     // Determine if product is featured (you can customize this logic)
     const isFeatured = index === 0 || 
                       shopifyProduct.tags?.includes('featured') ||
@@ -161,17 +189,7 @@ const ProductFeatured = () => {
       vendor: shopifyProduct.vendor,
       productType: shopifyProduct.productType,
       // Include full variant data for cart functionality and product pages
-      variants: shopifyProduct.variants.map((v) => ({
-        id: v.id,
-        title: v.title,
-        price: getPrice(v.price),
-        compareAtPrice: getPrice(v.compareAtPrice),
-        available: v.available,
-        // Add any other variant properties you need
-        weight: v.weight,
-        sku: v.sku,
-        selectedOptions: v.selectedOptions || [],
-      })),
+      variants: mapVariantImages(shopifyProduct.variants, images),
     };
   }
 
