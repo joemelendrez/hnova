@@ -297,49 +297,6 @@ const ProductFeatured = () => {
           ))}
         </div>
 
-        {/* Keep your existing social proof, CTA, and testimonial sections */}
-        {/* Social Proof */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-          className="bg-white rounded-xl p-8 mb-12"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-            <div>
-              <div className="flex items-center justify-center mb-2">
-                <Users className="h-8 w-8 text-[#1a1a1a] mr-2" />
-                <span className="text-3xl font-bold text-[#1a1a1a]">
-                  {products.length > 0 ? `${Math.min(products.length * 2500, 10000)}+` : '10,000+'}
-                </span>
-              </div>
-              <p className="text-gray-600">Happy Customers</p>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-center mb-2">
-                <Star className="h-8 w-8 text-yellow-500 mr-2 fill-current" />
-                <span className="text-3xl font-bold text-[#1a1a1a]">
-                  {products.length > 0 
-                    ? (products.reduce((sum, p) => sum + p.rating, 0) / products.length).toFixed(1)
-                    : '4.8'
-                  }
-                </span>
-              </div>
-              <p className="text-gray-600">Average Rating</p>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-center mb-2">
-                <Zap className="h-8 w-8 text-[#1a1a1a] mr-2" />
-                <span className="text-3xl font-bold text-[#1a1a1a]">90%</span>
-              </div>
-              <p className="text-gray-600">Success Rate</p>
-            </div>
-          </div>
-        </motion.div>
-
         {/* CTA Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -357,33 +314,7 @@ const ProductFeatured = () => {
           </Link>
         </motion.div>
 
-        {/* Customer Testimonial */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.6 }}
-          className="mt-16 bg-[#1a1a1a] rounded-xl p-8 text-white text-center"
-        >
-          <div className="max-w-3xl mx-auto">
-            <div className="flex justify-center mb-4">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className="h-5 w-5 text-yellow-400 fill-current"
-                />
-              ))}
-            </div>
-            <blockquote className="text-xl italic mb-4">
-              "The Habit Formation Toolkit completely transformed my daily
-              routine. I went from struggling with consistency to building 5 new
-              habits that stuck for over 6 months!"
-            </blockquote>
-            <cite className="text-[#DBDBDB] font-medium">
-              — Sarah M., Verified Customer
-            </cite>
-          </div>
-        </motion.div>
+       
       </div>
     </section>
   );

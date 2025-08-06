@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Download, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Download,Book, ShoppingBag } from 'lucide-react';
 import Button from './Button';
 import { useRouteLoading } from './RouteLoadingProvider';
 
@@ -217,13 +217,13 @@ const Hero = () => {
           transition={{ duration: 0.8, delay: 0.5 }}
         >
           <Button
-            href="/start-here"
+            href="/blog"
             size="large"
             variant="cta"
             className="group shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 min-w-[200px]"
           >
-            <Download className="mr-2 h-5 w-5" />
-            Get Free Guide
+            <Book className="mr-2 h-5 w-5" />
+           Read Blog
           </Button>
 
           <Button
