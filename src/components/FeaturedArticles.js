@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import { Clock, ArrowRight, TrendingUp, Zap } from 'lucide-react';
 import {
@@ -18,6 +18,11 @@ const FeaturedArticles = () => {
   const [error, setError] = useState(null);
   const [cacheHit, setCacheHit] = useState(false);
   const [loadTime, setLoadTime] = useState(0);
+
+  // Parallax scroll effect
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [0, 800], [100, -50]); // Moves up as you scroll
+  const opacity = useTransform(scrollY, [0, 300], [0.95, 1]); // Subtle fade in
 
   // Memoize fallback posts to prevent recreation on every render
   const fallbackPosts = useMemo(
@@ -143,7 +148,7 @@ const FeaturedArticles = () => {
     if (process.env.NODE_ENV !== 'development' || loading) return null;
 
     return (
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-8 right-8 z-20">
         <div
           className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
             cacheHit
@@ -159,12 +164,22 @@ const FeaturedArticles = () => {
   };
 
   if (loading) {
-    return <FeaturedArticlesSkeleton />;
+    return (
+      <motion.div
+        style={{ y, opacity }}
+        className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20"
+      >
+        <FeaturedArticlesSkeleton />
+      </motion.div>
+    );
   }
 
   if (error && featuredPosts.length === 0) {
     return (
-      <section className="py-20 bg-white relative">
+      <motion.section 
+        style={{ y, opacity }}
+        className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl"
+      >
         <PerformanceIndicator />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -197,15 +212,21 @@ const FeaturedArticles = () => {
             </Link>
           </div>
         </div>
-      </section>
+      </motion.section>
     );
   }
 
   return (
-    <section className="py-20 bg-white relative">
+    <motion.section 
+      style={{ y, opacity }}
+      className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl"
+    >
       <PerformanceIndicator />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Subtle gradient overlay at the top for depth */}
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/5 to-transparent rounded-t-[3rem] lg:rounded-t-[4rem]" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -226,6 +247,7 @@ const FeaturedArticles = () => {
             better habits and break the ones holding you back.
           </p>
         </motion.div>
+
         {/* Large Featured Article */}
         {featuredPosts.length > 0 && (
           <motion.div
@@ -236,13 +258,13 @@ const FeaturedArticles = () => {
             className="mb-12"
           >
             <Link href={`/blog/${featuredPosts[0].slug}`} className="group">
-              <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-200">
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-[#DBDBDB]">
                 <div className="grid grid-cols-1 lg:grid-cols-2">
-                  <div className="relative h-64 lg:h-auto">
+                  <div className="relative h-64 lg:h-auto overflow-hidden">
                     <img
                       src={featuredPosts[0].image}
                       alt={featuredPosts[0].imageAlt || featuredPosts[0].title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="eager" // Load featured image immediately
                       onError={(e) => {
                         e.target.src =
@@ -250,26 +272,28 @@ const FeaturedArticles = () => {
                       }}
                     />
                     <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-[#DBDBDB] text-[#1a1a1a] text-sm font-medium rounded-full">
+                      <span className="px-3 py-1 bg-[#DBDBDB] text-[#1a1a1a] text-sm font-medium rounded-full shadow-lg">
                         Featured
                       </span>
                     </div>
+                    {/* Gradient overlay for better text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent lg:hidden" />
                   </div>
                   <div className="p-8 lg:p-12 flex flex-col justify-center">
                     <div className="flex items-center text-sm text-gray-500 mb-4">
-                      <span className="bg-accent-hover text-white px-3 py-1 rounded-full text-xs font-medium mr-3">
+                      <span className="bg-[#fe0000] text-white px-3 py-1 rounded-full text-xs font-medium mr-3">
                         {featuredPosts[0].category}
                       </span>
                       <Clock className="h-4 w-4 mr-1" />
                       {featuredPosts[0].readTime}
                     </div>
-                    <h3 className="text-2xl lg:text-3xl font-bold text-[#1a1a1a] mb-4 group-hover:text-[#fe0000] transition-colors">
+                    <h3 className="text-2xl lg:text-3xl font-bold text-[#1a1a1a] mb-4 group-hover:text-[#fe0000] transition-colors duration-300 leading-tight">
                       {featuredPosts[0].title}
                     </h3>
                     <p className="text-gray-600 mb-6 leading-relaxed">
                       {featuredPosts[0].excerpt}
                     </p>
-                    <div className="flex items-center text-[#fe0000] font-semibold group-hover:text-[#dc2626]">
+                    <div className="flex items-center text-[#fe0000] font-semibold group-hover:text-[#dc2626] transition-colors duration-200">
                       Read Article
                       <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-200" />
                     </div>
@@ -293,18 +317,18 @@ const FeaturedArticles = () => {
                   duration: 0.6,
                   delay: Math.min(index * 0.1, 0.5),
                 }}
-                className="h-full" // Important: Add this to motion.div
+                className="h-full"
               >
                 <Link
                   href={`/blog/${post.slug}`}
                   className="group h-full block"
                 >
-                  <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-200 h-full flex flex-col">
-                    <div className="relative h-48 flex-shrink-0">
+                  <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 hover:border-[#DBDBDB] h-full flex flex-col group-hover:-translate-y-1">
+                    <div className="relative h-48 flex-shrink-0 overflow-hidden">
                       <img
                         src={post.image}
                         alt={post.imageAlt || post.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         loading={index < 2 ? 'eager' : 'lazy'}
                         onError={(e) => {
                           e.target.src =
@@ -314,19 +338,19 @@ const FeaturedArticles = () => {
                     </div>
                     <div className="p-6 flex flex-col flex-grow">
                       <div className="flex items-center text-sm text-gray-500 mb-3">
-                        <span className="bg-accent-hover text-white px-2 py-1 rounded text-xs font-medium mr-3">
+                        <span className="bg-[#fe0000] text-white px-2 py-1 rounded text-xs font-medium mr-3">
                           {post.category}
                         </span>
                         <Clock className="h-4 w-4 mr-1" />
                         {post.readTime}
                       </div>
-                      <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-[#fe0000] transition-colors leading-tight">
+                      <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-[#fe0000] transition-colors duration-300 leading-tight">
                         {post.title}
                       </h3>
                       <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3 flex-grow">
                         {post.excerpt}
                       </p>
-                      <div className="flex items-center text-[#fe0000] font-semibold group-hover:text-[#dc2626] mt-auto">
+                      <div className="flex items-center text-[#fe0000] font-semibold group-hover:text-[#dc2626] transition-colors duration-200 mt-auto">
                         Read More
                         <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                       </div>
@@ -337,6 +361,7 @@ const FeaturedArticles = () => {
             ))}
           </div>
         )}
+
         {/* View All Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -347,12 +372,13 @@ const FeaturedArticles = () => {
         >
           <Link
             href="/blog"
-            className="inline-flex items-center px-8 py-3 bg-[#fe0000] text-white font-semibold rounded-lg hover:bg-[#dc2626] transition-all duration-200 transform hover:-translate-y-0.5"
+            className="inline-flex items-center px-8 py-3 bg-[#fe0000] text-white font-semibold rounded-lg hover:bg-[#dc2626] transition-all duration-200 transform hover:-translate-y-0.5 hover:shadow-lg"
           >
             View All Articles
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </motion.div>
+
         {/* Cache Status Indicator (Development Only) */}
         {process.env.NODE_ENV === 'development' && (
           <motion.div
@@ -379,7 +405,7 @@ const FeaturedArticles = () => {
           </motion.div>
         )}
       </div>
-    </section>
+    </motion.section>
   );
 };
 

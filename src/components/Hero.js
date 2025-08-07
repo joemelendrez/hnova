@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Download,Book, ShoppingBag } from 'lucide-react';
+import { ArrowRight, Download, Book, ShoppingBag } from 'lucide-react';
 import Button from './Button';
 import { useRouteLoading } from './RouteLoadingProvider';
 
@@ -14,26 +14,26 @@ const Hero = () => {
   const scrollYRef = useRef(0);
   const videoRef = useRef(null);
   const { setIsLoading } = useRouteLoading();
-
+  
   // Prevent hydration issues
   useEffect(() => {
     setMounted(true);
   }, []);
-
+  
   // Check if device is mobile (guarded for SSR)
   useEffect(() => {
     if (!mounted || typeof window === 'undefined') return;
-
+    
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-
+    
     checkMobile();
     window.addEventListener('resize', checkMobile);
-
+    
     return () => window.removeEventListener('resize', checkMobile);
   }, [mounted]);
-
+  
   // Handle video loading for desktop only
   useEffect(() => {
     if (!mounted || isMobile || !videoRef.current) {
@@ -43,31 +43,31 @@ const Hero = () => {
       }
       return;
     }
-
+    
     const video = videoRef.current;
-
+    
     const handleLoadedData = () => {
       setVideoLoaded(true);
       // Hide loading screen once video is ready
       setTimeout(() => setIsLoading(false), 500);
     };
-
+    
     const handleError = () => {
       console.warn('Video failed to load, using fallback image');
       setVideoLoaded(false);
       // Hide loading even on error
       setTimeout(() => setIsLoading(false), 300);
     };
-
+    
     video.addEventListener('loadeddata', handleLoadedData);
     video.addEventListener('error', handleError);
-
+    
     return () => {
       video.removeEventListener('loadeddata', handleLoadedData);
       video.removeEventListener('error', handleError);
     };
   }, [mounted, isMobile, setIsLoading]);
-
+  
   // Smooth parallax animation with RAF (mobile only)
   const updateParallax = useCallback(() => {
     if (parallaxRef.current) {
@@ -75,16 +75,16 @@ const Hero = () => {
       parallaxRef.current.style.transform = `translate3d(0, ${offset}px, 0)`;
     }
   }, []);
-
+  
   // Optimized scroll handler with RAF (mobile only)
   useEffect(() => {
     if (!mounted || typeof window === 'undefined' || !isMobile) return;
-
+    
     let ticking = false;
-
+    
     const handleScroll = () => {
       scrollYRef.current = window.scrollY;
-
+      
       if (!ticking) {
         rafRef.current = requestAnimationFrame(() => {
           updateParallax();
@@ -93,10 +93,10 @@ const Hero = () => {
         ticking = true;
       }
     };
-
+    
     // Use passive listener for better performance
     window.addEventListener('scroll', handleScroll, { passive: true });
-
+    
     return () => {
       window.removeEventListener('scroll', handleScroll);
       if (rafRef.current) {
@@ -104,7 +104,7 @@ const Hero = () => {
       }
     };
   }, [mounted, isMobile, updateParallax]);
-
+  
   // Don't render until mounted to prevent hydration mismatch
   if (!mounted) {
     return (
@@ -114,7 +114,7 @@ const Hero = () => {
       </section>
     );
   }
-
+  
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
       {/* Desktop: Video Background */}
@@ -178,7 +178,7 @@ const Hero = () => {
       </div>
 
       {/* Main Content */}
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10">
+      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 pb-20">
         {/* Main Headline */}
         <motion.h1
           className="text-5xl md:text-6xl lg:text-7xl font-anton uppercase leading-tight mb-6 tracking-tight"
@@ -223,7 +223,7 @@ const Hero = () => {
             className="group shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300 min-w-[200px]"
           >
             <Book className="mr-2 h-5 w-5" />
-           Read Blog
+            Read Blog
           </Button>
 
           <Button
@@ -256,6 +256,9 @@ const Hero = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Fade out gradient at bottom to blend with next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1a1a1a] to-transparent z-20" />
     </section>
   );
 };
