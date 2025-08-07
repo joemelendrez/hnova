@@ -1,169 +1,45 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Download, Book, ShoppingBag } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ArrowRight, Book, ShoppingBag } from 'lucide-react';
 import Button from './Button';
 import { useRouteLoading } from './RouteLoadingProvider';
 
 const Hero = () => {
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const parallaxRef = useRef(null);
-  const rafRef = useRef(null);
-  const scrollYRef = useRef(0);
-  const videoRef = useRef(null);
   const { setIsLoading } = useRouteLoading();
+
+  // Parallax scroll effects for text elements
+  const { scrollY } = useScroll();
   
+  // Different parallax speeds for different text elements
+  const titleY = useTransform(scrollY, [0, 800], [0, -150]); // Title moves fastest
+  const subtitleY = useTransform(scrollY, [0, 800], [0, -100]); // Subtitle medium speed
+  const buttonsY = useTransform(scrollY, [0, 800], [0, -50]); // Buttons slowest
+  const trustY = useTransform(scrollY, [0, 800], [0, -25]); // Trust indicator very slow
+  
+  // Fade effect as content scrolls
+  const opacity = useTransform(scrollY, [0, 400], [1, 0]);
+
   // Prevent hydration issues
   useEffect(() => {
     setMounted(true);
-  }, []);
-  
-  // Check if device is mobile (guarded for SSR)
-  useEffect(() => {
-    if (!mounted || typeof window === 'undefined') return;
-    
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, [mounted]);
-  
-  // Handle video loading for desktop only
-  useEffect(() => {
-    if (!mounted || isMobile || !videoRef.current) {
-      // Hide loading for mobile or if no video
-      if (mounted) {
-        setTimeout(() => setIsLoading(false), 400);
-      }
-      return;
-    }
-    
-    const video = videoRef.current;
-    
-    const handleLoadedData = () => {
-      setVideoLoaded(true);
-      // Hide loading screen once video is ready
-      setTimeout(() => setIsLoading(false), 500);
-    };
-    
-    const handleError = () => {
-      console.warn('Video failed to load, using fallback image');
-      setVideoLoaded(false);
-      // Hide loading even on error
-      setTimeout(() => setIsLoading(false), 300);
-    };
-    
-    video.addEventListener('loadeddata', handleLoadedData);
-    video.addEventListener('error', handleError);
-    
-    return () => {
-      video.removeEventListener('loadeddata', handleLoadedData);
-      video.removeEventListener('error', handleError);
-    };
-  }, [mounted, isMobile, setIsLoading]);
-  
-  // Smooth parallax animation with RAF (mobile only)
-  const updateParallax = useCallback(() => {
-    if (parallaxRef.current) {
-      const offset = scrollYRef.current * 0.5;
-      parallaxRef.current.style.transform = `translate3d(0, ${offset}px, 0)`;
-    }
-  }, []);
-  
-  // Optimized scroll handler with RAF (mobile only)
-  useEffect(() => {
-    if (!mounted || typeof window === 'undefined' || !isMobile) return;
-    
-    let ticking = false;
-    
-    const handleScroll = () => {
-      scrollYRef.current = window.scrollY;
-      
-      if (!ticking) {
-        rafRef.current = requestAnimationFrame(() => {
-          updateParallax();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-    
-    // Use passive listener for better performance
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
-  }, [mounted, isMobile, updateParallax]);
-  
-  // Don't render until mounted to prevent hydration mismatch
+    // Hide loading immediately since we removed video
+    setTimeout(() => setIsLoading(false), 200);
+  }, [setIsLoading]);
+
   if (!mounted) {
     return (
       <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
-        <div className="absolute inset-0 bg-black/60" />
-        {/* Render nothing until we know if it's mobile or desktop */}
+        {/* Simple loading state */}
       </section>
     );
   }
-  
+
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
-      {/* Desktop: Video Background */}
-      {!isMobile && (
-        <>
-          <video
-            ref={videoRef}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-              videoLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-          >
-            <source src="/HabitBackground.webm" type="video/webm" />
-            <source src="/HabitBackground.mp4" type="video/mp4" />
-          </video>
-
-          {/* Desktop: Fallback Background Image (only show if video fails to load) */}
-          <div
-            className={`absolute inset-0 bg-cover bg-center bg-no-repeat transition-opacity duration-500 ${
-              videoLoaded ? 'opacity-0' : 'opacity-100'
-            }`}
-            style={{
-              backgroundImage: 'url(/HabitBackground.webp)',
-            }}
-          />
-        </>
-      )}
-
-      {/* Mobile: Smooth Parallax Image Background */}
-      {isMobile && (
-        <div
-          ref={parallaxRef}
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat will-change-transform"
-          style={{
-            backgroundImage: 'url(/HabitBackground.webp)',
-            height: '120%',
-            top: '-10%',
-            backfaceVisibility: 'hidden',
-            perspective: '1000px',
-          }}
-        />
-      )}
-
-      {/* Dark Overlay for Text Readability */}
-      <div className="absolute inset-0 bg-black/60" />
+      {/* Simple gradient background instead of image/video */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#1a1a1a] via-[#2a2a2a] to-[#1a1a1a]" />
 
       {/* Subtle Background Pattern */}
       <div className="absolute inset-0 opacity-5">
@@ -177,11 +53,15 @@ const Hero = () => {
         />
       </div>
 
-      {/* Main Content */}
-      <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 pb-20">
-        {/* Main Headline */}
+      {/* Main Content with Parallax Motion */}
+      <motion.div 
+        className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 pb-20"
+        style={{ opacity }} // Fade out as user scrolls
+      >
+        {/* Main Headline with Parallax */}
         <motion.h1
           className="text-5xl md:text-6xl lg:text-7xl font-anton uppercase leading-tight mb-6 tracking-tight"
+          style={{ y: titleY }} // Parallax effect
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
@@ -198,9 +78,10 @@ const Hero = () => {
           </span>
         </motion.h1>
 
-        {/* Subtitle */}
+        {/* Subtitle with Different Parallax Speed */}
         <motion.p
           className="text-xl md:text-2xl text-gray-300 mb-12 leading-relaxed max-w-3xl mx-auto"
+          style={{ y: subtitleY }} // Different parallax speed
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.3 }}
@@ -209,9 +90,10 @@ const Hero = () => {
           <span className="text-[#DBDBDB] font-semibold">automatic</span>
         </motion.p>
 
-        {/* CTA Buttons */}
+        {/* CTA Buttons with Another Parallax Speed */}
         <motion.div
           className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
+          style={{ y: buttonsY }} // Another parallax speed
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.5 }}
@@ -241,9 +123,10 @@ const Hero = () => {
           </Button>
         </motion.div>
 
-        {/* Simple Trust Indicator */}
+        {/* Trust Indicator with Slowest Parallax */}
         <motion.div
           className="text-center border-t border-white/20 pt-8"
+          style={{ y: trustY }} // Slowest parallax speed
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
@@ -255,7 +138,10 @@ const Hero = () => {
             Start your transformation today
           </div>
         </motion.div>
-      </div>
+      </motion.div>
+
+      {/* Fade out gradient at bottom to blend with next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1a1a1a] to-transparent z-20" />
     </section>
   );
 };
