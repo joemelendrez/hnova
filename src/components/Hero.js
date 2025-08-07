@@ -256,9 +256,6 @@ const Hero = () => {
           </div>
         </motion.div>
       </div>
-
-      {/* Fade out gradient at bottom to blend with next section */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#1a1a1a] to-transparent z-20" />
     </section>
   );
 };
