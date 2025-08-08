@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, Book, ShoppingBag } from 'lucide-react';
 import Button from './Button';
@@ -7,24 +7,70 @@ import { useRouteLoading } from './RouteLoadingProvider';
 
 const Hero = () => {
   const [mounted, setMounted] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const videoRef = useRef(null);
   const { setIsLoading } = useRouteLoading();
-  
+
   // Parallax scroll effects - ALL text moves together as one group
   const { scrollY } = useScroll();
-  
+
   // Single parallax transform for entire content group - moves down into Featured Articles
   const contentY = useTransform(scrollY, [0, 600], [0, 200]); // Moves DOWN as you scroll
-  
+
   // Optional: Slight fade as it moves down (remove if you don't want fading)
   const opacity = useTransform(scrollY, [0, 500], [1, 0.3]);
-  
+
+  // Detect desktop vs mobile
+  useEffect(() => {
+    const checkIsDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1024); // lg breakpoint
+    };
+
+    checkIsDesktop();
+    window.addEventListener('resize', checkIsDesktop);
+    return () => window.removeEventListener('resize', checkIsDesktop);
+  }, []);
+
+  // Handle video loading
+  useEffect(() => {
+    if (videoRef.current && isDesktop) {
+      const video = videoRef.current;
+
+      const handleLoadedData = () => {
+        setVideoLoaded(true);
+        setIsLoading(false);
+      };
+
+      const handleError = () => {
+        console.warn('Background video failed to load');
+        setVideoLoaded(false);
+        setIsLoading(false);
+      };
+
+      video.addEventListener('loadeddata', handleLoadedData);
+      video.addEventListener('error', handleError);
+
+      // Try to play the video
+      video.play().catch(() => {
+        console.warn('Autoplay failed - this is expected on some browsers');
+      });
+
+      return () => {
+        video.removeEventListener('loadeddata', handleLoadedData);
+        video.removeEventListener('error', handleError);
+      };
+    } else {
+      // Mobile or no video - hide loading immediately
+      setTimeout(() => setIsLoading(false), 200);
+    }
+  }, [isDesktop, setIsLoading]);
+
   // Prevent hydration issues
   useEffect(() => {
     setMounted(true);
-    // Hide loading immediately since we removed video
-    setTimeout(() => setIsLoading(false), 200);
-  }, [setIsLoading]);
-  
+  }, []);
+
   if (!mounted) {
     return (
       <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
@@ -32,14 +78,44 @@ const Hero = () => {
       </section>
     );
   }
-  
+
   return (
-    <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center ">
-      {/* Keep solid background color only */}
+    <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
+      {/* Background Video - Desktop Only */}
+      {isDesktop && (
+        <div className="absolute inset-0 z-0">
+          <video
+            ref={videoRef}
+            className={`w-full h-full object-cover transition-opacity duration-1000 ${
+              videoLoaded ? 'opacity-30' : 'opacity-0'
+            }`}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            poster="/videos/HabitBackground.webp" // Optional: Add a poster image
+          >
+            {/* Multiple video formats for better browser support */}
+            <source src="/videos/HabitBackground.webm" type="video/webm" />
+            {/* Fallback for browsers that don't support video */}
+            Your browser does not support the video tag.
+          </video>
+
+          {/* Video overlay for better text readability */}
+          <div className="absolute inset-0 bg-black/40 z-10" />
+
+          {/* Gradient overlay for smooth blending */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 z-20" />
+        </div>
+      )}
+
+      {/* Mobile Background - Solid Color Only */}
+      {!isDesktop && <div className="absolute inset-0 bg-[#1a1a1a] z-0" />}
 
       {/* Main Content - ALL text moves together as one group */}
-      <motion.div 
-        className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-10 pb-20"
+      <motion.div
+        className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center z-30 pb-20"
         style={{ y: contentY, opacity }} // Single transform for entire content group
       >
         {/* Main Headline */}

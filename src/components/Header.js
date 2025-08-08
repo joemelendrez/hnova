@@ -18,6 +18,9 @@ const Header = () => {
   const [isMobile, setIsMobile] = useState(false);
   const pathname = usePathname();
 
+  // Check if we're on homepage
+  const isHomepage = pathname === '/';
+
   // Navigation items
   const navigation = [
     { name: 'Home', href: '/' },
@@ -120,6 +123,21 @@ const Header = () => {
   const showReadingProgress =
     pathname.startsWith('/blog/') && pathname !== '/blog' && isMobile;
 
+  // Get header background classes based on page and scroll state
+  const getHeaderClasses = () => {
+    if (isHomepage) {
+      // Homepage styling - translucent when not scrolled, darker when scrolled
+      return scrolled
+        ? 'bg-[#1a1a1a]/80 shadow-lg backdrop-blur-sm'
+        : 'bg-[#1a1a1a]/20 shadow-lg backdrop-blur-sm';
+    } else {
+      // Other pages styling - solid background always
+      return scrolled
+        ? 'bg-[#1a1a1a]/80 shadow-lg backdrop-blur-sm'
+        : 'bg-[#1a1a1a] shadow-md';
+    }
+  };
+
   return (
     <>
       {/* Animated Logo for Mobile - Positioned outside header */}
@@ -142,13 +160,9 @@ const Header = () => {
       </motion.div>
 
       <header
-        className={`fixed left-0 right-0 top-0 transition-all duration-300 ease-in-out ${
-          scrolled
-            ? 'bg-[#1a1a1a]/80 shadow-lg backdrop-blur-sm'
-            : 'bg-[#1a1a1a]'
-        } ${headerVisible ? 'translate-y-0' : '-translate-y-full'} ${
-          mobileMenuOpen ? 'z-10' : 'z-40'
-        }`}
+        className={`fixed left-0 right-0 top-0 transition-all duration-300 ease-in-out ${getHeaderClasses()} ${
+          headerVisible ? 'translate-y-0' : '-translate-y-full'
+        } ${mobileMenuOpen ? 'z-10' : 'z-40'}`}
       >
         {/* Blur overlay when menu is open */}
         {mobileMenuOpen && (
@@ -194,7 +208,7 @@ const Header = () => {
                 >
                   <Link
                     href={item.href}
-                    className={`relative px-4 py-2 text-sm font-medium transition-all duration-200  ${
+                    className={`relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md ${
                       isActiveLink(item.href)
                         ? 'bg-[#f10000] text-white'
                         : 'text-white hover:bg-[#f10000] hover:text-white'
@@ -225,7 +239,6 @@ const Header = () => {
               ))}
 
               {/* Desktop Cart Icon */}
-              
               <CartIcon />
             </nav>
 
@@ -292,12 +305,12 @@ function CartIcon() {
   return (
     <button
       onClick={() => setCartOpen(true)}
-      className="relative p-2 hover:bg-[#f10000] text-white hover:text-[#dbdbdb] transition-colors ml-4"
+      className="relative p-2 rounded-md hover:bg-[#f10000] text-white hover:text-white transition-colors ml-4"
       aria-label={`Shopping cart with ${cartCount} items`}
     >
       <ShoppingBag className="h-5 w-5" />
       {cartCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-[#fe0000] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium ">
+        <span className="absolute -top-1 -right-1 bg-[#fe0000] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
           {cartCount > 9 ? '9+' : cartCount}
         </span>
       )}

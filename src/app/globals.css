@@ -18,34 +18,16 @@
   --color-accent-hover: #cd1718;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-roboto);
-  --font-mono: var(--font-geist-mono);
-  
-  /* Add custom font families */
-  --font-anton: var(--font-anton);
-  --font-roboto: var(--font-roboto);
-}
-
-/*@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}*/
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-roboto), Arial, Helvetica, sans-serif;
 }
 
-  ::selection {
-      background: #f10000; /* Example: A light yellow color */
-      color: #ffffff; /* Example: A dark gray text color */
-    }
+::selection {
+  background: #f10000;
+  color: #ffffff;
+}
 
 /* Typography System */
 h1, h2 {
@@ -213,13 +195,14 @@ h3 {
 /* Form elements with accent */
 input:focus, textarea:focus, select:focus {
   outline: none;
-  ring: 2px solid var(--color-accent);
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(254, 0, 0, 0.2);
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling with scroll padding for fixed header */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 140px;
 }
 
 /* Custom scrollbar with accent */
@@ -252,57 +235,114 @@ html {
   color: transparent;
 }
 
-/* Custom blog post content styles */
+/* SCROLL MARGIN FOR TABLE OF CONTENTS - CRITICAL FIX */
+#article-content h1,
+#article-content h2,
+#article-content h3,
+#article-content h4,
+#article-content h5,
+#article-content h6 {
+  scroll-margin-top: 140px !important;
+}
+
+/* Blog content styles converted from @apply to standard CSS */
 .blog-content {
-  @apply text-gray-700 leading-relaxed;
+  color: #374151;
+  line-height: 1.75;
 }
 
 .blog-content p {
-  @apply mb-6 text-xl leading-relaxed text-gray-700;
+  margin-bottom: 1.5rem;
+  font-size: 1.25rem;
+  line-height: 1.75;
+  color: #374151;
 }
 
 .blog-content h1 {
-  @apply text-4xl md:text-5xl font-bold text-[#1a1a1a] mt-12 mb-6 leading-tight;
+  font-size: 2.25rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.25;
+  scroll-margin-top: 140px !important;
 }
 
 .blog-content h2 {
-  @apply text-3xl md:text-4xl font-bold text-[#1a1a1a] mt-10 mb-5 leading-tight;
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  margin-top: 2.5rem;
+  margin-bottom: 1.25rem;
+  line-height: 1.25;
+  scroll-margin-top: 140px !important;
 }
 
 .blog-content h3 {
-  @apply text-2xl md:text-3xl font-bold text-[#1a1a1a] mt-8 mb-4 leading-tight;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  line-height: 1.25;
+  scroll-margin-top: 140px !important;
 }
 
 .blog-content h4 {
-  @apply text-xl md:text-2xl font-semibold text-[#1a1a1a] mt-6 mb-3;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  scroll-margin-top: 140px !important;
 }
 
 .blog-content h5 {
-  @apply text-lg md:text-xl font-semibold text-[#1a1a1a] mt-6 mb-3;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  scroll-margin-top: 140px !important;
 }
 
 .blog-content h6 {
-  @apply text-base md:text-lg font-semibold text-[#1a1a1a] mt-6 mb-3 uppercase tracking-wide;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  scroll-margin-top: 140px !important;
 }
 
 .blog-content ul {
-  @apply mb-6 space-y-3 pl-8 list-disc;
+  margin-bottom: 1.5rem;
+  padding-left: 2rem;
+  list-style-type: disc;
 }
 
 .blog-content ol {
-  @apply mb-6 space-y-3 pl-8 list-decimal;
+  margin-bottom: 1.5rem;
+  padding-left: 2rem;
+  list-style-type: decimal;
 }
 
 .blog-content li {
-  @apply text-xl text-gray-700 leading-relaxed;
+  font-size: 1.25rem;
+  color: #374151;
+  line-height: 1.75;
+  margin-bottom: 0.75rem;
 }
 
-.blog-content ul li {
-  @apply marker:text-gray-400;
+.blog-content ul li::marker {
+  color: #9ca3af;
 }
 
-.blog-content ol li {
-  @apply marker:text-gray-400 marker:font-medium;
+.blog-content ol li::marker {
+  color: #9ca3af;
+  font-weight: 500;
 }
 
 /* Nested lists */
@@ -310,118 +350,245 @@ html {
 .blog-content ol ol,
 .blog-content ul ol,
 .blog-content ol ul {
-  @apply mt-2 mb-2 pl-6;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
 }
 
 .blog-content ul ul {
-  @apply list-[circle];
+  list-style-type: circle;
 }
 
 .blog-content ul ul ul {
-  @apply list-[square];
+  list-style-type: square;
 }
 
 .blog-content blockquote {
-  @apply border-l-4 border-[#DBDBDB] pl-6 py-4 my-8 bg-gray-50 italic text-gray-600 rounded-r-lg text-xl;
+  border-left: 4px solid #DBDBDB;
+  padding-left: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  margin: 2rem 0;
+  background-color: #f9fafb;
+  font-style: italic;
+  color: #4b5563;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-size: 1.25rem;
 }
 
 .blog-content blockquote p {
-  @apply mb-0 text-gray-600 text-xl;
+  margin-bottom: 0;
+  color: #4b5563;
+  font-size: 1.25rem;
 }
 
 .blog-content a {
-  @apply text-[#1a1a1a] font-medium no-underline hover:underline transition-all duration-200;
+  color: #1a1a1a;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.blog-content a:hover {
+  text-decoration: underline;
 }
 
 .blog-content strong {
-  @apply font-semibold text-[#1a1a1a];
+  font-weight: 600;
+  color: #1a1a1a;
 }
 
 .blog-content em {
-  @apply italic;
+  font-style: italic;
 }
 
 .blog-content img {
-  @apply rounded-lg shadow-md my-8 w-full h-auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+  width: 100%;
+  height: auto;
 }
 
 .blog-content hr {
-  @apply border-gray-200 my-8;
+  border-color: #e5e7eb;
+  margin: 2rem 0;
 }
 
 .blog-content code {
-  @apply bg-gray-100 px-2 py-1 rounded text-lg text-[#1a1a1a] font-mono;
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 1.125rem;
+  color: #1a1a1a;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 .blog-content pre {
-  @apply bg-gray-900 text-white p-4 rounded-lg overflow-x-auto my-6 text-base;
+  background-color: #1f2937;
+  color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+  font-size: 1rem;
 }
 
 .blog-content pre code {
-  @apply bg-transparent text-white p-0 text-base;
+  background-color: transparent;
+  color: white;
+  padding: 0;
+  font-size: 1rem;
 }
 
 .blog-content table {
-  @apply w-full border-collapse border border-gray-200 my-6 text-lg;
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e5e7eb;
+  margin: 1.5rem 0;
+  font-size: 1.125rem;
 }
 
 .blog-content th {
-  @apply bg-gray-50 border border-gray-200 px-4 py-3 text-left font-semibold text-[#1a1a1a] text-lg;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #1a1a1a;
+  font-size: 1.125rem;
 }
 
 .blog-content td {
-  @apply border border-gray-200 px-4 py-3 text-gray-700 text-lg leading-relaxed;
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem 1rem;
+  color: #374151;
+  font-size: 1.125rem;
+  line-height: 1.75;
 }
 
 /* WordPress specific content cleanup */
 .blog-content .wp-block-image {
-  @apply mb-8;
+  margin-bottom: 2rem;
 }
 
 .blog-content .wp-block-quote {
-  @apply border-l-4 border-[#DBDBDB] pl-6 py-4 my-8 bg-gray-50 italic text-xl;
+  border-left: 4px solid #DBDBDB;
+  padding-left: 1.5rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  margin: 2rem 0;
+  background-color: #f9fafb;
+  font-style: italic;
+  font-size: 1.25rem;
 }
 
 .blog-content .wp-block-separator {
-  @apply border-gray-200 my-8;
+  border-color: #e5e7eb;
+  margin: 2rem 0;
+}
+
+.blog-content .wp-block-heading {
+  scroll-margin-top: 140px !important;
 }
 
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .blog-content h1 {
-    @apply text-3xl mt-8 mb-4;
+    font-size: 1.875rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
   }
   
   .blog-content h2 {
-    @apply text-2xl mt-6 mb-4;
+    font-size: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
   }
   
   .blog-content h3 {
-    @apply text-xl mt-6 mb-3;
+    font-size: 1.25rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
   }
   
   .blog-content p {
-    @apply mb-5 text-lg leading-relaxed;
+    margin-bottom: 1.25rem;
+    font-size: 1.125rem;
+    line-height: 1.75;
   }
   
   .blog-content li {
-    @apply text-lg;
+    font-size: 1.125rem;
   }
   
   .blog-content blockquote {
-    @apply pl-4 py-3 my-6 text-lg;
+    padding-left: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    margin: 1.5rem 0;
+    font-size: 1.125rem;
   }
   
   .blog-content blockquote p {
-    @apply text-lg;
+    font-size: 1.125rem;
   }
   
   .blog-content code {
-    @apply text-base;
+    font-size: 1rem;
+  }
+  
+  /* Adjust scroll margin for mobile */
+  html {
+    scroll-padding-top: 100px;
+  }
+  
+  #article-content h1,
+  #article-content h2,
+  #article-content h3,
+  #article-content h4,
+  #article-content h5,
+  #article-content h6 {
+    scroll-margin-top: 100px !important;
+  }
+  
+  .blog-content h1,
+  .blog-content h2,
+  .blog-content h3,
+  .blog-content h4,
+  .blog-content h5,
+  .blog-content h6 {
+    scroll-margin-top: 100px !important;
   }
 }
 
-/* Add these styles to your existing app/globals.css */
+/* Ensure smooth scrolling works across all browsers */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Alternative fallback for browsers that don't support scroll-margin-top */
+@supports not (scroll-margin-top: 140px) {
+  #article-content h1::before,
+  #article-content h2::before,
+  #article-content h3::before,
+  #article-content h4::before,
+  #article-content h5::before,
+  #article-content h6::before {
+    content: '';
+    display: block;
+    height: 140px;
+    margin-top: -140px;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
 
 /* Rich Text Content Styling for Shopify Descriptions */
 .rich-text-content {
@@ -897,4 +1064,3 @@ html {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #a0aec0;
 }
-
