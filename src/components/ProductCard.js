@@ -289,7 +289,7 @@ export default function ProductCard({ product }) {
                         className={`px-2 py-1 text-xs border rounded transition-colors ${
                           isSelected
                             ? 'border-gray-900 bg-gray-900 text-white'
-                            : 'border-black hover:border-gray-400 text-black'
+                            : 'border-black hover:border-gray-400 hover:bg-[#f10000] text-black hover:text-white'
                         }`}
                         title={value}
                       >
@@ -401,8 +401,8 @@ export default function ProductCard({ product }) {
             isInStock
               ? addingToCart // Only check local addingToCart state
                 ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-[#1a1a1a] hover:bg-[#dbdbdb] hover:text-white text-white'
-              : 'bg-black text-white cursor-not-allowed'
+                : 'bg-[#1a1a1a] hover:bg-[#f10000] hover:text-white text-white'
+              : 'bg-[#1a1a1a] text-white cursor-not-allowed'
           }`}
         >
           <ShoppingCart size={16} />
@@ -416,7 +416,7 @@ export default function ProductCard({ product }) {
         {/* View Product Link */}
         <Link
           href={`/shop/products/${slug}`}
-          className="mt-2 w-full flex items-center justify-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-[#1a1a1a] transition-colors"
+          className="mt-2 w-full flex items-center justify-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-gray-500 transition-colors"
         >
           <ExternalLink size={14} />
           View Details

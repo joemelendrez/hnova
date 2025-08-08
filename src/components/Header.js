@@ -225,6 +225,7 @@ const Header = () => {
               ))}
 
               {/* Desktop Cart Icon */}
+              
               <CartIcon />
             </nav>
 
@@ -291,12 +292,12 @@ function CartIcon() {
   return (
     <button
       onClick={() => setCartOpen(true)}
-      className="relative p-2 text-white hover:text-[#dbdbdb] transition-colors ml-4"
+      className="relative p-2 hover:bg-[#f10000] text-white hover:text-[#dbdbdb] transition-colors ml-4"
       aria-label={`Shopping cart with ${cartCount} items`}
     >
       <ShoppingBag className="h-5 w-5" />
       {cartCount > 0 && (
-        <span className="absolute -top-1 -right-1 bg-[#fe0000] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+        <span className="absolute -top-1 -right-1 bg-[#fe0000] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium ">
           {cartCount > 9 ? '9+' : cartCount}
         </span>
       )}
