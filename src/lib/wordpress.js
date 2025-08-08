@@ -2,7 +2,7 @@
 
 const WORDPRESS_API_URL =
   process.env.NEXT_PUBLIC_WORDPRESS_API_URL ||
-  'https://your-wordpress-site.com/graphql';
+  'https://cms.habitnova.com/graphql';
 
 // Memory cache for ultra-fast access
 const memoryCache = new Map();
@@ -338,6 +338,7 @@ export const SEARCH_POSTS = `
           title
           slug
           excerpt
+          content
           date
           categories {
             edges {
@@ -373,6 +374,7 @@ export const GET_POSTS_BY_CATEGORY = `
           title
           slug
           excerpt
+          content
           date
           categories {
             edges {
