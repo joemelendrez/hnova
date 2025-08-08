@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -11,12 +11,22 @@ import {
   Zap,
   CheckCircle,
 } from 'lucide-react';
+import { useCart } from '../app/hooks/useShopifyCart';
 import ProductCard from './ProductCard';
 
 const ProductFeatured = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Parallax and shrink effects to match FeaturedArticles
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [800, 1600], [50, -25]); // Moves up as you scroll
+  const opacity = useTransform(scrollY, [800, 1100], [0.95, 1]); // Subtle fade in
+  
+  // Shrink effect - section gets smaller as you scroll away from it
+  const scale = useTransform(scrollY, [1200, 1800], [1, 0.95]); // Shrinks from 100% to 95%
+  const borderRadius = useTransform(scrollY, [1200, 1800], [48, 80]); // Bottom corners get more rounded
 
   // Initialize Shopify client
   useEffect(() => {
@@ -196,6 +206,7 @@ const ProductFeatured = () => {
   function extractFeatures(product) {
     // Try to extract features from description
     const description = product.description || '';
+    const features = [];
 
     // Look for bullet points or numbered lists in description
     const bulletMatches = description.match(/[•·▪▫-]\s*([^\n•·▪▫-]+)/g);
@@ -385,7 +396,16 @@ const ProductFeatured = () => {
   // Loading state
   if (loading) {
     return (
-      <section className="relative z-10 bg-[#1a1a1a] rounded-t-[3rem] lg:rounded-t-[4rem] -mt-8 pt-16 pb-20 shadow-2xl overflow-hidden">
+      <motion.section 
+        style={{ 
+          y, 
+          opacity, 
+          scale,
+          borderBottomLeftRadius: borderRadius,
+          borderBottomRightRadius: borderRadius 
+        }}
+        className="relative z-10 bg-[#1a1a1a] rounded-t-[3rem] lg:rounded-t-[4rem] -mt-8 pt-16 pb-20 shadow-2xl overflow-hidden"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-white text-sm font-medium mb-4">
@@ -402,14 +422,23 @@ const ProductFeatured = () => {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
     );
   }
 
   // Error state
   if (error && products.length === 0) {
     return (
-      <section className="relative z-10 bg-[#1a1a1a] rounded-t-[3rem] lg:rounded-t-[4rem] -mt-8 pt-16 pb-20 shadow-2xl overflow-hidden">
+      <motion.section 
+        style={{ 
+          y, 
+          opacity, 
+          scale,
+          borderBottomLeftRadius: borderRadius,
+          borderBottomRightRadius: borderRadius 
+        }}
+        className="relative z-10 bg-[#1a1a1a] rounded-t-[3rem] lg:rounded-t-[4rem] -mt-8 pt-16 pb-20 shadow-2xl overflow-hidden"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-4">
             Featured Products
@@ -425,12 +454,21 @@ const ProductFeatured = () => {
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
-      </section>
+      </motion.section>
     );
   }
 
   return (
-    <section className="relative z-10 bg-[#1a1a1a] rounded-t-[3rem] lg:rounded-t-[4rem] -mt-8 pt-16 pb-20 shadow-2xl overflow-hidden">
+    <motion.section 
+      style={{ 
+        y, 
+        opacity, 
+        scale,
+        borderBottomLeftRadius: borderRadius,
+        borderBottomRightRadius: borderRadius 
+      }}
+      className="relative z-10 bg-[#1a1a1a] rounded-t-[3rem] lg:rounded-t-[4rem] -mt-8 pt-16 pb-20 shadow-2xl overflow-hidden"
+    >
       {/* Subtle gradient overlay at the top for depth */}
       <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/5 to-transparent rounded-t-[3rem] lg:rounded-t-[4rem]" />
 
@@ -480,7 +518,7 @@ const ProductFeatured = () => {
           </Link>
         </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
