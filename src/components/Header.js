@@ -208,7 +208,7 @@ const Header = () => {
                 >
                   <Link
                     href={item.href}
-                    className={`relative px-4 py-2 text-sm font-medium transition-all duration-200 rounded-md ${
+                    className={`relative px-4 py-2 text-sm font-medium transition-all duration-200  ${
                       isActiveLink(item.href)
                         ? 'bg-[#f10000] text-white'
                         : 'text-white hover:bg-[#f10000] hover:text-white'
