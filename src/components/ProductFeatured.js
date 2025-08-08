@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -18,15 +18,6 @@ const ProductFeatured = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Parallax and shrink effects to match FeaturedArticles
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [800, 1600], [50, -25]); // Moves up as you scroll
-  const opacity = useTransform(scrollY, [800, 1100], [0.95, 1]); // Subtle fade in
-  
-  // Shrink effect - section gets smaller as you scroll away from it
-  const scale = useTransform(scrollY, [1200, 1800], [1, 0.95]); // Shrinks from 100% to 95%
-  const borderRadius = useTransform(scrollY, [1200, 1800], [48, 80]); // Bottom corners get more rounded
 
   // Initialize Shopify client
   useEffect(() => {
@@ -396,83 +387,54 @@ const ProductFeatured = () => {
   // Loading state
   if (loading) {
     return (
-      <motion.section 
-        style={{ 
-          y, 
-          opacity, 
-          scale,
-          borderBottomLeftRadius: borderRadius,
-          borderBottomRightRadius: borderRadius 
-        }}
-        className="relative z-10 bg-[#1a1a1a] rounded-t-[3rem] lg:rounded-t-[4rem] -mt-8 pt-16 pb-20 shadow-2xl overflow-hidden"
-      >
+      <section className="py-20 bg-[#DBDBDB] bg-opacity-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-white text-sm font-medium mb-4">
+            <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 rounded-full text-[#1a1a1a] text-sm font-medium mb-4">
               <div className="w-4 h-4 bg-gray-300 rounded mr-2 animate-pulse"></div>
               Featured Products
             </div>
-            <h2 className="text-4xl font-bold text-white mb-4">
+            <h2 className="text-4xl font-bold text-[#1a1a1a] mb-4">
               Habit Formation Tools
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white bg-opacity-5 rounded-xl animate-pulse h-80"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-2 lg:row-span-2 bg-white rounded-xl animate-pulse h-96"></div>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white rounded-xl animate-pulse h-80"></div>
             ))}
           </div>
         </div>
-      </motion.section>
+      </section>
     );
   }
 
   // Error state
   if (error && products.length === 0) {
     return (
-      <motion.section 
-        style={{ 
-          y, 
-          opacity, 
-          scale,
-          borderBottomLeftRadius: borderRadius,
-          borderBottomRightRadius: borderRadius 
-        }}
-        className="relative z-10 bg-[#1a1a1a] rounded-t-[3rem] lg:rounded-t-[4rem] -mt-8 pt-16 pb-20 shadow-2xl overflow-hidden"
-      >
+      <section className="py-20 bg-[#DBDBDB] bg-opacity-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">
+          <h2 className="text-4xl font-bold text-[#1a1a1a] mb-4">
             Featured Products
           </h2>
-          <p className="text-xl text-gray-300 mb-8">
+          <p className="text-xl text-gray-600 mb-8">
             Unable to load products. Please try again later.
           </p>
           <Link
             href="/shop"
-            className="inline-flex items-center px-8 py-4 bg-white text-[#1a1a1a] font-semibold rounded-lg hover:bg-gray-100 transition-colors"
+            className="inline-flex items-center px-8 py-4 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
           >
             Browse All Products
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
-      </motion.section>
+      </section>
     );
   }
 
   return (
-    <motion.section 
-      style={{ 
-        y, 
-        opacity, 
-        scale,
-        borderBottomLeftRadius: borderRadius,
-        borderBottomRightRadius: borderRadius 
-      }}
-      className="relative z-10 bg-[#1a1a1a] rounded-t-[3rem] lg:rounded-t-[4rem] -mt-8 pt-16 pb-20 shadow-2xl overflow-hidden"
-    >
-      {/* Subtle gradient overlay at the top for depth */}
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-white/5 to-transparent rounded-t-[3rem] lg:rounded-t-[4rem]" />
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-20 bg-[#b9b9bd] bg-opacity-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -481,14 +443,14 @@ const ProductFeatured = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-white text-sm font-medium mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-50 rounded-full text-[#1a1a1a] text-sm font-medium mb-4">
             <ShoppingBag className="mr-2 h-4 w-4" />
             Featured Products
           </div>
-          <h2 className="text-4xl font-bold text-white mb-4">
+          <h2 className="text-4xl font-bold text-[#1a1a1a] mb-4">
             Habit Formation Tools
           </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Scientifically-designed tools and resources to help you build better
             habits, break bad ones, and transform your daily routine.
           </p>
@@ -511,14 +473,14 @@ const ProductFeatured = () => {
         >
           <Link
             href="/shop"
-            className="inline-flex items-center px-8 py-4 bg-white text-[#1a1a1a] font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+            className="inline-flex items-center px-8 py-4 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
           >
             Shop All Products
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </motion.div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 
