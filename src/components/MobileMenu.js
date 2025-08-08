@@ -14,7 +14,6 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
   }
 
   const quickLinks = [
-    { name: 'Free Habit Tracker', href: '/habit-tracker', icon: <Target className="h-4 w-4" /> },
     { name: 'Popular Articles', href: '/blog?filter=popular', icon: <TrendingUp className="h-4 w-4" /> },
     { name: 'Start Here Guide', href: '/start-here', icon: <BookOpen className="h-4 w-4" /> },
   ]
