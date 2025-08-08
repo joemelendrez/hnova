@@ -148,6 +148,7 @@ function calculateReadTime(content) {
   }
 }
 
+
 export default function BlogPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -170,6 +171,7 @@ export default function BlogPage() {
     () => searchTerm.length > 0 || selectedCategories.length > 0,
     [searchTerm, selectedCategories]
   );
+
 
   // Optimized initial data loading with preloading
   const fetchInitialData = useCallback(async () => {

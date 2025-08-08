@@ -227,6 +227,7 @@ export const GET_ALL_POSTS = `
           title
           slug
           excerpt
+          content
           date
           modified
           categories {
@@ -301,6 +302,7 @@ export const GET_POST_BY_SLUG = `
       content
       slug
       excerpt
+      content
       date
       modified
       categories {
