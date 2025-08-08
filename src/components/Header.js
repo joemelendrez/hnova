@@ -186,7 +186,7 @@ const Header = () => {
                   transition={{ duration: 0.2 }}
                 >
                   <Image
-                    src="/logos/Habitlogo.svg"
+                    src="/logos/HabitNova-Transparent-Logo.svg"
                     alt="Habit Nova Logo"
                     width={100}
                     height={100}
