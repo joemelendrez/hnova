@@ -459,7 +459,6 @@ const ProductFeatured = () => {
           borderBottomLeftRadius: borderRadius,
           borderBottomRightRadius: borderRadius,
         }}
-        className="relative z-10 bg-[#1a1a1a] overflow-hidden"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -495,7 +494,6 @@ const ProductFeatured = () => {
           borderBottomLeftRadius: borderRadius,
           borderBottomRightRadius: borderRadius,
         }}
-        className="relative z-10 bg-[#1a1a1a]  overflow-hidden"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-black mb-4">
@@ -527,20 +525,20 @@ const ProductFeatured = () => {
       }}
     
     >
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 lg:mt-0">
         {/* Section Header with New whileInView Animation */}
         <motion.div
           initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-200px 0px -200px 0px' }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
           className="text-center mb-16"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, margin: '-200px 0px -200px 0px' }}
-            transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
+            transition={{ duration: 0.3, delay: 0.1, ease: 'easeOut' }}
             className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-black text-sm font-medium mb-4"
           >
             <ShoppingBag className="mr-2 h-4 w-4" />
@@ -550,7 +548,7 @@ const ProductFeatured = () => {
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-200px 0px -200px 0px' }}
-            transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
+            transition={{ duration: 0.3, delay: 0.3, ease: 'easeOut' }}
             className="text-4xl font-bold text-white mb-4"
           >
             Habit Formation Tools
@@ -559,7 +557,7 @@ const ProductFeatured = () => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-200px 0px -200px 0px' }}
-            transition={{ duration: 0.6, delay: 0.5, ease: 'easeOut' }}
+            transition={{ duration: 0.3, delay: 0.5, ease: 'easeOut' }}
             className="text-xl text-gray-300 max-w-3xl mx-auto"
           >
             Our bestselling tools that have helped thousands build better habits
@@ -584,28 +582,16 @@ const ProductFeatured = () => {
           className="text-center"
         >
           <motion.a
-            href="https://shop.habitnova.com"
-            target="_blank"
+            href="/shop"
+           
             rel="noopener noreferrer"
             className="inline-flex items-center px-8 py-4 bg-[#f10000] text-white font-semibold rounded-lg hover:bg-[#cd1718] transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
             <ShoppingBag className="mr-3 h-5 w-5" />
-            Visit Our Complete Store
-            <svg
-              className="ml-3 h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-              />
-            </svg>
+            Check Out Our Bestsellers
+          
           </motion.a>
         </motion.div>
       </div>

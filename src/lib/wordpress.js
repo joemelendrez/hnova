@@ -268,6 +268,7 @@ export const GET_FEATURED_POSTS = `
           title
           slug
           excerpt
+          content
           date
           categories {
             edges {
