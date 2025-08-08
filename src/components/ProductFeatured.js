@@ -459,7 +459,7 @@ const ProductFeatured = () => {
           borderBottomLeftRadius: borderRadius,
           borderBottomRightRadius: borderRadius,
         }}
-        className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-8 pb-20 shadow-2xl overflow-hidden"
+        className="relative z-10 bg-[#1a1a1a] overflow-hidden"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -495,7 +495,7 @@ const ProductFeatured = () => {
           borderBottomLeftRadius: borderRadius,
           borderBottomRightRadius: borderRadius,
         }}
-        className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-8 pb-20 shadow-2xl overflow-hidden"
+        className="relative z-10 bg-[#1a1a1a]  overflow-hidden"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-black mb-4">
@@ -525,7 +525,7 @@ const ProductFeatured = () => {
         borderBottomLeftRadius: borderRadius,
         borderBottomRightRadius: borderRadius,
       }}
-      className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-16 lg:pt-8 shadow-2xl overflow-hidden"
+    
     >
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header with New whileInView Animation */}

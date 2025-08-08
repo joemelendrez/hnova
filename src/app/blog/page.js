@@ -1,4 +1,4 @@
-// src/app/blog/page.js - Optimized with caching and performance improvements
+// src/app/blog/page.js - Updated with enhanced readTime calculation
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
@@ -18,12 +18,135 @@ import {
   searchPosts,
   getPostsByCategory,
   getCategories,
-  formatPostData,
   preloadCriticalData,
   getCacheStats,
   warmupCache,
 } from '@/lib/wordpress';
 import BlogPageSkeleton from '@/components/BlogPageSkeleton';
+
+// Enhanced formatPostData function for blog page
+function formatPostDataEnhanced(post) {
+  const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
+
+  // Enhanced readTime calculation - checks for empty/null ACF values
+  const getReadTime = () => {
+    const acfReadTime = post.acfBlogFields?.readTime;
+
+    // Check if ACF readTime exists and is not empty/null/whitespace
+    if (
+      acfReadTime &&
+      typeof acfReadTime === 'string' &&
+      acfReadTime.trim() !== ''
+    ) {
+      return acfReadTime.trim();
+    }
+
+    // Fallback to calculated read time using content or excerpt
+    const contentForCalculation = post.content || cleanExcerpt || '';
+    return calculateReadTime(contentForCalculation);
+  };
+
+  // Decode HTML entities
+  const decodeHtmlEntities = (text) => {
+    if (!text) return '';
+
+    if (typeof window !== 'undefined') {
+      const textArea = document.createElement('textarea');
+      textArea.innerHTML = text;
+      return textArea.value;
+    } else {
+      return text
+        .replace(/&#8217;/g, "'")
+        .replace(/&#8216;/g, "'")
+        .replace(/&#8220;/g, '"')
+        .replace(/&#8221;/g, '"')
+        .replace(/&#8211;/g, '–')
+        .replace(/&#8212;/g, '—')
+        .replace(/&amp;/g, '&')
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'");
+    }
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid Date';
+    }
+  };
+
+  return {
+    id: post.id,
+    title: decodeHtmlEntities(post.title || ''),
+    slug: post.slug,
+    excerpt: decodeHtmlEntities(
+      post.acfBlogFields?.customExcerpt || cleanExcerpt || ''
+    ),
+    category: decodeHtmlEntities(
+      post.categories?.edges?.[0]?.node?.name || 'Uncategorized'
+    ),
+    categorySlug: post.categories?.edges?.[0]?.node?.slug || 'uncategorized',
+    readTime: getReadTime(), // Use the enhanced function
+    date: formatDate(post.date),
+    image:
+      post.featuredImage?.node?.sourceUrl ||
+      'https://images.unsplash.com/photo-1488998427799-e3362cec87c3?w=600&h=400&fit=crop&crop=center',
+    imageAlt: decodeHtmlEntities(
+      post.featuredImage?.node?.altText || post.title || ''
+    ),
+    featured: post.acfBlogFields?.featuredPost || false,
+    content: decodeHtmlEntities(post.content || ''),
+  };
+}
+
+// Enhanced calculateReadTime function
+function calculateReadTime(content) {
+  if (!content || typeof content !== 'string') {
+    return '1 min read';
+  }
+
+  // Remove HTML tags and decode entities for accurate word count
+  const cleanContent = content
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
+
+  if (!cleanContent) {
+    return '1 min read';
+  }
+
+  // Count words more accurately
+  const words = cleanContent
+    .split(/\s+/)
+    .filter((word) => word.length > 0 && /\w/.test(word)); // Only count words with actual letters/numbers
+
+  const wordCount = words.length;
+  console.log(
+    `Word count for calculation: ${wordCount}, content length: ${cleanContent.length}`
+  ); // Debug log
+
+  // Average reading speed (words per minute)
+  const wordsPerMinute = 200;
+
+  // Calculate read time
+  const readTimeMinutes = Math.max(1, Math.ceil(wordCount / wordsPerMinute));
+
+  // Format the output
+  if (readTimeMinutes === 1) {
+    return '1 min read';
+  } else {
+    return `${readTimeMinutes} min read`;
+  }
+}
 
 export default function BlogPage() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,9 +181,9 @@ export default function BlogPage() {
       const criticalData = await preloadCriticalData();
 
       if (criticalData) {
-        // Use the preloaded data
+        // Use the preloaded data with enhanced formatting
         const formattedPosts = criticalData.posts.edges.map((edge) =>
-          formatPostData(edge.node)
+          formatPostDataEnhanced(edge.node)
         );
         const categoryList = criticalData.categories.map((edge) => ({
           name: edge.node.name,
@@ -81,7 +204,7 @@ export default function BlogPage() {
         ]);
 
         const formattedPosts = postsData.edges.map((edge) =>
-          formatPostData(edge.node)
+          formatPostDataEnhanced(edge.node)
         );
         setPosts(formattedPosts);
         setHasNextPage(postsData.pageInfo.hasNextPage);
@@ -129,7 +252,7 @@ export default function BlogPage() {
 
         const searchData = await searchPosts(searchTerm, 12);
         const formattedPosts = searchData.edges.map((edge) =>
-          formatPostData(edge.node)
+          formatPostDataEnhanced(edge.node)
         );
         setPosts(formattedPosts);
         setHasNextPage(false); // Disable load more for search results
@@ -163,7 +286,7 @@ export default function BlogPage() {
 
       const postsData = await getAllPosts(12);
       const formattedPosts = postsData.edges.map((edge) =>
-        formatPostData(edge.node)
+        formatPostDataEnhanced(edge.node)
       );
       setPosts(formattedPosts);
       setHasNextPage(postsData.pageInfo.hasNextPage);
@@ -205,7 +328,7 @@ export default function BlogPage() {
       categoryResults.forEach((result) => {
         result.edges.forEach((edge) => {
           if (!postsMap.has(edge.node.id)) {
-            postsMap.set(edge.node.id, formatPostData(edge.node));
+            postsMap.set(edge.node.id, formatPostDataEnhanced(edge.node));
           }
         });
       });
@@ -255,7 +378,7 @@ export default function BlogPage() {
 
       const postsData = await getAllPosts(12, endCursor);
       const formattedPosts = postsData.edges.map((edge) =>
-        formatPostData(edge.node)
+        formatPostDataEnhanced(edge.node)
       );
 
       setPosts((prevPosts) => [...prevPosts, ...formattedPosts]);

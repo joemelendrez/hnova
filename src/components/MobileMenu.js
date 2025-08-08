@@ -26,7 +26,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
     },
     {
       name: 'Shop Full Store',
-      href: '/https://shop.habitnova.com',
+      href: 'https://shop.habitnova.com',
       icon: <ShoppingBag className="h-4 w-4" />,
     },
   ];

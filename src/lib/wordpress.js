@@ -633,9 +633,27 @@ export function warmupCache() {
   }
 }
 
-// Your existing utility functions
+// Enhanced formatPostData function with better readTime handling
 export function formatPostData(post) {
   const cleanExcerpt = post.excerpt?.replace(/<[^>]*>/g, '') || '';
+
+  // Enhanced readTime calculation - checks for empty/null ACF values
+  const getReadTime = () => {
+    const acfReadTime = post.acfBlogFields?.readTime;
+
+    // Check if ACF readTime exists and is not empty/null/whitespace
+    if (
+      acfReadTime &&
+      typeof acfReadTime === 'string' &&
+      acfReadTime.trim() !== ''
+    ) {
+      return acfReadTime.trim();
+    }
+
+    // Fallback to calculated read time using content or excerpt
+    const contentForCalculation = post.content || cleanExcerpt || '';
+    return calculateReadTime(contentForCalculation);
+  };
 
   return {
     id: post.id,
@@ -648,9 +666,7 @@ export function formatPostData(post) {
       post.categories?.edges?.[0]?.node?.name || 'Uncategorized'
     ),
     categorySlug: post.categories?.edges?.[0]?.node?.slug || 'uncategorized',
-    readTime:
-      post.acfBlogFields?.readTime ||
-      calculateReadTime(post.content || cleanExcerpt),
+    readTime: getReadTime(), // Use the enhanced function
     date: formatDate(post.date),
     image:
       post.featuredImage?.node?.sourceUrl ||
@@ -676,17 +692,40 @@ export function formatDate(dateString) {
   }
 }
 
+// Enhanced calculateReadTime function
 export function calculateReadTime(content) {
-  if (!content) return '1 min read';
+  if (!content || typeof content !== 'string') {
+    return '1 min read';
+  }
 
-  const cleanContent = content.replace(/<[^>]*>/g, '');
-  const wordCount = cleanContent
+  // Remove HTML tags and decode entities for accurate word count
+  const cleanContent = decodeHtmlEntities(content)
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .trim();
+
+  if (!cleanContent) {
+    return '1 min read';
+  }
+  // Count words more accurately
+  const words = cleanContent
     .split(/\s+/)
-    .filter((word) => word.length > 0).length;
-  const wordsPerMinute = 225;
-  const readTimeMinutes = Math.ceil(wordCount / wordsPerMinute);
+    .filter((word) => word.length > 0 && /\w/.test(word)); // Only count words with actual letters/numbers
 
-  return `${readTimeMinutes} min read`;
+  const wordCount = words.length;
+
+  // Average reading speed (words per minute)
+  const wordsPerMinute = 200; // Slightly slower than 225 for better user experience
+
+  // Calculate read time
+  const readTimeMinutes = Math.max(1, Math.ceil(wordCount / wordsPerMinute));
+
+  // Format the output
+  if (readTimeMinutes === 1) {
+    return '1 min read';
+  } else {
+    return `${readTimeMinutes} min read`;
+  }
 }
 
 // Your existing fallback data function
