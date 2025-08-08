@@ -525,7 +525,7 @@ const ProductFeatured = () => {
         borderBottomLeftRadius: borderRadius,
         borderBottomRightRadius: borderRadius,
       }}
-      className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-8 lg:pt-8 shadow-2xl overflow-hidden"
+      className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-16 lg:pt-8 shadow-2xl overflow-hidden"
     >
 
 
