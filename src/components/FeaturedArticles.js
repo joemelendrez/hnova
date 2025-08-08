@@ -25,7 +25,7 @@ const FeaturedArticles = () => {
   const opacity = useTransform(scrollY, [0, 300], [0.95, 1]); // Subtle fade in
   
   // Shrink effect - section gets smaller as you scroll away from it
-  const scale = useTransform(scrollY, [800, 1400], [1, 0.90]); // Shrinks from 100% to 95%
+  const scale = useTransform(scrollY, [800, 1400], [1, 0.95]); // Shrinks from 100% to 95%
   const borderRadius = useTransform(scrollY, [800, 1400], [36, 40]); // Bottom corners get more rounded
 
   // Memoize fallback posts to prevent recreation on every render
