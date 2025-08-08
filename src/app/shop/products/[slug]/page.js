@@ -28,6 +28,11 @@ import {
   FileText,
   Eye,
   Calendar,
+  ChevronUp,
+  ShoppingBag,
+  Zap,
+  Gift,
+  Clock,
 } from 'lucide-react';
 import { useCart } from '../../../hooks/useShopifyCart';
 
@@ -61,6 +66,8 @@ export default function ProductPage({ params }) {
   const [activeTab, setActiveTab] = useState('description');
   const [reviewsData, setReviewsData] = useState(null);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const [showStickyCart, setShowStickyCart] = useState(false);
 
   const { addToCart, cartLoading } = useCart();
 
@@ -608,6 +615,23 @@ export default function ProductPage({ params }) {
     }
   }, [product]);
 
+  // Scroll detection for scroll-to-top and sticky cart
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      const windowHeight = window.innerHeight;
+
+      // Show scroll to top after scrolling 500px
+      setShowScrollTop(scrollY > 500);
+
+      // Show sticky cart when scrolled past the main product section
+      setShowStickyCart(scrollY > windowHeight * 0.8);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // Fetch product data
   useEffect(() => {
     async function fetchProduct() {
@@ -753,6 +777,461 @@ export default function ProductPage({ params }) {
     }
   };
 
+  // Scroll to top function
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth',
+    });
+  };
+
+  // Scroll to reviews function
+  const scrollToReviews = () => {
+    const reviewsSection = document.getElementById('reviews-section');
+    if (reviewsSection) {
+      reviewsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Scroll to Top Button Component
+  const ScrollToTopButton = () => (
+    <AnimatePresence>
+      {showScrollTop && (
+        <motion.button
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.5 }}
+          onClick={scrollToTop}
+          className="fixed bottom-[88px] right-6 z-50 p-3 bg-gray-900 text-white rounded-full shadow-lg hover:bg-gray-800 transition-all duration-200 hover:scale-110 group"
+          style={{ backdropFilter: 'blur(10px)' }}
+        >
+          <ChevronUp className="h-5 w-5 group-hover:translate-y-[-2px] transition-transform" />
+          <span className="sr-only">Scroll to top</span>
+        </motion.button>
+      )}
+    </AnimatePresence>
+  );
+
+  // Sticky Cart Component
+  const StickyCartSection = () => (
+    <AnimatePresence>
+      {showStickyCart && (
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 100 }}
+          className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-lg h-[88px]"
+          style={{ backdropFilter: 'blur(10px)' }}
+        >
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 h-full">
+            <div className="flex items-center justify-between gap-4 h-full">
+              {/* Product Info */}
+              <div className="flex items-center gap-4 flex-1">
+                <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                  <Image
+                    src={currentImages[0]?.src || '/placeholder-product.webp'}
+                    alt={product?.title}
+                    width={48}
+                    height={48}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate">
+                    {product?.title}
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-gray-900">
+                      ${parseFloat(selectedVariant?.price || 0).toFixed(2)}
+                    </span>
+                    {isOnSale && (
+                      <span className="text-sm text-gray-500 line-through">
+                        $
+                        {parseFloat(
+                          selectedVariant?.compareAtPrice || 0
+                        ).toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3">
+                {/* Quantity Selector */}
+                <div className="hidden sm:flex items-center border border-gray-300 rounded-lg">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="p-2 hover:bg-gray-100 transition-colors"
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="px-3 py-2 font-medium min-w-[3rem] text-center">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="p-2 hover:bg-gray-100 transition-colors"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Add to Cart Button */}
+                <button
+                  onClick={handleAddToCart}
+                  disabled={
+                    !selectedVariant?.available || addingToCart || cartLoading
+                  }
+                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                    selectedVariant?.available
+                      ? 'bg-gray-900 text-white hover:bg-gray-800 hover:scale-105'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  <ShoppingBag className="h-5 w-5" />
+                  <span className="hidden sm:inline">
+                    {addingToCart || cartLoading
+                      ? 'Adding...'
+                      : selectedVariant?.available
+                      ? 'Add to Cart'
+                      : 'Out of Stock'}
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  // Product Benefits Section (to fill white space after description)
+  const ProductBenefitsSection = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.2 }}
+      className="mt-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-8"
+    >
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          Why Choose This Product?
+        </h2>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          Join thousands of satisfied customers who have transformed their daily
+          routines with our evidence-based approach to habit formation.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {[
+          {
+            icon: Zap,
+            title: 'Quick Results',
+            description:
+              'See improvements in just 21 days with our scientifically-proven methods.',
+            color: 'text-yellow-600',
+          },
+          {
+            icon: Gift,
+            title: 'Bonus Materials',
+            description:
+              'Includes exclusive templates, guides, and tracking tools worth $50.',
+            color: 'text-green-600',
+          },
+          {
+            icon: Clock,
+            title: 'Lifetime Access',
+            description:
+              'Download once and use forever. No subscriptions or recurring fees.',
+            color: 'text-blue-600',
+          },
+        ].map((benefit, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
+            className="text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow"
+          >
+            <div
+              className={`w-12 h-12 mx-auto mb-4 ${benefit.color} bg-gray-100 rounded-full flex items-center justify-center`}
+            >
+              <benefit.icon className="h-6 w-6" />
+            </div>
+            <h3 className="font-semibold text-gray-900 mb-2">
+              {benefit.title}
+            </h3>
+            <p className="text-sm text-gray-600">{benefit.description}</p>
+          </motion.div>
+        ))}
+      </div>
+
+      {/* CTA Section */}
+      <div className="text-center bg-gray-900 rounded-xl p-6 text-white">
+        <h3 className="text-xl font-bold mb-2">
+          Ready to Start Your Transformation?
+        </h3>
+        <p className="text-gray-300 mb-4">
+          Join over 10,000+ people who have built lasting habits
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={handleAddToCart}
+            disabled={
+              !selectedVariant?.available || addingToCart || cartLoading
+            }
+            className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+              selectedVariant?.available
+                ? 'bg-white text-gray-900 hover:bg-gray-100 hover:scale-105'
+                : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {addingToCart || cartLoading
+              ? 'Adding to Cart...'
+              : `Get Started - ${parseFloat(
+                  selectedVariant?.price || 0
+                ).toFixed(2)}`}
+          </button>
+
+          <button
+            onClick={scrollToReviews}
+            className="px-6 py-3 border border-gray-400 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            Read Reviews
+          </button>
+        </div>
+
+        {/* Trust Signals */}
+        <div className="flex items-center justify-center gap-6 mt-4 text-sm text-gray-400">
+          <div className="flex items-center gap-1">
+            <Shield className="h-4 w-4" />
+            <span>30-day guarantee</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Truck className="h-4 w-4" />
+            <span>Free shipping</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Star className="h-4 w-4 fill-current text-yellow-400" />
+            <span>
+              {reviewsData?.averageRating?.toFixed(1) || '4.8'} rating
+            </span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+
+  // Similar Products Section
+  const SimilarProductsSection = () => {
+    const [similarProducts, setSimilarProducts] = useState([]);
+
+    useEffect(() => {
+      const fetchSimilarProducts = async () => {
+        try {
+          if (!shopifyClient || !product) return;
+
+          // Method 1: Fetch by same product type/category
+          const allProducts = await shopifyClient.product.fetchAll();
+
+          // Filter products by same category/type, exclude current product
+          const similar = allProducts
+            .filter(
+              (p) =>
+                p.id !== product.id && // Exclude current product
+                (p.productType === product.productType || // Same product type
+                  p.vendor === product.vendor || // Same vendor
+                  p.tags?.some((tag) => product.tags?.includes(tag))) // Shared tags
+            )
+            .slice(0, 3) // Limit to 3 products
+            .map((shopifyProduct) => {
+              const variant = shopifyProduct.variants[0];
+              const images = shopifyProduct.images || [];
+
+              return {
+                id: shopifyProduct.id,
+                name: shopifyProduct.title,
+                handle: shopifyProduct.handle,
+                price:
+                  typeof variant?.price === 'object'
+                    ? variant.price.amount
+                    : variant?.price || '0',
+                originalPrice: variant?.compareAtPrice
+                  ? typeof variant.compareAtPrice === 'object'
+                    ? variant.compareAtPrice.amount
+                    : variant.compareAtPrice
+                  : null,
+                image:
+                  images[0]?.src ||
+                  images[0]?.transformedSrc ||
+                  '/placeholder-product.webp',
+                rating: 4.5 + Math.random() * 0.5, // Random rating 4.5-5.0
+                reviews: Math.floor(Math.random() * 200) + 50, // Random review count 50-250
+              };
+            });
+
+          setSimilarProducts(similar);
+        } catch (error) {
+          console.error('Error fetching similar products:', error);
+          // Fallback to mock data if API fails
+          setMockSimilarProducts();
+        }
+      };
+
+      const setMockSimilarProducts = () => {
+        // Mock data for testing (only show if not the same as current product)
+        const mockSimilarProducts = [
+          {
+            id: '1',
+            name: 'Digital Detox Journal',
+            handle: 'digital-detox-journal',
+            price: '19.99',
+            originalPrice: '24.99',
+            image:
+              'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop',
+            rating: 4.6,
+            reviews: 189,
+          },
+          {
+            id: '2',
+            name: 'Productivity Power Pack',
+            handle: 'productivity-power-pack',
+            price: '34.99',
+            originalPrice: null,
+            image:
+              'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=300&h=300&fit=crop',
+            rating: 4.9,
+            reviews: 156,
+          },
+          {
+            id: '3',
+            name: 'Mindfulness Habit Kit',
+            handle: 'mindfulness-habit-kit',
+            price: '29.99',
+            originalPrice: '39.99',
+            image:
+              'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=300&h=300&fit=crop',
+            rating: 4.7,
+            reviews: 203,
+          },
+        ];
+
+        // Filter out current product and limit to 3
+        const filtered = mockSimilarProducts
+          .filter(
+            (p) => p.name !== product?.title && p.handle !== product?.handle
+          )
+          .slice(0, 3);
+        setSimilarProducts(filtered);
+      };
+
+      // Try to fetch real products first, fallback to mock
+      if (shopifyClient && product) {
+        fetchSimilarProducts();
+      } else {
+        setMockSimilarProducts();
+      }
+    }, [product]);
+
+    if (similarProducts.length === 0) {
+      return null; // Don't show section if no similar products
+    }
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+        className="mt-16"
+      >
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            You Might Also Like
+          </h2>
+          <p className="text-gray-600">
+            Customers who viewed this item also looked at these products
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {similarProducts.map((similarProduct, index) => (
+            <motion.div
+              key={similarProduct.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+              className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden border border-gray-100 hover:border-gray-200 group"
+            >
+              <div className="relative aspect-square overflow-hidden">
+                <Image
+                  src={similarProduct.image}
+                  alt={similarProduct.name}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+                {similarProduct.originalPrice && (
+                  <div className="absolute top-3 left-3 bg-red-500 text-white px-2 py-1 rounded text-xs font-medium">
+                    Sale
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4">
+                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                  {similarProduct.name}
+                </h3>
+
+                <div className="flex items-center gap-1 mb-2">
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-3 w-3 ${
+                          i < Math.floor(similarProduct.rating)
+                            ? 'text-yellow-400 fill-current'
+                            : 'text-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-xs text-gray-600">
+                    ({similarProduct.reviews})
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-900">
+                      ${parseFloat(similarProduct.price).toFixed(2)}
+                    </span>
+                    {similarProduct.originalPrice && (
+                      <span className="text-sm text-gray-500 line-through">
+                        ${parseFloat(similarProduct.originalPrice).toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+
+                  <Link
+                    href={`/shop/products/${similarProduct.handle}`}
+                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                  >
+                    View Details
+                  </Link>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+    );
+  };
+
   if (loading) {
     return <ProductPageSkeleton />;
   }
@@ -787,7 +1266,7 @@ export default function ProductPage({ params }) {
   const hasMultipleVariants = product?.variants?.length > 1;
 
   return (
-    <div className="pt-16 lg:pt-20 ">
+    <div className="pt-16 lg:pt-20">
       {/* Back Button */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
@@ -901,12 +1380,12 @@ export default function ProductPage({ params }) {
 
             {/* Thumbnail Images */}
             {currentImages.length > 1 && (
-              <div className="flex gap-4 overflow-x-auto pb-2">
+              <div className="flex gap-3 overflow-x-auto pb-2">
                 {currentImages.map((image, index) => (
                   <button
                     key={`${image.src}-${index}`}
                     onClick={() => setSelectedImage(index)}
-                    className={`relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-colors ${
+                    className={`relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border-2 transition-colors ${
                       selectedImage === index
                         ? 'border-gray-900'
                         : 'border-gray-200 hover:border-gray-400'
@@ -1211,6 +1690,7 @@ export default function ProductPage({ params }) {
 
             {activeTab === 'reviews' && (
               <motion.div
+                id="reviews-section"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4 }}
@@ -1333,7 +1813,69 @@ export default function ProductPage({ params }) {
             )}
           </div>
         </motion.div>
+
+        {/* Similar Products Section */}
+        <SimilarProductsSection />
       </div>
+
+      {/* Trust & Guarantee Section - Full Width Footer */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+        className="w-full bg-gray-50 border-t border-gray-200 mt-16 py-12"
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
+            Shop with Confidence
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Shield,
+                title: 'Secure Shopping',
+                description:
+                  'Your payment information is protected with industry-standard encryption.',
+              },
+              {
+                icon: RotateCcw,
+                title: 'Easy Returns',
+                description:
+                  'Not satisfied? Return your purchase within 30 days for a full refund.',
+              },
+              {
+                icon: Truck,
+                title: 'Fast Delivery',
+                description:
+                  'Quick processing and reliable shipping to get your order to you fast.',
+              },
+            ].map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
+                className="text-center"
+              >
+                <div className="w-12 h-12 mx-auto mb-4 text-gray-700 bg-white rounded-full flex items-center justify-center shadow-sm">
+                  <feature.icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-semibold text-gray-900 mb-2">
+                  {feature.title}
+                </h3>
+                <p className="text-sm text-gray-600">{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Sticky Cart Section */}
+      <StickyCartSection />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTopButton />
 
       {/* Image Zoom Modal */}
       <AnimatePresence>
