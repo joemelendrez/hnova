@@ -184,7 +184,7 @@ const Header = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex lg:items-center lg:space-x-8">
+            <nav className="hidden lg:flex lg:items-center lg:space-x-2">
               {navigation.map((item) => (
                 <motion.div
                   key={item.name}
@@ -194,43 +194,30 @@ const Header = () => {
                 >
                   <Link
                     href={item.href}
-                    className={`relative px-3 py-2 text-sm font-medium transition-colors duration-200 ${
+                    className={`relative px-4 py-2 text-sm font-medium transition-all duration-200  ${
                       isActiveLink(item.href)
-                        ? 'text-white hover:text-[#fe0000]'
-                        : 'text-white hover:text-[#dbdbdb]'
+                        ? 'bg-[#f10000] text-white'
+                        : 'text-white hover:bg-[#f10000] hover:text-white'
                     }`}
                   >
                     {item.name}
 
-                    {/* Active Link Underline */}
-                    {isActiveLink(item.href) && (
-                      <motion.span
-                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left rounded-full bg-[#fe0000]"
-                        layoutId="activeLink"
-                        initial={{ scaleX: 0 }}
-                        animate={{ scaleX: 1 }}
-                        transition={{
-                          duration: 0.3,
-                          ease: 'easeOut',
-                          type: 'tween',
-                        }}
-                      />
-                    )}
-
-                    {/* Hover Underline */}
+                    {/* Hover Background Effect for non-active links */}
                     {!isActiveLink(item.href) && (
-                      <motion.span
-                        className="absolute bottom-0 left-0 right-0 h-0.5 origin-left rounded-full bg-white"
-                        initial={{ scaleX: 0 }}
+                      <motion.div
+                        className="absolute inset-0 bg-[#f10000] rounded-md"
+                        initial={{ opacity: 0, scale: 0.8 }}
                         variants={{
                           hover: {
-                            scaleX: 1,
+                            opacity: 1,
+                            scale: 1,
                             transition: {
-                              duration: 0.25,
+                              duration: 0.2,
                               ease: 'easeOut',
                             },
                           },
                         }}
+                        style={{ zIndex: -1 }}
                       />
                     )}
                   </Link>
@@ -304,7 +291,7 @@ function CartIcon() {
   return (
     <button
       onClick={() => setCartOpen(true)}
-      className="relative p-2 text-white hover:text-[#dbdbdb] transition-colors"
+      className="relative p-2 text-white hover:text-[#dbdbdb] transition-colors ml-4"
       aria-label={`Shopping cart with ${cartCount} items`}
     >
       <ShoppingBag className="h-5 w-5" />
