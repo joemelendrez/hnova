@@ -401,7 +401,9 @@ export default function ShopClient() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 font-anton uppercase">Habit Formation Tools.</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 font-anton uppercase">
+              Habit Formation Tools.
+            </h1>
             <p className="text-xl text-gray-200 leading-relaxed">
               Discover scientifically-backed tools and products to help you
               build better habits and transform your daily routine.
@@ -487,7 +489,7 @@ export default function ShopClient() {
             </motion.div>
           )}
 
-          {/* Coming Soon Notice */}
+          {/* Coming Soon Notice - Updated with External Shop Link */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -497,9 +499,52 @@ export default function ShopClient() {
             <h3 className="text-xl font-bold text-[#1a1a1a] mb-2 font-anton uppercase">
               More Products Coming Soon
             </h3>
-            <p className="text-gray-600 font-roboto">
+            <p className="text-gray-600 font-roboto mb-6">
               We're carefully curating the best habit formation tools and will
               be adding more products regularly.
+            </p>
+
+            {/* External Shop Link Button */}
+            <motion.a
+              href="https://shop.habitnova.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-8 py-3 bg-[#1a1a1a] text-white font-roboto font-medium rounded-lg hover:bg-gray-800 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+            >
+              <svg
+                className="mr-2 h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                />
+              </svg>
+              Visit Our Full Store
+              <svg
+                className="ml-2 h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </motion.a>
+
+            <p className="text-gray-500 text-sm mt-3 font-roboto">
+              Browse our complete collection of habit-building tools
             </p>
           </motion.div>
         </div>

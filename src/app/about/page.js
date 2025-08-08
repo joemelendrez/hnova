@@ -14,7 +14,7 @@ export default function AboutPage() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">
-              About.
+              About Us.
             </h1>
             <p className="text-xl text-[#dbdbdb] leading-relaxed">
               We&apos;re on a mission to help people understand the science

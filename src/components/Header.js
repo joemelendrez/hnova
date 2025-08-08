@@ -23,11 +23,11 @@ const Header = () => {
 
   // Navigation items
   const navigation = [
-    { name: 'Home', href: '/' },
-    { name: 'Blog', href: '/blog' },
-    { name: 'About', href: '/about' },
-    { name: 'Contact', href: '/contact' },
-    { name: 'Shop', href: '/shop' },
+    { name: 'HOME', href: '/' },
+    { name: 'BLOG', href: '/blog' },
+    { name: 'ABOUT', href: '/about' },
+    { name: 'CONTACT', href: '/contact' },
+    { name: 'SHOP', href: '/shop' },
   ];
 
   // Detect mobile/desktop
@@ -198,7 +198,7 @@ const Header = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex lg:items-center lg:space-x-2">
+            <nav className="hidden lg:flex lg:items-center lg:space-x-2 ">
               {navigation.map((item) => (
                 <motion.div
                   key={item.name}

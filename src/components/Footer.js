@@ -46,18 +46,18 @@ const Footer = () => {
 
             {/* Newsletter Signup */}
             <div className="mb-6">
-              <h3 className="text-xl font-semibold text-white mb-3">
+              <h3 className="text-xl font-semibold text-[#DBDBDB] mb-3">
                 Weekly Habit Insights
               </h3>
               <form className="flex gap-3 max-w-sm">
                 <input
                   type="email"
                   placeholder="Your email"
-                  className="flex-1 px-4 py-2 bg-white border border-gray-700 rounded-lg text-[#1a1a1a] placeholder-gray-400 focus:ring-2 focus:ring-[#DBDBDB] focus:border-transparent"
+                  className="flex-1 px-4 py-2 bg-[#dbdbdb] border border-gray-700 rounded-lg text-[#1a1a1a] placeholder-gray-400 focus:ring-2 focus:ring-[#DBDBDB] focus:border-transparent"
                 />
                 <button
                   type="submit"
-                  className="bg-[#DBDBDB] text-[#1a1a1a] px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition-colors"
+                  className="bg-[#f10000] text-white px-4 py-2 rounded-lg font-medium hover:bg-[#CD1718] transition-colors"
                 >
                   Subscribe
                 </button>
@@ -72,15 +72,15 @@ const Footer = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
             {/* Explore */}
             <div>
-              <h3 className="text-lg font-semibold text-[#DBDBDB] mb-4">
-                Explore
+              <h3 className="text-lg font-semibold text-[#DBDBDB] mb-4 font-anton">
+                EXPLORE
               </h3>
               <ul className="space-y-2">
                 {footerLinks.explore.map((item) => (
                   <li key={item.name}>
                     <Link
                       href={item.href}
-                      className="text-gray-300 hover:text-[#DBDBDB] transition-colors duration-200 text-sm"
+                      className="text-gray-300 hover:text-[#CD1718] transition-colors duration-200 text-sm"
                     >
                       {item.name}
                     </Link>
@@ -91,15 +91,15 @@ const Footer = () => {
 
             {/* Resources */}
             <div>
-              <h3 className="text-lg font-semibold text-[#DBDBDB] mb-4">
-                Resources
+              <h3 className="text-lg font-semibold text-[#DBDBDB] mb-4 font-anton">
+                RESOURCES
               </h3>
               <ul className="space-y-2">
                 {footerLinks.resources.map((item) => (
                   <li key={item.name}>
                     <Link
                       href={item.href}
-                      className="text-gray-300 hover:text-[#DBDBDB] transition-colors duration-200 text-sm"
+                      className="text-gray-300 hover:text-[#CD1718] transition-colors duration-200 text-sm"
                     >
                       {item.name}
                     </Link>
@@ -110,15 +110,15 @@ const Footer = () => {
 
             {/* Legal */}
             <div>
-              <h3 className="text-lg font-semibold text-[#DBDBDB] mb-4">
-                Legal
+              <h3 className="text-lg font-semibold text-[#DBDBDB] mb-4 font-anton">
+                LEGAL
               </h3>
               <ul className="space-y-2">
                 {footerLinks.legal.map((item) => (
                   <li key={item.name}>
                     <Link
                       href={item.href}
-                      className="text-gray-300 hover:text-[#DBDBDB] transition-colors duration-200 text-sm"
+                      className="text-gray-300 hover:text-[#CD1718] transition-colors duration-200 text-sm"
                     >
                       {item.name}
                     </Link>
