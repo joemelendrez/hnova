@@ -26,7 +26,7 @@ const FeaturedArticles = () => {
   
   // Shrink effect - section gets smaller as you scroll away from it
   const scale = useTransform(scrollY, [800, 1400], [1, 0.95]); // Shrinks from 100% to 95%
-  const borderRadius = useTransform(scrollY, [800, 1400], [48, 80]); // Bottom corners get more rounded
+  const borderRadius = useTransform(scrollY, [800, 1400], [36, 40]); // Bottom corners get more rounded
 
   // Memoize fallback posts to prevent recreation on every render
   const fallbackPosts = useMemo(
@@ -171,7 +171,7 @@ const FeaturedArticles = () => {
     return (
       <motion.div
         style={{ y, opacity }}
-        className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 overflow-hidden"
+        className="relative z-10 bg-white rounded-t-[2rem] lg:rounded-t-[3rem] -mt-16 lg:-mt-20 overflow-hidden"
       >
         <FeaturedArticlesSkeleton />
       </motion.div>
@@ -188,7 +188,7 @@ const FeaturedArticles = () => {
           borderBottomLeftRadius: borderRadius,
           borderBottomRightRadius: borderRadius 
         }}
-        className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl overflow-hidden"
+        className="relative z-10 bg-white rounded-t-[2rem] lg:rounded-t-[3rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl overflow-hidden"
       >
         <PerformanceIndicator />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -235,12 +235,11 @@ const FeaturedArticles = () => {
         borderBottomLeftRadius: borderRadius,
         borderBottomRightRadius: borderRadius 
       }}
-      className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl overflow-hidden"
+      className="relative z-10 bg-white rounded-t-[2rem] lg:rounded-t-[3rem] -mt-16 lg:-mt-20 pt-8 shadow-2xl overflow-hidden"
     >
       <PerformanceIndicator />
 
-      {/* Subtle gradient overlay at the top for depth */}
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/5 to-transparent rounded-t-[3rem] lg:rounded-t-[4rem]" />
+     
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}

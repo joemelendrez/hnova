@@ -199,7 +199,7 @@ export default function ProductCard({ product }) {
   const variantOptions = getVariantOptions();
   
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
+    <div className="bg-[#dbdbdb] rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
       {/* Product Image */}
       <Link href={`/shop/products/${slug}`}>
         <div className="relative aspect-square overflow-hidden bg-gray-100">
@@ -289,7 +289,7 @@ export default function ProductCard({ product }) {
                         className={`px-2 py-1 text-xs border rounded transition-colors ${
                           isSelected
                             ? 'border-gray-900 bg-gray-900 text-white'
-                            : 'border-gray-300 hover:border-gray-400'
+                            : 'border-black hover:border-gray-400 text-black'
                         }`}
                         title={value}
                       >
@@ -391,8 +391,8 @@ export default function ProductCard({ product }) {
             isInStock
               ? addingToCart || cartLoading
                 ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-[#DBDBDB] hover:bg-[#1a1a1a] hover:text-white text-[#1a1a1a]'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-[#1a1a1a] hover:bg-[#dbdbdb] hover:text-white text-white'
+              : 'bg-black text-white cursor-not-allowed'
           }`}
         >
           <ShoppingCart size={16} />

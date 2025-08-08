@@ -34,7 +34,7 @@ const Hero = () => {
   }
   
   return (
-    <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
+    <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center pt-16">
       {/* Keep solid background color only */}
 
       {/* Main Content - ALL text moves together as one group */}

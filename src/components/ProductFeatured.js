@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -19,6 +19,15 @@ const ProductFeatured = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Parallax and shrink effects to match FeaturedArticles
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [800, 1600], [50, -25]); // Moves up as you scroll
+  const opacity = useTransform(scrollY, [800, 1100], [0.95, 1]); // Subtle fade in
+
+  // Shrink effect - section gets smaller as you scroll away from it
+  const scale = useTransform(scrollY, [1200, 1800], [1, 0.95]); // Shrinks from 100% to 95%
+  const borderRadius = useTransform(scrollY, [1200, 1800], [48, 80]); // Bottom corners get more rounded
+
   // Initialize Shopify client
   useEffect(() => {
     async function fetchFeaturedProducts() {
@@ -28,10 +37,11 @@ const ProductFeatured = () => {
       try {
         // Dynamic import for client-side only
         const ShopifyBuy = await import('shopify-buy');
-        
+
         const shopifyClient = ShopifyBuy.default.buildClient({
           domain: process.env.NEXT_PUBLIC_SHOPIFY_DOMAIN,
-          storefrontAccessToken: process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN,
+          storefrontAccessToken:
+            process.env.NEXT_PUBLIC_SHOPIFY_STOREFRONT_TOKEN,
         });
 
         console.log('🔄 Fetching featured products from Shopify...');
@@ -49,7 +59,7 @@ const ProductFeatured = () => {
         console.log(`✅ Found ${shopifyProducts.length} products`);
 
         // Format products for our component
-        const formattedProducts = shopifyProducts.map((product, index) => 
+        const formattedProducts = shopifyProducts.map((product, index) =>
           formatShopifyProduct(product, index)
         );
 
@@ -65,11 +75,10 @@ const ProductFeatured = () => {
 
         setProducts(featuredProducts);
         console.log('✅ Featured products set:', featuredProducts.length);
-
       } catch (error) {
         console.error('❌ Error fetching Shopify products:', error);
         setError(error.message);
-        
+
         // Fallback to mock data if Shopify fails
         setProducts(getFallbackProducts());
       } finally {
@@ -102,7 +111,7 @@ const ProductFeatured = () => {
     const mapVariantImages = (variants, productImages) => {
       return variants.map((v) => {
         let variantImage = null;
-        
+
         // Check if variant has an associated image
         if (v.image) {
           variantImage = {
@@ -111,7 +120,7 @@ const ProductFeatured = () => {
             alt: v.image.altText || shopifyProduct.title,
           };
         }
-        
+
         return {
           id: v.id,
           title: v.title,
@@ -127,22 +136,23 @@ const ProductFeatured = () => {
     };
 
     // Determine if product is featured (you can customize this logic)
-    const isFeatured = index === 0 || 
-                      shopifyProduct.tags?.includes('featured') ||
-                      shopifyProduct.productType?.toLowerCase().includes('toolkit') ||
-                      shopifyProduct.title?.toLowerCase().includes('complete');
+    const isFeatured =
+      index === 0 ||
+      shopifyProduct.tags?.includes('featured') ||
+      shopifyProduct.productType?.toLowerCase().includes('toolkit') ||
+      shopifyProduct.title?.toLowerCase().includes('complete');
 
     // Generate badge based on product data
     const getBadge = (product, isOnSale, createdAt) => {
       if (product.tags?.includes('bestseller')) return 'BESTSELLER';
       if (product.tags?.includes('new')) return 'NEW';
       if (isOnSale) return 'SALE';
-      
+
       // Auto-detect new products (created within last 30 days)
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       if (new Date(createdAt) > thirtyDaysAgo) return 'NEW';
-      
+
       return null;
     };
 
@@ -159,7 +169,8 @@ const ProductFeatured = () => {
     };
 
     const reviewData = getProductReviews(shopifyProduct.handle);
-    const isOnSale = compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price);
+    const isOnSale =
+      compareAtPrice && parseFloat(compareAtPrice) > parseFloat(price);
 
     return {
       id: shopifyProduct.id,
@@ -178,9 +189,14 @@ const ProductFeatured = () => {
         alt: img.altText || shopifyProduct.title,
       })),
       // Keep legacy image property for backward compatibility
-      image: images[0]?.src || images[0]?.transformedSrc || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
+      image:
+        images[0]?.src ||
+        images[0]?.transformedSrc ||
+        'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
       badge: getBadge(shopifyProduct, isOnSale, shopifyProduct.createdAt),
-      description: shopifyProduct.description || 'High-quality product to help you build better habits.',
+      description:
+        shopifyProduct.description ||
+        'High-quality product to help you build better habits.',
       features: extractFeatures(shopifyProduct),
       isFeatured: isFeatured,
       shopifyId: shopifyProduct.id,
@@ -203,7 +219,7 @@ const ProductFeatured = () => {
     const bulletMatches = description.match(/[•·▪▫-]\s*([^\n•·▪▫-]+)/g);
     if (bulletMatches && bulletMatches.length > 0) {
       return bulletMatches
-        .map(match => match.replace(/[•·▪▫-]\s*/, '').trim())
+        .map((match) => match.replace(/[•·▪▫-]\s*/, '').trim())
         .slice(0, 4);
     }
 
@@ -211,23 +227,43 @@ const ProductFeatured = () => {
     const numberMatches = description.match(/\d+\.\s*([^\n\d]+)/g);
     if (numberMatches && numberMatches.length > 0) {
       return numberMatches
-        .map(match => match.replace(/\d+\.\s*/, '').trim())
+        .map((match) => match.replace(/\d+\.\s*/, '').trim())
         .slice(0, 4);
     }
 
     // Generate features based on product type/tags
     if (product.productType?.toLowerCase().includes('journal')) {
-      return ['Daily Tracking Pages', 'Progress Charts', 'Reflection Prompts', 'Goal Setting Guide'];
+      return [
+        'Daily Tracking Pages',
+        'Progress Charts',
+        'Reflection Prompts',
+        'Goal Setting Guide',
+      ];
     }
     if (product.productType?.toLowerCase().includes('toolkit')) {
-      return ['Comprehensive Guide', 'Tracking Templates', 'Progress Charts', 'Bonus Resources'];
+      return [
+        'Comprehensive Guide',
+        'Tracking Templates',
+        'Progress Charts',
+        'Bonus Resources',
+      ];
     }
     if (product.tags?.includes('digital')) {
-      return ['Instant Download', 'Printable Format', 'Mobile Friendly', 'Lifetime Access'];
+      return [
+        'Instant Download',
+        'Printable Format',
+        'Mobile Friendly',
+        'Lifetime Access',
+      ];
     }
 
     // Default features
-    return ['Premium Quality', 'Expert Designed', 'Proven Results', 'Money-Back Guarantee'];
+    return [
+      'Premium Quality',
+      'Expert Designed',
+      'Proven Results',
+      'Money-Back Guarantee',
+    ];
   }
 
   // Updated fallback products with variant data
@@ -251,10 +287,17 @@ const ProductFeatured = () => {
             alt: 'Complete Habit Formation Toolkit',
           },
         ],
-        image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
+        image:
+          'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=400&fit=crop',
         badge: 'BESTSELLER',
-        description: 'Everything you need to build lasting habits: 90-day tracker, habit stacking guide, weekly planners, and progress charts.',
-        features: ['90-Day Habit Tracker', 'Habit Stacking Guide', 'Weekly Planning Sheets', 'Progress Visualization'],
+        description:
+          'Everything you need to build lasting habits: 90-day tracker, habit stacking guide, weekly planners, and progress charts.',
+        features: [
+          '90-Day Habit Tracker',
+          'Habit Stacking Guide',
+          'Weekly Planning Sheets',
+          'Progress Visualization',
+        ],
         isFeatured: true,
         shopifyId: 'fallback-1',
         variantId: 'fallback-variant-1',
@@ -288,10 +331,17 @@ const ProductFeatured = () => {
             alt: 'Digital Detox Journal',
           },
         ],
-        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
+        image:
+          'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=400&fit=crop',
         badge: 'NEW',
-        description: 'Break free from digital overwhelm with guided prompts and tracking sheets.',
-        features: ['30-Day Challenge', 'Screen Time Tracker', 'Mindfulness Exercises', 'Progress Charts'],
+        description:
+          'Break free from digital overwhelm with guided prompts and tracking sheets.',
+        features: [
+          '30-Day Challenge',
+          'Screen Time Tracker',
+          'Mindfulness Exercises',
+          'Progress Charts',
+        ],
         isFeatured: false,
         shopifyId: 'fallback-2',
         variantId: 'fallback-variant-2',
@@ -325,10 +375,17 @@ const ProductFeatured = () => {
             alt: 'Productivity Power Pack',
           },
         ],
-        image: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=400&h=400&fit=crop',
+        image:
+          'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=400&h=400&fit=crop',
         badge: null,
-        description: 'Complete productivity system with time-blocking templates and focus techniques.',
-        features: ['Time Blocking Templates', 'Focus Sessions Guide', 'Weekly Reviews', 'Goal Setting Framework'],
+        description:
+          'Complete productivity system with time-blocking templates and focus techniques.',
+        features: [
+          'Time Blocking Templates',
+          'Focus Sessions Guide',
+          'Weekly Reviews',
+          'Goal Setting Framework',
+        ],
         isFeatured: false,
         shopifyId: 'fallback-3',
         variantId: 'fallback-variant-3',
@@ -362,10 +419,17 @@ const ProductFeatured = () => {
             alt: 'Mindfulness Habit Kit',
           },
         ],
-        image: 'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=400&fit=crop',
+        image:
+          'https://images.unsplash.com/photo-1545205597-3d9d02c29597?w=400&h=400&fit=crop',
         badge: 'SALE',
-        description: 'Develop mindfulness habits with guided meditations and reflection exercises.',
-        features: ['Guided Meditations', 'Daily Reflections', 'Breathing Exercises', 'Progress Tracking'],
+        description:
+          'Develop mindfulness habits with guided meditations and reflection exercises.',
+        features: [
+          'Guided Meditations',
+          'Daily Reflections',
+          'Breathing Exercises',
+          'Progress Tracking',
+        ],
         isFeatured: false,
         shopifyId: 'fallback-4',
         variantId: 'fallback-variant-4',
@@ -387,54 +451,85 @@ const ProductFeatured = () => {
   // Loading state
   if (loading) {
     return (
-      <section className="py-20 bg-[#DBDBDB] bg-opacity-10">
+      <motion.section
+        style={{
+          y,
+          opacity,
+          scale,
+          borderBottomLeftRadius: borderRadius,
+          borderBottomRightRadius: borderRadius,
+        }}
+        className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-8 pb-20 shadow-2xl overflow-hidden"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 rounded-full text-[#1a1a1a] text-sm font-medium mb-4">
+            <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-white text-sm font-medium mb-4">
               <div className="w-4 h-4 bg-gray-300 rounded mr-2 animate-pulse"></div>
               Featured Products
             </div>
-            <h2 className="text-4xl font-bold text-[#1a1a1a] mb-4">
+            <h2 className="text-4xl font-bold text-white mb-4">
               Habit Formation Tools
             </h2>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-2 lg:row-span-2 bg-white rounded-xl animate-pulse h-96"></div>
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-xl animate-pulse h-80"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="bg-white bg-opacity-5 rounded-xl animate-pulse h-80"
+              ></div>
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
     );
   }
 
   // Error state
   if (error && products.length === 0) {
     return (
-      <section className="py-20 bg-[#DBDBDB] bg-opacity-10">
+      <motion.section
+        style={{
+          y,
+          opacity,
+          scale,
+          borderBottomLeftRadius: borderRadius,
+          borderBottomRightRadius: borderRadius,
+        }}
+        className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-8 pb-20 shadow-2xl overflow-hidden"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-[#1a1a1a] mb-4">
+          <h2 className="text-4xl font-bold text-white mb-4">
             Featured Products
           </h2>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="text-xl text-gray-300 mb-8">
             Unable to load products. Please try again later.
           </p>
           <Link
             href="/shop"
-            className="inline-flex items-center px-8 py-4 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-gray-800 transition-colors"
+            className="inline-flex items-center px-8 py-4 bg-white text-[#1a1a1a] font-semibold rounded-lg hover:bg-gray-100 transition-colors"
           >
             Browse All Products
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
-      </section>
+      </motion.section>
     );
   }
 
   return (
-    <section className="py-20 bg-[#b9b9bd] bg-opacity-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <motion.section
+      style={{
+        y,
+        opacity,
+        scale,
+        borderBottomLeftRadius: borderRadius,
+        borderBottomRightRadius: borderRadius,
+      }}
+      className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-8 lg:pt-8 shadow-2xl overflow-hidden"
+    >
+
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -443,14 +538,14 @@ const ProductFeatured = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-50 rounded-full text-[#1a1a1a] text-sm font-medium mb-4">
+          <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-black text-sm font-medium mb-4">
             <ShoppingBag className="mr-2 h-4 w-4" />
             Featured Products
           </div>
-          <h2 className="text-4xl font-bold text-[#1a1a1a] mb-4">
+          <h2 className="text-4xl font-bold text-white mb-4">
             Habit Formation Tools
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
             Scientifically-designed tools and resources to help you build better
             habits, break bad ones, and transform your daily routine.
           </p>
@@ -473,14 +568,14 @@ const ProductFeatured = () => {
         >
           <Link
             href="/shop"
-            className="inline-flex items-center px-8 py-4 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+            className="inline-flex items-center px-8 py-4 bg-[#f10000] text-white font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
           >
             Shop All Products
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
