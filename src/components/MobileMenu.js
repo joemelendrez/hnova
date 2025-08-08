@@ -74,7 +74,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                   {/* Logo Box - square box just for logo - Now clickable to close */}
                   <button
                     onClick={onClose}
-                    className="flex h-20 w-20 items-center justify-center bg-[#1a1a1a] shadow-lg hover:bg-gray-800 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-inset"
+                    className="flex h-20 w-20 items-center justify-center bg-[#1a1a1a] shadow-lg hover:bg-gray-800 transition-colors duration-200"
                     aria-label="Close menu"
                   >
                     <motion.div
@@ -88,7 +88,7 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
                       className="flex h-16 w-16 items-center justify-center"
                     >
                       <Image
-                        src="/logos/HabitHead.svg"
+                        src="/logos/HabitHead-transparent.svg"
                         alt="Habit Nova Logo - Click to close menu"
                         width={64}
                         height={64}
