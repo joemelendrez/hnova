@@ -383,7 +383,7 @@ const FeaturedArticles = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-center mt-12"
+          className="text-center mt-12 pb-8"
         >
           <Link
             href="/blog"
