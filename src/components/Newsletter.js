@@ -1,18 +1,13 @@
 'use client';
 import { useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Mail, CheckCircle } from 'lucide-react';
 import Button from './Button';
 
 const Newsletter = () => {
   const [email, setEmail] = useState('');
   const [isSubscribed, setIsSubscribed] = useState(false);
-  
-  // Parallax scroll effect
-  const { scrollY } = useScroll();
-  const y = useTransform(scrollY, [1400, 2200], [100, -50]); // Adjust based on where this section appears
-  const opacity = useTransform(scrollY, [1200, 1600], [0.95, 1]);
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle newsletter signup here
@@ -20,16 +15,10 @@ const Newsletter = () => {
     setIsSubscribed(true);
     setEmail('');
   };
-  
-  return (
-    <motion.section 
-      style={{ y, opacity }}
-      className="relative z-10 bg-[#DBDBDB] bg-opacity-10 rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl"
-    >
-      {/* Subtle gradient overlay at the top for depth */}
-      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/5 to-transparent rounded-t-[3rem] lg:rounded-t-[4rem]" />
 
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+  return (
+    <section className="py-20 bg-[#DBDBDB] bg-opacity-10">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -39,7 +28,7 @@ const Newsletter = () => {
         >
           {!isSubscribed ? (
             <>
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-[#1a1a1a] rounded-full mb-6 shadow-lg">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-[#1a1a1a] rounded-full mb-6">
                 <Mail className="h-8 w-8 text-white" />
               </div>
 
@@ -61,9 +50,9 @@ const Newsletter = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email address"
                     required
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1a1a1a] focus:border-transparent bg-white text-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1a1a1a] focus:border-transparent bg-white text-gray-700"
                   />
-                  <Button type="submit" variant="dark" className="shadow-lg hover:shadow-xl">
+                  <Button type="submit" variant="dark">
                     Subscribe
                   </Button>
                 </div>
@@ -78,7 +67,7 @@ const Newsletter = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6 shadow-lg">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-6">
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
 
@@ -94,7 +83,7 @@ const Newsletter = () => {
           )}
         </motion.div>
       </div>
-    </motion.section>
+    </section>
   );
 };
 

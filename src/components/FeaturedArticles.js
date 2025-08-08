@@ -19,10 +19,14 @@ const FeaturedArticles = () => {
   const [cacheHit, setCacheHit] = useState(false);
   const [loadTime, setLoadTime] = useState(0);
 
-  // Parallax scroll effect
+  // Parallax and shrink effects
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 800], [100, -50]); // Moves up as you scroll
   const opacity = useTransform(scrollY, [0, 300], [0.95, 1]); // Subtle fade in
+  
+  // Shrink effect - section gets smaller as you scroll away from it
+  const scale = useTransform(scrollY, [600, 1200], [1, 0.95]); // Shrinks from 100% to 95%
+  const borderRadius = useTransform(scrollY, [600, 1200], [48, 80]); // Bottom corners get more rounded
 
   // Memoize fallback posts to prevent recreation on every render
   const fallbackPosts = useMemo(
@@ -167,7 +171,7 @@ const FeaturedArticles = () => {
     return (
       <motion.div
         style={{ y, opacity }}
-        className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20"
+        className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 overflow-hidden"
       >
         <FeaturedArticlesSkeleton />
       </motion.div>
@@ -177,8 +181,14 @@ const FeaturedArticles = () => {
   if (error && featuredPosts.length === 0) {
     return (
       <motion.section 
-        style={{ y, opacity }}
-        className="relative z-10 bg-white rounded-t-[2rem] lg:rounded-t-[3rem] mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl"
+        style={{ 
+          y, 
+          opacity, 
+          scale,
+          borderBottomLeftRadius: borderRadius,
+          borderBottomRightRadius: borderRadius 
+        }}
+        className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl overflow-hidden"
       >
         <PerformanceIndicator />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -218,13 +228,19 @@ const FeaturedArticles = () => {
 
   return (
     <motion.section 
-      style={{ y, opacity }}
-      className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl"
+      style={{ 
+        y, 
+        opacity, 
+        scale,
+        borderBottomLeftRadius: borderRadius,
+        borderBottomRightRadius: borderRadius 
+      }}
+      className="relative z-10 bg-white rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl overflow-hidden"
     >
       <PerformanceIndicator />
 
       {/* Subtle gradient overlay at the top for depth */}
-      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black/5 to-transparent rounded-t-[3rem] lg:rounded-t-[4rem]" />
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/5 to-transparent rounded-t-[3rem] lg:rounded-t-[4rem]" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
