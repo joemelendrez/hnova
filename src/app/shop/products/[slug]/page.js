@@ -787,7 +787,7 @@ export default function ProductPage({ params }) {
   const hasMultipleVariants = product?.variants?.length > 1;
 
   return (
-    <div className="pt-16 lg:pt-20">
+    <div className="pt-16 lg:pt-20 ">
       {/* Back Button */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
@@ -808,7 +808,7 @@ export default function ProductPage({ params }) {
       </motion.div>
 
       {/* Product Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 pt-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div className="space-y-4">
