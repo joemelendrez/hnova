@@ -28,12 +28,12 @@ const ProductFeatured = () => {
   const scale = useTransform(scrollY, [1200, 1800], [1, 0.95]); // Shrinks from 100% to 95%
   const borderRadius = useTransform(scrollY, [1200, 1800], [48, 80]); // Bottom corners get more rounded
 
-  // Header parallax animations - text slides in from different directions
-  const headerY = useTransform(scrollY, [600, 1000], [60, 0]); // Header moves up into view
-  const headerOpacity = useTransform(scrollY, [600, 900], [0, 1]); // Fades in smoothly
-  const badgeY = useTransform(scrollY, [650, 950], [40, 0]); // Badge slides in slightly delayed
-  const titleY = useTransform(scrollY, [700, 1000], [50, 0]); // Title slides in last
-  const descriptionY = useTransform(scrollY, [750, 1050], [30, 0]); // Description follows
+  // Header parallax animations - text slides in from different directions ON SCROLL DOWN
+  const headerY = useTransform(scrollY, [700, 1000], [60, 0]); // Header moves up into view as you scroll down
+  const headerOpacity = useTransform(scrollY, [700, 950], [0, 1]); // Fades in smoothly as you scroll down
+  const badgeY = useTransform(scrollY, [750, 1000], [40, 0]); // Badge slides in as you scroll down
+  const titleY = useTransform(scrollY, [800, 1050], [50, 0]); // Title slides in as you scroll down
+  const descriptionY = useTransform(scrollY, [850, 1100], [30, 0]); // Description follows as you scroll down
 
   // Initialize Shopify client
   useEffect(() => {
@@ -534,29 +534,30 @@ const ProductFeatured = () => {
       }}
       className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-16 lg:pt-8 shadow-2xl overflow-hidden"
     >
+
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header with Smooth Parallax Animation */}
         <motion.div
-          style={{
-            y: headerY,
-            opacity: headerOpacity,
+          style={{ 
+            y: headerY, 
+            opacity: headerOpacity 
           }}
           className="text-center mb-16"
         >
-          <motion.div
+          <motion.div 
             style={{ y: badgeY }}
             className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-black text-sm font-medium mb-4"
           >
             <ShoppingBag className="mr-2 h-4 w-4" />
             Featured Products
           </motion.div>
-          <motion.h2
+          <motion.h2 
             style={{ y: titleY }}
             className="text-4xl font-bold text-white mb-4"
           >
             Habit Formation Tools
           </motion.h2>
-          <motion.p
+          <motion.p 
             style={{ y: descriptionY }}
             className="text-xl text-gray-300 max-w-3xl mx-auto"
           >
