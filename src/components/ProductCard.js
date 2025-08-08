@@ -7,28 +7,24 @@ import { useCart } from '../app/hooks/useShopifyCart';
 export default function ProductCard({ product }) {
   const [imageError, setImageError] = useState(false);
   const [addingToCart, setAddingToCart] = useState(false);
-  const [selectedVariant, setSelectedVariant] = useState(product.variants?.[0] || null);
+  const [selectedVariant, setSelectedVariant] = useState(
+    product.variants?.[0] || null
+  );
   const [showVariants, setShowVariants] = useState(false);
   const [currentImage, setCurrentImage] = useState(null);
-  const { addToCart, cartLoading } = useCart();
-  
-  const {
-    slug,
-    name,
-    images,
-    placeholder,
-    variants = [],
-  } = product;
-  
+  const { addToCart } = useCart(); // Remove cartLoading from here
+
+  const { slug, name, images, placeholder, variants = [] } = product;
+
   // Use selected variant or fallback to product-level data
   const currentVariant = selectedVariant || {
     id: product.variantId || product.id,
     price: product.price,
     compareAtPrice: product.regular_price,
     available: product.stock_status === 'instock',
-    title: 'Default'
+    title: 'Default',
   };
-  
+
   // Function to get variant-specific image
   const getVariantImage = (variant) => {
     if (!variant) return null;
@@ -42,18 +38,20 @@ export default function ProductCard({ product }) {
     if (variant.selectedOptions && images?.length > 1) {
       for (const option of variant.selectedOptions) {
         const optionValue = option.value.toLowerCase();
-        
+
         // Look for image with matching alt text
-        const matchingImage = images.find(img => {
+        const matchingImage = images.find((img) => {
           const altText = (img.alt || '').toLowerCase();
-          return altText.includes(optionValue) || 
-                 altText.includes(option.name.toLowerCase());
+          return (
+            altText.includes(optionValue) ||
+            altText.includes(option.name.toLowerCase())
+          );
         });
 
         if (matchingImage) return matchingImage;
 
         // Look for image with matching filename/src
-        const filenameMatch = images.find(img => {
+        const filenameMatch = images.find((img) => {
           const filename = (img.src || '').toLowerCase();
           return filename.includes(optionValue);
         });
@@ -64,7 +62,7 @@ export default function ProductCard({ product }) {
 
     // Method 3: Map by variant index (if images are in same order as variants)
     if (variants.length > 1 && images?.length > 1) {
-      const variantIndex = variants.findIndex(v => v.id === variant.id);
+      const variantIndex = variants.findIndex((v) => v.id === variant.id);
       if (variantIndex >= 0 && variantIndex < images.length) {
         return images[variantIndex];
       }
@@ -78,10 +76,10 @@ export default function ProductCard({ product }) {
       ].filter(Boolean);
 
       for (const term of searchTerms) {
-        const matchingImage = images?.find(img => {
+        const matchingImage = images?.find((img) => {
           const altText = (img.alt || '').toLowerCase();
           const filename = (img.src || '').toLowerCase();
-          
+
           return altText.includes(term) || filename.includes(term);
         });
 
@@ -117,34 +115,35 @@ export default function ProductCard({ product }) {
       setCurrentImage(images?.[0] || null);
     }
   }, []);
-  
+
   const isInStock = currentVariant.available;
   const displayPrice = currentVariant.price;
   const originalPrice = currentVariant.compareAtPrice;
-  const onSale = originalPrice && parseFloat(originalPrice) > parseFloat(displayPrice);
-  
+  const onSale =
+    originalPrice && parseFloat(originalPrice) > parseFloat(displayPrice);
+
   // Handle variant selection
   const handleVariantChange = (variant) => {
     setSelectedVariant(variant);
     setShowVariants(false);
   };
-  
+
   // Handle adding to cart
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    if (!isInStock || addingToCart || cartLoading) return;
-    
+
+    if (!isInStock || addingToCart) return; // Only check local addingToCart state
+
     const variantId = currentVariant.id;
     if (!variantId) {
       console.error('No variant ID found for product:', product);
       alert('Error: Product variant not found');
       return;
     }
-    
+
     setAddingToCart(true);
-    
+
     try {
       await addToCart(variantId, 1);
       console.log('Product added to cart successfully!');
@@ -155,7 +154,7 @@ export default function ProductCard({ product }) {
       setAddingToCart(false);
     }
   };
-  
+
   // Image handling with variant support
   const getImageSrc = () => {
     if (imageError) {
@@ -163,25 +162,25 @@ export default function ProductCard({ product }) {
     }
     return currentImage?.src || placeholder || '/placeholder-product.webp';
   };
-  
+
   const getImageAlt = () => {
     if (imageError) {
       return `${name} - Product Image`;
     }
     return currentImage?.alt || name;
   };
-  
+
   // Check if product has multiple variants
   const hasMultipleVariants = variants.length > 1;
 
   // Get unique variant options for display (colors, sizes, etc.)
   const getVariantOptions = () => {
     if (!hasMultipleVariants) return [];
-    
+
     const optionMap = new Map();
-    variants.forEach(variant => {
+    variants.forEach((variant) => {
       if (variant.selectedOptions) {
-        variant.selectedOptions.forEach(option => {
+        variant.selectedOptions.forEach((option) => {
           if (!optionMap.has(option.name)) {
             optionMap.set(option.name, new Set());
           }
@@ -189,15 +188,15 @@ export default function ProductCard({ product }) {
         });
       }
     });
-    
+
     return Array.from(optionMap.entries()).map(([name, values]) => ({
       name,
-      values: Array.from(values)
+      values: Array.from(values),
     }));
   };
 
   const variantOptions = getVariantOptions();
-  
+
   return (
     <div className="bg-[#dbdbdb] rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
       {/* Product Image */}
@@ -234,8 +233,8 @@ export default function ProductCard({ product }) {
                 <div
                   key={index}
                   className={`w-1.5 h-1.5 rounded-full ${
-                    currentImage?.src === images[index]?.src 
-                      ? 'bg-white' 
+                    currentImage?.src === images[index]?.src
+                      ? 'bg-white'
                       : 'bg-white bg-opacity-50'
                   }`}
                 />
@@ -259,29 +258,30 @@ export default function ProductCard({ product }) {
         {/* Quick Variant Options (for visual variants like colors) */}
         {variantOptions.length > 0 && (
           <div className="mb-3">
-            {variantOptions.map(option => (
+            {variantOptions.map((option) => (
               <div key={option.name} className="mb-2">
                 <div className="text-xs text-gray-600 mb-1">{option.name}:</div>
                 <div className="flex gap-1 flex-wrap">
-                  {option.values.slice(0, 4).map(value => {
+                  {option.values.slice(0, 4).map((value) => {
                     const isSelected = selectedVariant?.selectedOptions?.some(
-                      opt => opt.name === option.name && opt.value === value
+                      (opt) => opt.name === option.name && opt.value === value
                     );
-                    
+
                     return (
                       <button
                         key={value}
                         onClick={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
-                          
+
                           // Find variant with this option value
-                          const newVariant = variants.find(v =>
-                            v.selectedOptions?.some(opt => 
-                              opt.name === option.name && opt.value === value
+                          const newVariant = variants.find((v) =>
+                            v.selectedOptions?.some(
+                              (opt) =>
+                                opt.name === option.name && opt.value === value
                             )
                           );
-                          
+
                           if (newVariant) {
                             handleVariantChange(newVariant);
                           }
@@ -293,7 +293,9 @@ export default function ProductCard({ product }) {
                         }`}
                         title={value}
                       >
-                        {value.length > 8 ? value.substring(0, 8) + '...' : value}
+                        {value.length > 8
+                          ? value.substring(0, 8) + '...'
+                          : value}
                       </button>
                     );
                   })}
@@ -323,9 +325,11 @@ export default function ProductCard({ product }) {
                 <span className="truncate">
                   {selectedVariant?.title || 'Select variant'}
                 </span>
-                <ChevronDown 
-                  size={16} 
-                  className={`transform transition-transform ${showVariants ? 'rotate-180' : ''}`}
+                <ChevronDown
+                  size={16}
+                  className={`transform transition-transform ${
+                    showVariants ? 'rotate-180' : ''
+                  }`}
                 />
               </button>
 
@@ -342,7 +346,11 @@ export default function ProductCard({ product }) {
                       }}
                       className={`w-full text-left px-3 py-2 text-sm hover:bg-gray-100 transition-colors ${
                         selectedVariant?.id === variant.id ? 'bg-gray-100' : ''
-                      } ${!variant.available ? 'text-gray-400 cursor-not-allowed' : ''}`}
+                      } ${
+                        !variant.available
+                          ? 'text-gray-400 cursor-not-allowed'
+                          : ''
+                      }`}
                       disabled={!variant.available}
                     >
                       <div className="flex justify-between items-center">
@@ -352,7 +360,9 @@ export default function ProductCard({ product }) {
                             ${parseFloat(variant.price).toFixed(2)}
                           </span>
                           {!variant.available && (
-                            <span className="text-xs text-red-500">Out of Stock</span>
+                            <span className="text-xs text-red-500">
+                              Out of Stock
+                            </span>
                           )}
                         </div>
                       </div>
@@ -386,17 +396,17 @@ export default function ProductCard({ product }) {
         {/* Add to Cart Button */}
         <button
           onClick={handleAddToCart}
-          disabled={!isInStock || addingToCart || cartLoading}
+          disabled={!isInStock || addingToCart} // Removed cartLoading from here
           className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md transition-colors ${
             isInStock
-              ? addingToCart || cartLoading
+              ? addingToCart // Only check local addingToCart state
                 ? 'bg-gray-400 text-white cursor-not-allowed'
                 : 'bg-[#1a1a1a] hover:bg-[#dbdbdb] hover:text-white text-white'
               : 'bg-black text-white cursor-not-allowed'
           }`}
         >
           <ShoppingCart size={16} />
-          {addingToCart || cartLoading
+          {addingToCart // Only check local addingToCart state
             ? 'Adding...'
             : isInStock
             ? 'Add to Cart'
