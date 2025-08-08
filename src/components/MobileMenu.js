@@ -3,7 +3,7 @@ import { Fragment, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Mail, Target, BookOpen, TrendingUp } from 'lucide-react'
+import { X, Mail, ShoppingBag, BookOpen, TrendingUp } from 'lucide-react'
 
 const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
   const isActiveLink = (href) => {
@@ -14,9 +14,22 @@ const MobileMenu = ({ open, onClose, currentPath, navigation }) => {
   }
 
   const quickLinks = [
-    { name: 'Popular Articles', href: '/blog?filter=popular', icon: <TrendingUp className="h-4 w-4" /> },
-    { name: 'Start Here Guide', href: '/start-here', icon: <BookOpen className="h-4 w-4" /> },
-  ]
+    {
+      name: 'Popular Articles',
+      href: '/blog?filter=popular',
+      icon: <TrendingUp className="h-4 w-4" />,
+    },
+    {
+      name: 'Start Here Guide',
+      href: '/start-here',
+      icon: <BookOpen className="h-4 w-4" />,
+    },
+    {
+      name: 'Shop Full Store',
+      href: '/https://shop.habitnova.com',
+      icon: <ShoppingBag className="h-4 w-4" />,
+    },
+  ];
 
   // Prevent body scroll when menu is open
   useEffect(() => {

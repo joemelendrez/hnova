@@ -13,7 +13,7 @@ const Footer = () => {
     ],
     resources: [
       { name: 'Start Here Guide', href: '/start-here' },
-      { name: 'Habit Tracker', href: '/habit-tracker' },
+      { name: 'Shop Full Store', href: 'https://shop.habitnova.com' },
       { name: 'Free Tools', href: '/tools' },
       { name: 'Success Stories', href: '/success-stories' },
     ],

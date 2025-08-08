@@ -405,8 +405,8 @@ export default function ShopClient() {
               Habit Formation Tools.
             </h1>
             <p className="text-xl text-gray-200 leading-relaxed">
-              Discover scientifically-backed tools and products to help you
-              build better habits and transform your daily routine.
+              Our bestselling habit-building tools and products. Visit our
+              complete store below to explore the full collection.
             </p>
             {error && <p className="text-sm text-gray-400 mt-4">{error}</p>}
           </motion.div>
@@ -564,8 +564,8 @@ function ShopPageSkeleton() {
               Habit Formation Tools.
             </h1>
             <p className="text-xl text-gray-200 leading-relaxed mb-8">
-              Discover scientifically-backed tools and products to help you
-              build better habits and transform your daily routine.
+              Our bestselling habit-building tools and products. Visit our
+              complete store below to explore the full collection.
             </p>
           </div>
         </div>

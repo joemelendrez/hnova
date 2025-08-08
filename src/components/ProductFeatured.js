@@ -28,13 +28,6 @@ const ProductFeatured = () => {
   const scale = useTransform(scrollY, [1200, 1800], [1, 0.95]); // Shrinks from 100% to 95%
   const borderRadius = useTransform(scrollY, [1200, 1800], [48, 80]); // Bottom corners get more rounded
 
-  // Header parallax animations - text slides in from different directions ON SCROLL DOWN
-  const headerY = useTransform(scrollY, [700, 1000], [60, 0]); // Header moves up into view as you scroll down
-  const headerOpacity = useTransform(scrollY, [700, 950], [0, 1]); // Fades in smoothly as you scroll down
-  const badgeY = useTransform(scrollY, [750, 1000], [40, 0]); // Badge slides in as you scroll down
-  const titleY = useTransform(scrollY, [800, 1050], [50, 0]); // Title slides in as you scroll down
-  const descriptionY = useTransform(scrollY, [850, 1100], [30, 0]); // Description follows as you scroll down
-
   // Initialize Shopify client
   useEffect(() => {
     async function fetchFeaturedProducts() {
@@ -534,35 +527,44 @@ const ProductFeatured = () => {
       }}
       className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-16 lg:pt-8 shadow-2xl overflow-hidden"
     >
-
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header with Smooth Parallax Animation */}
+        {/* Section Header with New whileInView Animation */}
         <motion.div
-          style={{ 
-            y: headerY, 
-            opacity: headerOpacity 
-          }}
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-200px 0px -200px 0px' }}
+          transition={{ duration: 0.6, ease: 'easeOut' }}
           className="text-center mb-16"
         >
-          <motion.div 
-            style={{ y: badgeY }}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-200px 0px -200px 0px' }}
+            transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
             className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-black text-sm font-medium mb-4"
           >
             <ShoppingBag className="mr-2 h-4 w-4" />
             Featured Products
           </motion.div>
-          <motion.h2 
-            style={{ y: titleY }}
+          <motion.h2
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-200px 0px -200px 0px' }}
+            transition={{ duration: 0.7, delay: 0.3, ease: 'easeOut' }}
             className="text-4xl font-bold text-white mb-4"
           >
             Habit Formation Tools
           </motion.h2>
-          <motion.p 
-            style={{ y: descriptionY }}
+          <motion.p
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-200px 0px -200px 0px' }}
+            transition={{ duration: 0.6, delay: 0.5, ease: 'easeOut' }}
             className="text-xl text-gray-300 max-w-3xl mx-auto"
           >
-            Scientifically-designed tools and resources to help you build better
-            habits, break bad ones, and transform your daily routine.
+            Our bestselling tools that have helped thousands build better habits
+            and transform their routines. Explore our complete store below for
+            the full collection of proven resources.
           </motion.p>
         </motion.div>
 
@@ -581,13 +583,30 @@ const ProductFeatured = () => {
           transition={{ duration: 0.4, delay: 0.4 }}
           className="text-center"
         >
-          <Link
-            href="/shop"
-            className="inline-flex items-center px-8 py-4 bg-[#f10000] text-white font-semibold rounded-lg hover:bg-gray-100 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+          <motion.a
+            href="https://shop.habitnova.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-8 py-4 bg-[#f10000] text-white font-semibold rounded-lg hover:bg-[#cd1718] transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
-            Shop All Products
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
+            <ShoppingBag className="mr-3 h-5 w-5" />
+            Visit Our Complete Store
+            <svg
+              className="ml-3 h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+          </motion.a>
         </motion.div>
       </div>
     </motion.section>

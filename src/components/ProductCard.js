@@ -12,7 +12,7 @@ export default function ProductCard({ product }) {
   );
   const [showVariants, setShowVariants] = useState(false);
   const [currentImage, setCurrentImage] = useState(null);
-  const { addToCart } = useCart(); // Remove cartLoading from here
+  const { addToCart } = useCart();
 
   const { slug, name, images, placeholder, variants = [] } = product;
 
@@ -96,7 +96,7 @@ export default function ProductCard({ product }) {
       const variantImage = getVariantImage(selectedVariant);
       if (variantImage) {
         setCurrentImage(variantImage);
-        setImageError(false); // Reset image error when switching variants
+        setImageError(false);
       } else {
         setCurrentImage(images?.[0] || null);
       }
@@ -133,7 +133,7 @@ export default function ProductCard({ product }) {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!isInStock || addingToCart) return; // Only check local addingToCart state
+    if (!isInStock || addingToCart) return;
 
     const variantId = currentVariant.id;
     if (!variantId) {
@@ -198,10 +198,11 @@ export default function ProductCard({ product }) {
   const variantOptions = getVariantOptions();
 
   return (
-    <div className="bg-[#dbdbdb] rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group">
-      {/* Product Image */}
+    // FIXED HEIGHT CARD WITH FLEXBOX LAYOUT
+    <div className="bg-[#dbdbdb] rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 group h-full flex flex-col">
+      {/* Product Image - Fixed aspect ratio */}
       <Link href={`/shop/products/${slug}`}>
-        <div className="relative aspect-square overflow-hidden bg-gray-100">
+        <div className="relative aspect-square overflow-hidden bg-gray-100 flex-shrink-0">
           <Image
             src={getImageSrc()}
             alt={getImageAlt()}
@@ -247,8 +248,9 @@ export default function ProductCard({ product }) {
         </div>
       </Link>
 
-      {/* Product Info */}
-      <div className="p-4">
+      {/* Product Info - Flexible content area */}
+      <div className="p-4 flex flex-col flex-grow">
+        {/* Product Title */}
         <Link href={`/shop/products/${slug}`}>
           <h3 className="font-medium text-gray-900 hover:text-[#1a1a1a] transition-colors line-clamp-2 mb-2">
             {name}
@@ -393,34 +395,40 @@ export default function ProductCard({ product }) {
           </div>
         )}
 
-        {/* Add to Cart Button */}
-        <button
-          onClick={handleAddToCart}
-          disabled={!isInStock || addingToCart} // Removed cartLoading from here
-          className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md transition-colors ${
-            isInStock
-              ? addingToCart // Only check local addingToCart state
-                ? 'bg-gray-400 text-white cursor-not-allowed'
-                : 'bg-[#1a1a1a] hover:bg-[#f10000] hover:text-white text-white'
-              : 'bg-[#1a1a1a] text-white cursor-not-allowed'
-          }`}
-        >
-          <ShoppingCart size={16} />
-          {addingToCart // Only check local addingToCart state
-            ? 'Adding...'
-            : isInStock
-            ? 'Add to Cart'
-            : 'Out of Stock'}
-        </button>
+        {/* SPACER - Pushes buttons to bottom */}
+        <div className="flex-grow"></div>
 
-        {/* View Product Link */}
-        <Link
-          href={`/shop/products/${slug}`}
-          className="mt-2 w-full flex items-center justify-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-gray-500 transition-colors"
-        >
-          <ExternalLink size={14} />
-          View Details
-        </Link>
+        {/* BUTTONS SECTION - Sticks to bottom */}
+        <div className="mt-auto pt-2">
+          {/* Add to Cart Button */}
+          <button
+            onClick={handleAddToCart}
+            disabled={!isInStock || addingToCart}
+            className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-md transition-colors mb-2 ${
+              isInStock
+                ? addingToCart
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : 'bg-[#1a1a1a] hover:bg-[#f10000] hover:text-white text-white'
+                : 'bg-[#1a1a1a] text-white cursor-not-allowed'
+            }`}
+          >
+            <ShoppingCart size={16} />
+            {addingToCart
+              ? 'Adding...'
+              : isInStock
+              ? 'Add to Cart'
+              : 'Out of Stock'}
+          </button>
+
+          {/* View Product Link */}
+          <Link
+            href={`/shop/products/${slug}`}
+            className="w-full flex items-center justify-center gap-2 py-2 px-4 text-sm text-gray-600 hover:text-gray-500 transition-colors"
+          >
+            <ExternalLink size={14} />
+            View Details
+          </Link>
+        </div>
       </div>
     </div>
   );
