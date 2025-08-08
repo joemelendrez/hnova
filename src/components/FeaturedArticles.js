@@ -235,7 +235,7 @@ const FeaturedArticles = () => {
         borderBottomLeftRadius: borderRadius,
         borderBottomRightRadius: borderRadius 
       }}
-      className="relative z-10 bg-white rounded-t-[2rem] lg:rounded-t-[3rem] -mt-16 lg:-mt-20 pt-8 shadow-2xl overflow-hidden"
+      className="relative z-10 bg-white rounded-t-[2rem] lg:rounded-t-[3rem] -mt-16 lg:-mt-20 shadow-2xl overflow-hidden"
     >
       <PerformanceIndicator />
 
