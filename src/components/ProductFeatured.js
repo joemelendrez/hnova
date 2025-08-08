@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import Link from 'next/link';
 import {
   ArrowRight,
@@ -18,6 +18,11 @@ const ProductFeatured = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Parallax scroll effect
+  const { scrollY } = useScroll();
+  const y = useTransform(scrollY, [800, 1600], [100, -50]); // Adjust based on where this section appears
+  const opacity = useTransform(scrollY, [600, 1000], [0.95, 1]);
 
   // Initialize Shopify client
   useEffect(() => {
@@ -384,10 +389,13 @@ const ProductFeatured = () => {
     ];
   }
 
-  // Loading state
+  // Loading state with parallax
   if (loading) {
     return (
-      <section className="py-20 bg-[#DBDBDB] bg-opacity-10">
+      <motion.section 
+        style={{ y, opacity }}
+        className="relative z-10 bg-[#b9b9bd] bg-opacity-10 rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 rounded-full text-[#1a1a1a] text-sm font-medium mb-4">
@@ -405,14 +413,17 @@ const ProductFeatured = () => {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
     );
   }
 
-  // Error state
+  // Error state with parallax
   if (error && products.length === 0) {
     return (
-      <section className="py-20 bg-[#DBDBDB] bg-opacity-10">
+      <motion.section 
+        style={{ y, opacity }}
+        className="relative z-10 bg-[#b9b9bd] bg-opacity-10 rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-[#1a1a1a] mb-4">
             Featured Products
@@ -428,13 +439,19 @@ const ProductFeatured = () => {
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </div>
-      </section>
+      </motion.section>
     );
   }
 
   return (
-    <section className="py-20 bg-[#b9b9bd] bg-opacity-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <motion.section 
+      style={{ y, opacity }}
+      className="relative z-10 bg-[#b9b9bd] bg-opacity-10 rounded-t-[3rem] lg:rounded-t-[4rem] -mt-16 lg:-mt-20 pt-24 pb-20 shadow-2xl"
+    >
+      {/* Subtle gradient overlay at the top for depth */}
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/5 to-transparent rounded-t-[3rem] lg:rounded-t-[4rem]" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -480,7 +497,7 @@ const ProductFeatured = () => {
           </Link>
         </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };
 
