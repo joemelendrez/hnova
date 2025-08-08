@@ -421,7 +421,448 @@ html {
   }
 }
 
-/* Add this to your global CSS file (globals.css) or Tailwind config */
+/* Add these styles to your existing app/globals.css */
+
+/* Rich Text Content Styling for Shopify Descriptions */
+.rich-text-content {
+  color: #374151;
+  line-height: 1.75;
+}
+
+.rich-text-content h1 {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  margin-bottom: 1.5rem;
+  margin-top: 2rem;
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+}
+
+.rich-text-content h1:first-child {
+  margin-top: 0;
+}
+
+.rich-text-content h2 {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1a1a1a;
+  margin-bottom: 1.25rem;
+  margin-top: 1.75rem;
+  font-family: 'Anton', sans-serif;
+  text-transform: uppercase;
+}
+
+.rich-text-content h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+}
+
+.rich-text-content h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.rich-text-content h5 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.75rem;
+  margin-top: 1rem;
+}
+
+.rich-text-content h6 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.rich-text-content p {
+  margin-bottom: 1rem;
+  line-height: 1.75;
+}
+
+.rich-text-content img {
+  width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+  max-width: 100%;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.rich-text-content img:hover {
+  transform: scale(1.05);
+}
+
+.rich-text-content figure {
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.rich-text-content figcaption {
+  font-size: 0.875rem;
+  color: #6B7280;
+  margin-top: 0.75rem;
+  font-style: italic;
+  padding: 0 1rem;
+}
+
+.rich-text-content ul {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.rich-text-content ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+  list-style-type: decimal;
+}
+
+.rich-text-content li {
+  line-height: 1.75;
+  margin-bottom: 0.5rem;
+}
+
+.rich-text-content li::marker {
+  color: #1a1a1a;
+}
+
+.rich-text-content a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.rich-text-content a:hover {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.rich-text-content blockquote {
+  border-left: 4px solid #DBDBDB;
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+  font-style: italic;
+  color: #6B7280;
+  background-color: #f9fafb;
+  padding: 1rem 1.5rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+.rich-text-content code {
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco, Consolas, monospace;
+}
+
+.rich-text-content pre {
+  background-color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+
+.rich-text-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.rich-text-content table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #d1d5db;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.rich-text-content thead {
+  background-color: #1a1a1a;
+  color: white;
+}
+
+.rich-text-content th {
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.rich-text-content td {
+  border: 1px solid #d1d5db;
+  padding: 0.75rem 1rem;
+}
+
+.rich-text-content tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.rich-text-content tbody tr:hover {
+  background-color: #f3f4f6;
+  transition: background-color 0.2s ease;
+}
+
+.rich-text-content hr {
+  margin: 2rem 0;
+  border-color: #d1d5db;
+}
+
+.rich-text-content strong,
+.rich-text-content b {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.rich-text-content em,
+.rich-text-content i {
+  font-style: italic;
+}
+
+.rich-text-content mark {
+  background-color: #fef3c7;
+  padding: 0.125rem;
+  border-radius: 0.125rem;
+}
+
+.rich-text-content del {
+  text-decoration: line-through;
+  color: #6b7280;
+}
+
+.rich-text-content ins {
+  text-decoration: underline;
+  color: #059669;
+  background-color: #d1fae5;
+  padding: 0.125rem;
+  border-radius: 0.125rem;
+  text-decoration: none;
+}
+
+/* Video embeds */
+.rich-text-content iframe {
+  width: 100%;
+  height: 16rem;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+}
+
+@media (min-width: 768px) {
+  .rich-text-content iframe {
+    height: 24rem;
+  }
+}
+
+/* Responsive image gallery */
+.rich-text-content .image-gallery {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+@media (min-width: 768px) {
+  .rich-text-content .image-gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .rich-text-content .image-gallery {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.rich-text-content .image-gallery img {
+  width: 100%;
+  height: 12rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 0;
+  transition: box-shadow 0.2s ease;
+}
+
+.rich-text-content .image-gallery img:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom classes for special content */
+.rich-text-content .highlight-box {
+  background-color: rgba(219, 219, 219, 0.2);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin: 1.5rem 0;
+  border-left: 4px solid #1a1a1a;
+}
+
+.rich-text-content .feature-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+@media (min-width: 768px) {
+  .rich-text-content .feature-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.rich-text-content .feature-item {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+  transition: box-shadow 0.2s ease;
+}
+
+.rich-text-content .feature-item:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.rich-text-content .feature-item h4 {
+  color: #1a1a1a;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  margin-top: 0;
+}
+
+.rich-text-content .feature-item p {
+  color: #6b7280;
+  margin-bottom: 0;
+  font-size: 0.875rem;
+}
+
+/* Call-to-action boxes */
+.rich-text-content .cta-box {
+  background-color: #1a1a1a;
+  color: white;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.rich-text-content .cta-box h3 {
+  color: white;
+  margin-bottom: 1rem;
+  margin-top: 0;
+}
+
+.rich-text-content .cta-box p {
+  color: #d1d5db;
+  margin-bottom: 1rem;
+}
+
+.rich-text-content .cta-button {
+  display: inline-block;
+  background-color: #DBDBDB;
+  color: #1a1a1a;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.rich-text-content .cta-button:hover {
+  background-color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .rich-text-content h1 {
+    font-size: 1.5rem;
+  }
+  
+  .rich-text-content h2 {
+    font-size: 1.25rem;
+  }
+  
+  .rich-text-content h3 {
+    font-size: 1.125rem;
+  }
+  
+  .rich-text-content .feature-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .rich-text-content .image-gallery {
+    grid-template-columns: 1fr;
+  }
+  
+  .rich-text-content table {
+    font-size: 0.875rem;
+  }
+  
+  .rich-text-content th,
+  .rich-text-content td {
+    padding: 0.5rem;
+  }
+}
+
+/* Loading states for dynamically loaded images */
+.rich-text-content img[data-loading="true"] {
+  opacity: 0.5;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.rich-text-content img[data-loaded="true"] {
+  opacity: 1;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Review source badges */
+.review-source-amazon {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.review-source-aliexpress {
+  background-color: #fecaca;
+  color: #991b1b;
+}
+
+.review-source-ebay {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.review-source-walmart {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.review-source-imported {
+  background-color: #f3f4f6;
+  color: #374151;
+}
 
 /* Hide scrollbar for WebKit browsers (Chrome, Safari, etc.) */
 .scrollbar-hide {
@@ -456,3 +897,4 @@ html {
 .scrollbar-thin::-webkit-scrollbar-thumb:hover {
   background: #a0aec0;
 }
+
