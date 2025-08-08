@@ -28,6 +28,13 @@ const ProductFeatured = () => {
   const scale = useTransform(scrollY, [1200, 1800], [1, 0.95]); // Shrinks from 100% to 95%
   const borderRadius = useTransform(scrollY, [1200, 1800], [48, 80]); // Bottom corners get more rounded
 
+  // Header parallax animations - text slides in from different directions
+  const headerY = useTransform(scrollY, [600, 1000], [60, 0]); // Header moves up into view
+  const headerOpacity = useTransform(scrollY, [600, 900], [0, 1]); // Fades in smoothly
+  const badgeY = useTransform(scrollY, [650, 950], [40, 0]); // Badge slides in slightly delayed
+  const titleY = useTransform(scrollY, [700, 1000], [50, 0]); // Title slides in last
+  const descriptionY = useTransform(scrollY, [750, 1050], [30, 0]); // Description follows
+
   // Initialize Shopify client
   useEffect(() => {
     async function fetchFeaturedProducts() {
@@ -463,7 +470,7 @@ const ProductFeatured = () => {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-white text-sm font-medium mb-4">
+            <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-black text-sm font-medium mb-4">
               <div className="w-4 h-4 bg-gray-300 rounded mr-2 animate-pulse"></div>
               Featured Products
             </div>
@@ -498,7 +505,7 @@ const ProductFeatured = () => {
         className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-8 pb-20 shadow-2xl overflow-hidden"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-white mb-4">
+          <h2 className="text-4xl font-bold text-black mb-4">
             Featured Products
           </h2>
           <p className="text-xl text-gray-300 mb-8">
@@ -527,28 +534,35 @@ const ProductFeatured = () => {
       }}
       className="relative z-10 bg-[#1a1a1a] rounded-t-[2rem] lg:rounded-t-[3rem] -mt-16 lg:pt-8 shadow-2xl overflow-hidden"
     >
-
-
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
+        {/* Section Header with Smooth Parallax Animation */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
+          style={{
+            y: headerY,
+            opacity: headerOpacity,
+          }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-black text-sm font-medium mb-4">
+          <motion.div
+            style={{ y: badgeY }}
+            className="inline-flex items-center px-4 py-2 bg-white bg-opacity-10 rounded-full text-black text-sm font-medium mb-4"
+          >
             <ShoppingBag className="mr-2 h-4 w-4" />
             Featured Products
-          </div>
-          <h2 className="text-4xl font-bold text-white mb-4">
+          </motion.div>
+          <motion.h2
+            style={{ y: titleY }}
+            className="text-4xl font-bold text-white mb-4"
+          >
             Habit Formation Tools
-          </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+          </motion.h2>
+          <motion.p
+            style={{ y: descriptionY }}
+            className="text-xl text-gray-300 max-w-3xl mx-auto"
+          >
             Scientifically-designed tools and resources to help you build better
             habits, break bad ones, and transform your daily routine.
-          </p>
+          </motion.p>
         </motion.div>
 
         {/* Products Grid - Unified 4-column layout */}
