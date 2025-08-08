@@ -823,11 +823,11 @@ export default function ProductPage({ params }) {
           className="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-200 shadow-lg h-[88px]"
           style={{ backdropFilter: 'blur(10px)' }}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 h-full">
-            <div className="flex items-center justify-between gap-4 h-full">
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 h-full">
+            <div className="flex items-center justify-between gap-2 sm:gap-4 h-full">
               {/* Product Info */}
-              <div className="flex items-center gap-4 flex-1">
-                <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+              <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                   <Image
                     src={currentImages[0]?.src || '/placeholder-product.webp'}
                     alt={product?.title}
@@ -838,15 +838,15 @@ export default function ProductPage({ params }) {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">
+                  <h3 className="font-semibold text-gray-900 truncate text-sm sm:text-base">
                     {product?.title}
                   </h3>
                   <div className="flex items-center gap-2">
-                    <span className="text-lg font-bold text-gray-900">
+                    <span className="text-base sm:text-lg font-bold text-gray-900">
                       ${parseFloat(selectedVariant?.price || 0).toFixed(2)}
                     </span>
                     {isOnSale && (
-                      <span className="text-sm text-gray-500 line-through">
+                      <span className="hidden xs:inline text-xs sm:text-sm text-gray-500 line-through">
                         $
                         {parseFloat(
                           selectedVariant?.compareAtPrice || 0
@@ -858,9 +858,9 @@ export default function ProductPage({ params }) {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-3">
-                {/* Quantity Selector */}
-                <div className="hidden sm:flex items-center border border-gray-300 rounded-lg">
+              <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+                {/* Quantity Selector - Only on larger screens */}
+                <div className="hidden md:flex items-center border border-gray-300 rounded-lg">
                   <button
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     className="p-2 hover:bg-gray-100 transition-colors"
@@ -879,20 +879,40 @@ export default function ProductPage({ params }) {
                   </button>
                 </div>
 
+                {/* Mobile Quantity Selector - Compact */}
+                <div className="flex md:hidden items-center border border-gray-300 rounded-lg">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="p-1.5 hover:bg-gray-100 transition-colors"
+                    disabled={quantity <= 1}
+                  >
+                    <Minus className="h-3 w-3" />
+                  </button>
+                  <span className="px-2 py-1.5 font-medium text-sm min-w-[2rem] text-center">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="p-1.5 hover:bg-gray-100 transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                  </button>
+                </div>
+
                 {/* Add to Cart Button */}
                 <button
                   onClick={handleAddToCart}
                   disabled={
                     !selectedVariant?.available || addingToCart || cartLoading
                   }
-                  className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all ${
+                  className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all text-sm sm:text-base ${
                     selectedVariant?.available
                       ? 'bg-gray-900 text-white hover:bg-gray-800 hover:scale-105'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  <ShoppingBag className="h-5 w-5" />
-                  <span className="hidden sm:inline">
+                  <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <span className="whitespace-nowrap">
                     {addingToCart || cartLoading
                       ? 'Adding...'
                       : selectedVariant?.available
