@@ -36,18 +36,6 @@ const Hero = () => {
   return (
     <section className="relative bg-[#1a1a1a] text-white overflow-hidden min-h-screen flex items-center">
       {/* Keep solid background color only */}
-      
-      {/* Subtle Background Pattern (optional - remove if you want completely solid) */}
-      <div className="absolute inset-0 opacity-5">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at 20% 80%, #DBDBDB 1px, transparent 1px),
-                              radial-gradient(circle at 80% 20%, #DBDBDB 1px, transparent 1px)`,
-            backgroundSize: '100px 100px',
-          }}
-        />
-      </div>
 
       {/* Main Content - ALL text moves together as one group */}
       <motion.div 
