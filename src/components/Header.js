@@ -198,7 +198,7 @@ const Header = () => {
             </div>
 
             {/* Desktop Navigation */}
-            <nav className="hidden lg:flex lg:items-center lg:space-x-2 ">
+            <nav className="hidden lg:flex lg:items-center lg:space-x-2 font-bold">
               {navigation.map((item) => (
                 <motion.div
                   key={item.name}
