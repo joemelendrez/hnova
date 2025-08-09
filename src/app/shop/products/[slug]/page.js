@@ -72,489 +72,184 @@ export default function ProductPage({ params }) {
 
   const { addToCart, cartLoading } = useCart();
 
-  // Fetch reviews from our import API
-  const fetchImportedReviews = async (productHandle) => {
+  // Fetch reviews from Shopify API (replaces the old fetchImportedReviews function)
+  const fetchShopifyReviews = async (productHandle) => {
     setReviewsLoading(true);
     try {
-      const response = await fetch(
+      // First try to get reviews from Shopify
+      const shopifyResponse = await fetch(
+        `/api/shopify-reviews?product=${productHandle}&app=detect`
+      );
+
+      if (shopifyResponse.ok) {
+        const shopifyData = await shopifyResponse.json();
+        
+        if (shopifyData.success && shopifyData.reviews.length > 0) {
+          console.log(`Found ${shopifyData.reviews.length} reviews from ${shopifyData.reviewApp}`);
+          return formatShopifyReviews(shopifyData);
+        }
+      }
+
+      // Fallback to imported reviews if no Shopify reviews found
+      const importResponse = await fetch(
         `/api/import-reviews?product=${productHandle}`
       );
 
-      if (response.ok) {
-        const data = await response.json();
-        return formatImportedReviews(data);
+      if (importResponse.ok) {
+        const importData = await importResponse.json();
+        if (importData.reviews && importData.reviews.length > 0) {
+          console.log(`Found ${importData.reviews.length} imported reviews`);
+          return formatImportedReviews(importData);
+        }
       }
 
-      // Fallback to sample reviews
+      // Final fallback to sample reviews
       return getFallbackReviews(productHandle);
+      
     } catch (error) {
-      console.error('Error fetching imported reviews:', error);
+      console.error('Error fetching reviews:', error);
       return getFallbackReviews(productHandle);
     } finally {
       setReviewsLoading(false);
     }
   };
 
-  // Format imported reviews data
+  // Format Shopify reviews data
+  const formatShopifyReviews = (data) => {
+    return {
+      averageRating: data.summary.averageRating || 0,
+      totalReviews: data.summary.totalReviews || 0,
+      ratingBreakdown: data.summary.ratingBreakdown || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      reviews: data.reviews.map(review => ({
+        id: review.id,
+        author: review.author,
+        rating: review.rating,
+        title: review.title || '',
+        content: review.content,
+        date: review.date,
+        verified: review.verified || false,
+        helpful: review.helpful || 0,
+        images: review.images || [],
+        source: review.source, // 'judgeme', 'loox', 'yotpo', etc.
+        sourceLabel: getSourceLabel(review.source),
+        variant: review.variant || ''
+      })),
+      source: 'shopify',
+      reviewApp: data.reviewApp,
+      reviewAppName: getReviewAppName(data.reviewApp)
+    };
+  };
+
+  // Format imported reviews data (fallback)
   const formatImportedReviews = (data) => {
     return {
-      averageRating: data.averageRating || 4.5,
+      averageRating: data.averageRating || 0,
       totalReviews: data.totalReviews || 0,
-      ratingBreakdown: data.ratingBreakdown || {
-        5: Math.floor(data.totalReviews * 0.6),
-        4: Math.floor(data.totalReviews * 0.25),
-        3: Math.floor(data.totalReviews * 0.1),
-        2: Math.floor(data.totalReviews * 0.03),
-        1: Math.floor(data.totalReviews * 0.02),
-      },
-      reviews: (data.reviews || []).map((review) => ({
-        id: review.id || Math.random().toString(36),
-        author: review.author || 'Anonymous',
-        rating: review.rating || 5,
+      ratingBreakdown: data.ratingBreakdown || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      reviews: (data.reviews || []).map(review => ({
+        id: review.id,
+        author: review.author,
+        rating: review.rating,
         title: review.title || '',
-        content: review.content || '',
-        date: review.date || review.reviewDate || new Date().toISOString(),
-        verified: review.verified || review.verifiedPurchase || false,
-        helpful: review.helpful || review.helpfulVotes || 0,
+        content: review.content,
+        date: review.date,
+        verified: review.verified || false,
+        helpful: review.helpful || 0,
         images: review.images || [],
-        variant: review.variant || review.variantInfo || '',
-        source: review.source || review.sourcePlatform || 'imported',
-        country: review.country || '',
-        imported: true,
+        source: review.source || 'imported',
+        sourceLabel: getSourceLabel(review.source),
+        variant: review.variant || ''
       })),
+      source: 'imported',
+      reviewApp: null,
+      reviewAppName: 'Imported Reviews'
     };
   };
 
-  // Fallback reviews for demo/testing
+  // Get fallback reviews for demo
   const getFallbackReviews = (productHandle) => {
-    const mockReviews = {
-      'habit-formation-toolkit': {
-        averageRating: 4.8,
-        totalReviews: 247,
-        ratingBreakdown: { 5: 180, 4: 45, 3: 15, 2: 5, 1: 2 },
-        reviews: [
-          {
-            id: '1',
-            author: 'Sarah M.',
-            rating: 5,
-            title: 'Life-changing toolkit!',
-            content:
-              'This toolkit completely transformed my daily routine. The habit tracker is well-designed and the materials are incredibly helpful. Successfully built 5 new habits in 2 months!',
-            date: '2024-01-15T10:30:00Z',
-            verified: true,
-            helpful: 23,
-            images: [],
-            variant: 'Digital Download',
-            source: 'amazon',
-            country: 'US',
-            imported: true,
-          },
-          {
-            id: '2',
-            author: 'Mike R.',
-            rating: 4,
-            title: 'Great value for money',
-            content:
-              'Really comprehensive toolkit. Only wish it had more examples for different habit types, but overall very satisfied with the purchase.',
-            date: '2024-01-10T14:20:00Z',
-            verified: true,
-            helpful: 15,
-            images: [],
-            variant: 'Physical Edition',
-            source: 'amazon',
-            country: 'CA',
-            imported: true,
-          },
-          {
-            id: '3',
-            author: 'Jennifer L.',
-            rating: 5,
-            title: 'Perfect for beginners',
-            content:
-              'As someone who struggled with consistency, this toolkit made habit building much easier. The step-by-step approach really works!',
-            date: '2024-01-08T09:15:00Z',
-            verified: true,
-            helpful: 19,
-            images: [
-              {
-                src: 'https://images.unsplash.com/photo-1434626881859-194d67b2b86f?w=200&h=200&fit=crop',
-                alt: 'Customer photo showing habit tracker in use',
-                width: 200,
-                height: 200,
-              },
-            ],
-            variant: 'Digital Download',
-            source: 'aliexpress',
-            country: 'UK',
-            imported: true,
-          },
-        ],
-      },
-    };
-
-    return (
-      mockReviews[productHandle] || {
-        averageRating: 4.5,
-        totalReviews: 125,
-        ratingBreakdown: { 5: 75, 4: 30, 3: 15, 2: 3, 1: 2 },
-        reviews: [
-          {
-            id: 'default-1',
-            author: 'Verified Customer',
-            rating: 5,
-            title: 'Great product!',
-            content:
-              'This product exceeded my expectations. Quality is excellent and really helps with building better habits.',
-            date: new Date().toISOString(),
-            verified: true,
-            helpful: 8,
-            images: [],
-            variant: 'Standard',
-            source: 'imported',
-            country: 'US',
-            imported: true,
-          },
-        ],
-      }
-    );
-  };
-
-  // Enhanced product formatting with rich description parsing
-  function formatShopifyProduct(shopifyProduct) {
-    const images = shopifyProduct.images || [];
-
     return {
-      id: shopifyProduct.id,
-      title: shopifyProduct.title,
-      handle: shopifyProduct.handle,
-      description: shopifyProduct.description,
-      descriptionHtml: shopifyProduct.descriptionHtml,
-      vendor: shopifyProduct.vendor,
-      productType: shopifyProduct.productType,
-      tags: shopifyProduct.tags || [],
-      images: images.map((img) => ({
-        src: img.src || img.transformedSrc,
-        alt: img.altText || shopifyProduct.title,
-        id: img.id,
-      })),
-      variants: shopifyProduct.variants.map((variant) => ({
-        id: variant.id,
-        title: variant.title,
-        price:
-          typeof variant.price === 'object'
-            ? variant.price.amount
-            : variant.price,
-        compareAtPrice: variant.compareAtPrice
-          ? typeof variant.compareAtPrice === 'object'
-            ? variant.compareAtPrice.amount
-            : variant.compareAtPrice
-          : null,
-        available: variant.available,
-        selectedOptions: variant.selectedOptions || [],
-        image: variant.image
-          ? {
-              src: variant.image.src || variant.image.transformedSrc,
-              alt: variant.image.altText || variant.title,
-              id: variant.image.id,
-            }
-          : null,
-      })),
+      averageRating: 4.7,
+      totalReviews: 156,
+      ratingBreakdown: { 1: 2, 2: 5, 3: 12, 4: 45, 5: 92 },
+      reviews: [
+        {
+          id: 'demo-1',
+          author: 'Sarah K.',
+          rating: 5,
+          title: 'Life-changing habit tracker!',
+          content: 'This journal has completely transformed my daily routine. The layout is perfect and the quality is amazing. Highly recommend for anyone serious about building better habits.',
+          date: '2024-01-15',
+          verified: true,
+          helpful: 23,
+          images: [],
+          source: 'demo',
+          sourceLabel: 'Demo Review'
+        },
+        {
+          id: 'demo-2',
+          author: 'Mike R.',
+          rating: 5,
+          title: 'Perfect for goal tracking',
+          content: 'Love the scientific approach to habit formation. The prompts are thoughtful and the progress tracking keeps me motivated every day.',
+          date: '2024-01-10',
+          verified: true,
+          helpful: 18,
+          images: [],
+          source: 'demo',
+          sourceLabel: 'Demo Review'
+        },
+        {
+          id: 'demo-3',
+          author: 'Emma L.',
+          rating: 4,
+          title: 'Great quality, love the design',
+          content: 'Beautiful journal with excellent paper quality. The habit tracking system is well thought out. Only wish it had more pages!',
+          date: '2024-01-08',
+          verified: true,
+          helpful: 12,
+          images: [],
+          source: 'demo',
+          sourceLabel: 'Demo Review'
+        }
+      ],
+      source: 'demo',
+      reviewApp: null,
+      reviewAppName: 'Demo Reviews'
     };
-  }
-
-  // Enhanced rich text renderer for Shopify HTML descriptions
-  const RichTextRenderer = ({ htmlContent }) => {
-    const [processedHtml, setProcessedHtml] = useState('');
-
-    useEffect(() => {
-      if (!htmlContent) return;
-
-      // Process the HTML to make images responsive and secure
-      const processHtml = (html) => {
-        // Create a temporary div to parse HTML safely
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = html;
-
-        // Process images
-        const images = tempDiv.querySelectorAll('img');
-        images.forEach((img) => {
-          // Add responsive classes using regular CSS classes instead of @apply
-          img.className =
-            'w-full h-auto rounded-lg my-4 max-w-full shadow-md transition-transform duration-300 hover:scale-105';
-
-          // Ensure images are secure (https)
-          if (img.src && img.src.startsWith('http:')) {
-            img.src = img.src.replace('http:', 'https:');
-          }
-
-          // Add loading="lazy" for performance
-          img.setAttribute('loading', 'lazy');
-
-          // Add alt text if missing
-          if (!img.alt) {
-            img.alt = product?.title || 'Product image';
-          }
-
-          // Wrap images in figure with caption if needed
-          const figcaption = img.getAttribute('data-caption');
-          if (figcaption) {
-            const figure = document.createElement('figure');
-            figure.className = 'my-6 text-center';
-            img.parentNode.insertBefore(figure, img);
-            figure.appendChild(img);
-
-            const caption = document.createElement('figcaption');
-            caption.className = 'text-sm text-gray-600 text-center mt-2 italic';
-            caption.textContent = figcaption;
-            figure.appendChild(caption);
-          }
-        });
-
-        // Process other elements with regular CSS classes
-        const headings = tempDiv.querySelectorAll('h1, h2, h3, h4, h5, h6');
-        headings.forEach((heading) => {
-          const size =
-            heading.tagName === 'H1'
-              ? 'text-3xl'
-              : heading.tagName === 'H2'
-              ? 'text-2xl'
-              : heading.tagName === 'H3'
-              ? 'text-xl'
-              : 'text-lg';
-          heading.className = `font-bold text-gray-900 mb-4 mt-6 ${size}`;
-        });
-
-        const paragraphs = tempDiv.querySelectorAll('p');
-        paragraphs.forEach((p) => {
-          p.className = 'mb-4 leading-relaxed text-gray-700';
-        });
-
-        const lists = tempDiv.querySelectorAll('ul, ol');
-        lists.forEach((list) => {
-          const listType = list.tagName === 'UL' ? 'list-disc' : 'list-decimal';
-          list.className = `mb-4 pl-6 space-y-2 ${listType}`;
-        });
-
-        const listItems = tempDiv.querySelectorAll('li');
-        listItems.forEach((li) => {
-          li.className = 'text-gray-700 leading-relaxed';
-        });
-
-        const links = tempDiv.querySelectorAll('a');
-        links.forEach((link) => {
-          link.className =
-            'text-blue-600 hover:text-blue-800 underline transition-colors';
-          link.setAttribute('target', '_blank');
-          link.setAttribute('rel', 'noopener noreferrer');
-        });
-
-        const tables = tempDiv.querySelectorAll('table');
-        tables.forEach((table) => {
-          table.className =
-            'w-full border-collapse border border-gray-300 my-4 rounded-lg overflow-hidden';
-
-          const ths = table.querySelectorAll('th');
-          ths.forEach((th) => {
-            th.className =
-              'border border-gray-300 px-4 py-2 bg-gray-100 font-semibold text-left';
-          });
-
-          const tds = table.querySelectorAll('td');
-          tds.forEach((td) => {
-            td.className = 'border border-gray-300 px-4 py-2';
-          });
-        });
-
-        return tempDiv.innerHTML;
-      };
-
-      setProcessedHtml(processHtml(htmlContent));
-    }, [htmlContent]);
-
-    return (
-      <div
-        className="prose prose-gray max-w-none text-gray-700 leading-relaxed"
-        dangerouslySetInnerHTML={{ __html: processedHtml }}
-      />
-    );
   };
 
-  // Star rating component
-  const StarRating = ({ rating, size = 'sm', showRating = false }) => {
-    const starSize =
-      size === 'lg' ? 'h-6 w-6' : size === 'md' ? 'h-5 w-5' : 'h-4 w-4';
-
-    return (
-      <div className="flex items-center gap-1">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`${starSize} ${
-              i < Math.floor(rating)
-                ? 'text-yellow-400 fill-current'
-                : i < rating
-                ? 'text-yellow-400 fill-current opacity-50'
-                : 'text-gray-300'
-            }`}
-          />
-        ))}
-        {showRating && (
-          <span className="ml-2 text-sm text-gray-600">
-            {rating.toFixed(1)}
-          </span>
-        )}
-      </div>
-    );
-  };
-
-  // Review component
-  const ReviewItem = ({ review }) => {
-    const [showFullContent, setShowFullContent] = useState(false);
-    const contentPreview =
-      review.content.length > 200
-        ? review.content.substring(0, 200) + '...'
-        : review.content;
-
-    // Source badge colors
-    const getSourceBadge = (source) => {
-      const badges = {
-        amazon: 'bg-orange-100 text-orange-800',
-        aliexpress: 'bg-red-100 text-red-800',
-        ebay: 'bg-blue-100 text-blue-800',
-        walmart: 'bg-blue-100 text-blue-800',
-        imported: 'bg-gray-100 text-gray-800',
-      };
-      return badges[source] || badges.imported;
+  // Get human-readable source labels
+  const getSourceLabel = (source) => {
+    const sourceLabels = {
+      'judgeme': 'Judge.me',
+      'loox': 'Loox',
+      'yotpo': 'Yotpo',
+      'stamped': 'Stamped.io',
+      'rivyo': 'Rivyo',
+      'amazon': 'Amazon',
+      'aliexpress': 'AliExpress',
+      'ebay': 'eBay',
+      'walmart': 'Walmart',
+      'manual': 'Manual Entry',
+      'imported': 'Imported',
+      'demo': 'Demo Review'
     };
-
-    return (
-      <div className="border-b border-gray-200 pb-6 mb-6 last:border-b-0">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-white font-semibold">
-            {review.author.charAt(0).toUpperCase()}
-          </div>
-
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="font-semibold text-gray-900">
-                {review.author}
-              </span>
-              {review.verified && (
-                <span className="flex items-center gap-1 text-green-600 text-sm">
-                  <CheckCircle className="h-4 w-4" />
-                  Verified Purchase
-                </span>
-              )}
-              {review.source && (
-                <span
-                  className={`text-xs px-2 py-1 rounded ${getSourceBadge(
-                    review.source
-                  )}`}
-                >
-                  {review.source}
-                </span>
-              )}
-              {review.country && (
-                <span className="text-gray-500 text-sm">
-                  📍 {review.country}
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2 mb-2">
-              <StarRating rating={review.rating} />
-              <span className="text-sm text-gray-500">
-                {new Date(review.date).toLocaleDateString()}
-              </span>
-            </div>
-
-            {review.title && (
-              <h4 className="font-semibold text-gray-900 mb-2">
-                {review.title}
-              </h4>
-            )}
-
-            <p className="text-gray-700 leading-relaxed mb-3">
-              {showFullContent || review.content.length <= 200
-                ? review.content
-                : contentPreview}
-              {review.content.length > 200 && (
-                <button
-                  onClick={() => setShowFullContent(!showFullContent)}
-                  className="text-blue-600 hover:text-blue-800 ml-2 underline"
-                >
-                  {showFullContent ? 'Show less' : 'Read more'}
-                </button>
-              )}
-            </p>
-
-            {review.variant && (
-              <div className="text-sm text-gray-500 mb-2">
-                <strong>Variant:</strong> {review.variant}
-              </div>
-            )}
-
-            {review.images && review.images.length > 0 && (
-              <div className="flex gap-2 mb-3">
-                {review.images.map((img, index) => (
-                  <div
-                    key={index}
-                    className="w-16 h-16 rounded-lg overflow-hidden"
-                  >
-                    <Image
-                      src={img.src}
-                      alt={img.alt}
-                      width={64}
-                      height={64}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <button className="flex items-center gap-1 hover:text-gray-700 transition-colors">
-                <ThumbsUp className="h-4 w-4" />
-                Helpful ({review.helpful})
-              </button>
-
-              {review.imported && (
-                <span className="text-xs italic">
-                  Review imported from external source
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    
+    return sourceLabels[source] || source;
   };
 
-  // Rating breakdown component
-  const RatingBreakdown = ({ breakdown, totalReviews }) => {
-    return (
-      <div className="space-y-2">
-        {[5, 4, 3, 2, 1].map((rating) => {
-          const count = breakdown[rating] || 0;
-          const percentage =
-            totalReviews > 0 ? (count / totalReviews) * 100 : 0;
-
-          return (
-            <div key={rating} className="flex items-center gap-3">
-              <span className="text-sm w-8">{rating}★</span>
-              <div className="flex-1 bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${percentage}%` }}
-                />
-              </div>
-              <span className="text-sm text-gray-600 w-12">{count}</span>
-            </div>
-          );
-        })}
-      </div>
-    );
+  // Get review app names
+  const getReviewAppName = (app) => {
+    const appNames = {
+      'judgeme': 'Judge.me',
+      'loox': 'Loox',
+      'yotpo': 'Yotpo',
+      'stamped': 'Stamped.io',
+      'rivyo': 'Rivyo'
+    };
+    
+    return appNames[app] || app;
   };
 
   // Get variant-specific images
@@ -612,7 +307,7 @@ export default function ProductPage({ params }) {
   // Load reviews when product loads
   useEffect(() => {
     if (product) {
-      fetchImportedReviews(product.handle).then(setReviewsData);
+      fetchShopifyReviews(product.handle).then(setReviewsData);
     }
   }, [product]);
 
