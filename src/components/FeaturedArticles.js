@@ -431,7 +431,7 @@ const FeaturedArticles = () => {
                 <ShoppingBag className="mr-2 h-4 w-4" />
                 Habit-Building Tools
               </div>
-              <h3 className="text-3xl font-bold text-[#1a1a1a] mb-4 leading-tight">
+              <h3 className="text-3xl font-anton text-[#1a1a1a] mb-4 leading-tight">
                 Turn Knowledge Into Action
               </h3>
               <p className="text-gray-600 text-lg leading-relaxed max-w-2xl mx-auto">
