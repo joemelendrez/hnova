@@ -390,6 +390,7 @@ html {
 }
 
 .blog-content a:hover {
+  color: #cd1718;
   text-decoration: underline;
 }
 
