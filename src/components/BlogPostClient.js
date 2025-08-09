@@ -350,7 +350,7 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
           </motion.div>
         </footer>
 
-        {/* Related Posts */}
+        {/* Related Posts - Fixed Card Layout */}
         {relatedPosts.length > 0 && (
           <section className="bg-[#DBDBDB] bg-opacity-10 py-16">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -372,13 +372,14 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.6, delay: index * 0.1 }}
+                      className="h-full flex flex-col"
                     >
                       <Link
                         href={`/blog/${relatedPost.slug}`}
-                        className="group"
+                        className="group h-full flex flex-col"
                       >
-                        <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                          <div className="relative h-48">
+                        <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 h-full flex flex-col">
+                          <div className="relative h-48 flex-shrink-0">
                             <img
                               src={relatedPost.image}
                               alt={decodeHtmlEntities(
@@ -389,23 +390,37 @@ const BlogPostClient = ({ post, relatedPosts = [] }) => {
                                 e.target.src = '/images/blog/default.jpg';
                               }}
                             />
+
+                            {/* Category Badge */}
+                            {relatedPost.category && (
+                              <div className="absolute top-4 left-4">
+                                <span className="bg-[#f10000] text-white px-3 py-1 rounded-full text-sm font-medium">
+                                  {decodeHtmlEntities(relatedPost.category)}
+                                </span>
+                              </div>
+                            )}
                           </div>
-                          <div className="p-6">
-                            <div className="flex items-center text-sm text-gray-500 mb-3">
-                              <span className="bg-accent-hover text-white px-2 py-1 rounded text-xs font-medium mr-3">
-                                {decodeHtmlEntities(relatedPost.category)}
-                              </span>
+
+                          <div className="p-6 flex-1 flex flex-col">
+                            {/* Read Time */}
+                            <div className="flex items-center text-sm text-gray-500 mb-3 flex-shrink-0">
                               <Clock className="h-4 w-4 mr-1" />
-                              {relatedPost.readTime}
+                              <span>{relatedPost.readTime}</span>
                             </div>
-                            <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors leading-tight">
+
+                            {/* Title */}
+                            <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors leading-tight flex-shrink-0">
                               {decodeHtmlEntities(relatedPost.title)}
                             </h3>
-                            <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3">
+
+                            {/* Excerpt - This grows to fill space */}
+                            <p className="text-gray-600 mb-6 leading-relaxed line-clamp-3 flex-1">
                               {decodeHtmlEntities(relatedPost.excerpt)}
                             </p>
-                            <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700">
-                              Read More
+
+                            {/* Read More Link - Sticks to bottom */}
+                            <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700 transition-colors flex-shrink-0 mt-auto">
+                              <span>Read More</span>
                               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                             </div>
                           </div>

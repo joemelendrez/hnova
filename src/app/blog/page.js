@@ -1,4 +1,4 @@
-// src/app/blog/page.js - Updated with enhanced readTime calculation
+// src/app/blog/page.js - Updated with Load More button
 'use client';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
@@ -12,6 +12,8 @@ import {
   X,
   Zap,
   Database,
+  ChevronDown,
+  RotateCcw,
 } from 'lucide-react';
 import {
   getAllPosts,
@@ -148,7 +150,6 @@ function calculateReadTime(content) {
   }
 }
 
-
 export default function BlogPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState([]);
@@ -171,7 +172,6 @@ export default function BlogPage() {
     () => searchTerm.length > 0 || selectedCategories.length > 0,
     [searchTerm, selectedCategories]
   );
-
 
   // Optimized initial data loading with preloading
   const fetchInitialData = useCallback(async () => {
@@ -561,68 +561,170 @@ export default function BlogPage() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-8">
-        {posts.map((post, index) => (
-          <motion.div
-            key={post.id}
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.6,
-              delay: Math.min(index * 0.1, 0.8),
-            }}
-            className="flex" // ensure child can stretch if needed
-          >
-            <Link
-              href={`/blog/${post.slug}`}
-              className="group flex flex-col flex-grow"
+      {/* Main Content Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Posts Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 py-8">
+          {posts.map((post, index) => (
+            <motion.div
+              key={post.id}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.6,
+                delay: Math.min(index * 0.1, 0.8),
+              }}
+              className="flex" // ensure child can stretch if needed
             >
-              <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 flex flex-col h-full">
-                <div className="relative h-48 flex-shrink-0">
-                  <img
-                    src={post.image}
-                    alt={post.imageAlt}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading={index < 6 ? 'eager' : 'lazy'}
-                    onError={(e) => {
-                      e.currentTarget.src = '/images/blog/default.jpg';
-                    }}
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className="bg-accent-hover text-white px-3 py-1 rounded-full text-xs font-medium">
-                      {post.category}
-                    </span>
+              <Link
+                href={`/blog/${post.slug}`}
+                className="group flex flex-col flex-grow"
+              >
+                <article className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-200 flex flex-col h-full">
+                  <div className="relative h-48 flex-shrink-0">
+                    <img
+                      src={post.image}
+                      alt={post.imageAlt}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading={index < 6 ? 'eager' : 'lazy'}
+                      onError={(e) => {
+                        e.currentTarget.src = '/images/blog/default.jpg';
+                      }}
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-accent-hover text-white px-3 py-1 rounded-full text-xs font-medium">
+                        {post.category}
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Body: grows to fill space */}
-                <div className="p-6 flex flex-col flex-grow">
-                  <div className="flex items-center text-sm text-gray-500 mb-3">
-                    <span>{post.date}</span>
-                    <span className="mx-2">•</span>
-                    <Clock className="h-4 w-4 mr-1" />
-                    <span>{post.readTime}</span>
+                  {/* Body: grows to fill space */}
+                  <div className="p-6 flex flex-col flex-grow">
+                    <div className="flex items-center text-sm text-gray-500 mb-3">
+                      <span>{post.date}</span>
+                      <span className="mx-2">•</span>
+                      <Clock className="h-4 w-4 mr-1" />
+                      <span>{post.readTime}</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors leading-tight">
+                      {post.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3 flex-grow">
+                      {post.excerpt}
+                    </p>
+                    {/* Spacer is implicit because flex-grow on excerpt if needed */}
                   </div>
-                  <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors leading-tight">
-                    {post.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4 leading-relaxed line-clamp-3 flex-grow">
-                    {post.excerpt}
-                  </p>
-                  {/* Spacer is implicit because flex-grow on excerpt if needed */}
-                </div>
 
-                {/* Footer: stays at bottom */}
-                <div className="px-6 pb-6">
-                  <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700">
-                    Read Article
-                    <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                  {/* Footer: stays at bottom */}
+                  <div className="px-6 pb-6">
+                    <div className="flex items-center text-[#1a1a1a] font-semibold group-hover:text-gray-700">
+                      Read Article
+                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                    </div>
                   </div>
-                </div>
-              </article>
+                </article>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* No Posts Found */}
+        {!loading && posts.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center py-16"
+          >
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Search className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              No articles found
+            </h3>
+            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              {hasActiveFilters
+                ? "Try adjusting your search terms or category filters to find what you're looking for."
+                : "We couldn't find any articles. Please try again later."}
+            </p>
+            {hasActiveFilters && (
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedCategories([]);
+                }}
+                className="inline-flex items-center px-4 py-2 bg-[#1a1a1a] text-white rounded-lg hover:bg-gray-800 transition-colors"
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Clear Filters
+              </button>
+            )}
+          </motion.div>
+        )}
+
+        {/* Load More Button */}
+        {!hasActiveFilters && hasNextPage && posts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center py-12"
+          >
+            <button
+              onClick={loadMorePosts}
+              disabled={loadingMore}
+              className={`inline-flex items-center px-8 py-4 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] rounded-lg font-semibold transition-all duration-300 hover:bg-[#1a1a1a] hover:text-white hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-[#1a1a1a] group ${
+                loadingMore ? 'cursor-not-allowed' : 'hover:scale-105'
+              }`}
+            >
+              {loadingMore ? (
+                <>
+                  <Loader className="h-5 w-5 mr-3 animate-spin" />
+                  Loading more articles...
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-5 w-5 mr-3 group-hover:translate-y-0.5 transition-transform duration-200" />
+                  Load More Articles
+                </>
+              )}
+            </button>
+
+            {/* Show posts count */}
+            <p className="text-sm text-gray-500 mt-4">
+              Showing {posts.length} articles
+              {hasNextPage && ' • More available'}
+            </p>
+          </motion.div>
+        )}
+
+        {/* End of posts message when no more to load */}
+        {!hasActiveFilters && !hasNextPage && posts.length > 12 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center py-12 border-t border-gray-200"
+          >
+            <div className="w-12 h-12 bg-[#DBDBDB] bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Database className="h-6 w-6 text-[#1a1a1a]" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              You've reached the end!
+            </h3>
+            <p className="text-gray-600 mb-6">
+              You've viewed all {posts.length} available articles. Check back
+              soon for new content.
+            </p>
+            <Link
+              href="/shop"
+              className="inline-flex items-center px-6 py-3 bg-[#DBDBDB] text-[#1a1a1a] rounded-lg font-semibold hover:bg-gray-300 transition-colors"
+            >
+              Check Out Our Shop
+              <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </motion.div>
-        ))}
+        )}
       </div>
     </div>
   );

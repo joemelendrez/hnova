@@ -35,6 +35,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { useCart } from '../../../hooks/useShopifyCart';
+import RecommendedBlogPosts from '@/components/RecommendedBlogPosts';
 
 // Initialize Shopify client
 let shopifyClient = null;
@@ -1890,6 +1891,13 @@ export default function ProductPage({ params }) {
           </div>
         </div>
       </motion.div>
+
+      <RecommendedBlogPosts
+        product={product}
+        maxPosts={3}
+        title="Learn More About Habit Building"
+        subtitle="Discover evidence-based strategies to maximize your success"
+      />
 
       {/* Sticky Cart Section */}
       <StickyCartSection />
