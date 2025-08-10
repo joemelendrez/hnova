@@ -77,11 +77,46 @@ const Header = () => {
         return;
       }
 
-      const article = document.querySelector('article');
-      if (!article) return;
+      // Look for the main article content, excluding related articles
+      const article =
+        document.querySelector('article main') ||
+        document.querySelector('article .prose') ||
+        document.querySelector('article [class*="content"]') ||
+        document.querySelector('.blog-content') ||
+        document.querySelector('.post-content');
 
-      const articleTop = article.offsetTop;
-      const articleHeight = article.offsetHeight;
+      // Fallback to article but try to exclude related/footer sections
+      let articleElement = article;
+      if (!articleElement) {
+        const fullArticle = document.querySelector('article');
+        if (fullArticle) {
+          // Try to find the main content area and exclude related articles section
+          const relatedSection =
+            fullArticle.querySelector('[class*="related"]') ||
+            fullArticle.querySelector('[id*="related"]') ||
+            fullArticle.querySelector('.related-articles') ||
+            fullArticle.querySelector('.more-articles') ||
+            fullArticle.querySelector('aside') ||
+            fullArticle.querySelector('footer');
+
+          if (relatedSection) {
+            // Calculate article height excluding the related section
+            const articleTop = fullArticle.offsetTop;
+            const relatedTop = relatedSection.offsetTop;
+            articleElement = {
+              offsetTop: articleTop,
+              offsetHeight: relatedTop - articleTop,
+            };
+          } else {
+            articleElement = fullArticle;
+          }
+        }
+      }
+
+      if (!articleElement) return;
+
+      const articleTop = articleElement.offsetTop;
+      const articleHeight = articleElement.offsetHeight;
       const articleBottom = articleTop + articleHeight;
       const scrollTop = window.scrollY;
       const windowHeight = window.innerHeight;
