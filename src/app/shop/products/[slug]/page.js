@@ -1204,11 +1204,14 @@ export default function ProductPage({ params }) {
               </div>
 
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                <Link 
+                  href={`/shop/products/${similarProduct.handle}`}>
+                <h3 className="font-semibold text-[#1a1a1a] hover:text-[#f10000] mb-2 line-clamp-2">
                   {similarProduct.name}
                 </h3>
+                </Link>
 
-                <div className="flex items-center gap-1 mb-2">
+                {/* <div className="flex items-center gap-1 mb-2">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
                       <Star
@@ -1224,7 +1227,7 @@ export default function ProductPage({ params }) {
                   <span className="text-xs text-gray-600">
                     ({similarProduct.reviews})
                   </span>
-                </div>
+                </div> */}
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1240,7 +1243,7 @@ export default function ProductPage({ params }) {
 
                   <Link
                     href={`/shop/products/${similarProduct.handle}`}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-sm text-[#f10000] hover:text-[#cd1718] font-medium"
                   >
                     View Details
                   </Link>
