@@ -379,157 +379,157 @@ export default function ProductPage({ params }) {
     );
   };
 
-  // Star rating component
-  const StarRating = ({ rating, size = 'sm', showRating = false }) => {
-    const starSize =
-      size === 'lg' ? 'h-6 w-6' : size === 'md' ? 'h-5 w-5' : 'h-4 w-4';
+  // // Star rating component
+  // const StarRating = ({ rating, size = 'sm', showRating = false }) => {
+  //   const starSize =
+  //     size === 'lg' ? 'h-6 w-6' : size === 'md' ? 'h-5 w-5' : 'h-4 w-4';
 
-    return (
-      <div className="flex items-center gap-1">
-        {[...Array(5)].map((_, i) => (
-          <Star
-            key={i}
-            className={`${starSize} ${
-              i < Math.floor(rating)
-                ? 'text-yellow-400 fill-current'
-                : i < rating
-                ? 'text-yellow-400 fill-current opacity-50'
-                : 'text-gray-300'
-            }`}
-          />
-        ))}
-        {showRating && (
-          <span className="ml-2 text-sm text-gray-600">
-            {rating.toFixed(1)}
-          </span>
-        )}
-      </div>
-    );
-  };
+  //   return (
+  //     <div className="flex items-center gap-1">
+  //       {[...Array(5)].map((_, i) => (
+  //         <Star
+  //           key={i}
+  //           className={`${starSize} ${
+  //             i < Math.floor(rating)
+  //               ? 'text-yellow-400 fill-current'
+  //               : i < rating
+  //               ? 'text-yellow-400 fill-current opacity-50'
+  //               : 'text-gray-300'
+  //           }`}
+  //         />
+  //       ))}
+  //       {showRating && (
+  //         <span className="ml-2 text-sm text-gray-600">
+  //           {rating.toFixed(1)}
+  //         </span>
+  //       )}
+  //     </div>
+  //   );
+  // };
 
-  // Review component
-  const ReviewItem = ({ review }) => {
-    const [showFullContent, setShowFullContent] = useState(false);
-    const contentPreview =
-      review.content.length > 200
-        ? review.content.substring(0, 200) + '...'
-        : review.content;
+  // // Review component
+  // const ReviewItem = ({ review }) => {
+  //   const [showFullContent, setShowFullContent] = useState(false);
+  //   const contentPreview =
+  //     review.content.length > 200
+  //       ? review.content.substring(0, 200) + '...'
+  //       : review.content;
 
-    // Source badge colors
-    const getSourceBadge = (source) => {
-      const badges = {
-        amazon: 'bg-orange-100 text-orange-800',
-        aliexpress: 'bg-red-100 text-red-800',
-        ebay: 'bg-blue-100 text-blue-800',
-        walmart: 'bg-blue-100 text-blue-800',
-        imported: 'bg-gray-100 text-gray-800',
-      };
-      return badges[source] || badges.imported;
-    };
+  //   // Source badge colors
+  //   const getSourceBadge = (source) => {
+  //     const badges = {
+  //       amazon: 'bg-orange-100 text-orange-800',
+  //       aliexpress: 'bg-red-100 text-red-800',
+  //       ebay: 'bg-blue-100 text-blue-800',
+  //       walmart: 'bg-blue-100 text-blue-800',
+  //       imported: 'bg-gray-100 text-gray-800',
+  //     };
+  //     return badges[source] || badges.imported;
+  //   };
 
-    return (
-      <div className="border-b border-gray-200 pb-6 mb-6 last:border-b-0">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-white font-semibold">
-            {review.author.charAt(0).toUpperCase()}
-          </div>
+  //   return (
+  //     <div className="border-b border-gray-200 pb-6 mb-6 last:border-b-0">
+  //       <div className="flex items-start gap-4">
+  //         <div className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-white font-semibold">
+  //           {review.author.charAt(0).toUpperCase()}
+  //         </div>
 
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2 flex-wrap">
-              <span className="font-semibold text-gray-900">
-                {review.author}
-              </span>
-              {review.verified && (
-                <span className="flex items-center gap-1 text-green-600 text-sm">
-                  <CheckCircle className="h-4 w-4" />
-                  Verified Purchase
-                </span>
-              )}
-              {review.source && (
-                <span
-                  className={`text-xs px-2 py-1 rounded ${getSourceBadge(
-                    review.source
-                  )}`}
-                >
-                  {review.source}
-                </span>
-              )}
-              {review.country && (
-                <span className="text-gray-500 text-sm">
-                  📍 {review.country}
-                </span>
-              )}
-            </div>
+  //         <div className="flex-1">
+  //           <div className="flex items-center gap-2 mb-2 flex-wrap">
+  //             <span className="font-semibold text-gray-900">
+  //               {review.author}
+  //             </span>
+  //             {review.verified && (
+  //               <span className="flex items-center gap-1 text-green-600 text-sm">
+  //                 <CheckCircle className="h-4 w-4" />
+  //                 Verified Purchase
+  //               </span>
+  //             )}
+  //             {review.source && (
+  //               <span
+  //                 className={`text-xs px-2 py-1 rounded ${getSourceBadge(
+  //                   review.source
+  //                 )}`}
+  //               >
+  //                 {review.source}
+  //               </span>
+  //             )}
+  //             {review.country && (
+  //               <span className="text-gray-500 text-sm">
+  //                 📍 {review.country}
+  //               </span>
+  //             )}
+  //           </div>
 
-            <div className="flex items-center gap-2 mb-2">
-              <StarRating rating={review.rating} />
-              <span className="text-sm text-gray-500">
-                {new Date(review.date).toLocaleDateString()}
-              </span>
-            </div>
+  //           <div className="flex items-center gap-2 mb-2">
+  //             <StarRating rating={review.rating} />
+  //             <span className="text-sm text-gray-500">
+  //               {new Date(review.date).toLocaleDateString()}
+  //             </span>
+  //           </div>
 
-            {review.title && (
-              <h4 className="font-semibold text-gray-900 mb-2">
-                {review.title}
-              </h4>
-            )}
+  //           {review.title && (
+  //             <h4 className="font-semibold text-gray-900 mb-2">
+  //               {review.title}
+  //             </h4>
+  //           )}
 
-            <p className="text-gray-700 leading-relaxed mb-3">
-              {showFullContent || review.content.length <= 200
-                ? review.content
-                : contentPreview}
-              {review.content.length > 200 && (
-                <button
-                  onClick={() => setShowFullContent(!showFullContent)}
-                  className="text-blue-600 hover:text-blue-800 ml-2 underline"
-                >
-                  {showFullContent ? 'Show less' : 'Read more'}
-                </button>
-              )}
-            </p>
+  //           <p className="text-gray-700 leading-relaxed mb-3">
+  //             {showFullContent || review.content.length <= 200
+  //               ? review.content
+  //               : contentPreview}
+  //             {review.content.length > 200 && (
+  //               <button
+  //                 onClick={() => setShowFullContent(!showFullContent)}
+  //                 className="text-blue-600 hover:text-blue-800 ml-2 underline"
+  //               >
+  //                 {showFullContent ? 'Show less' : 'Read more'}
+  //               </button>
+  //             )}
+  //           </p>
 
-            {review.variant && (
-              <div className="text-sm text-gray-500 mb-2">
-                <strong>Variant:</strong> {review.variant}
-              </div>
-            )}
+  //           {review.variant && (
+  //             <div className="text-sm text-gray-500 mb-2">
+  //               <strong>Variant:</strong> {review.variant}
+  //             </div>
+  //           )}
 
-            {review.images && review.images.length > 0 && (
-              <div className="flex gap-2 mb-3">
-                {review.images.map((img, index) => (
-                  <div
-                    key={index}
-                    className="w-16 h-16 rounded-lg overflow-hidden"
-                  >
-                    <Image
-                      src={img.src}
-                      alt={img.alt}
-                      width={64}
-                      height={64}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
+  //           {review.images && review.images.length > 0 && (
+  //             <div className="flex gap-2 mb-3">
+  //               {review.images.map((img, index) => (
+  //                 <div
+  //                   key={index}
+  //                   className="w-16 h-16 rounded-lg overflow-hidden"
+  //                 >
+  //                   <Image
+  //                     src={img.src}
+  //                     alt={img.alt}
+  //                     width={64}
+  //                     height={64}
+  //                     className="object-cover w-full h-full"
+  //                   />
+  //                 </div>
+  //               ))}
+  //             </div>
+  //           )}
 
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <button className="flex items-center gap-1 hover:text-gray-700 transition-colors">
-                <ThumbsUp className="h-4 w-4" />
-                Helpful ({review.helpful})
-              </button>
+  //           <div className="flex items-center gap-4 text-sm text-gray-500">
+  //             <button className="flex items-center gap-1 hover:text-gray-700 transition-colors">
+  //               <ThumbsUp className="h-4 w-4" />
+  //               Helpful ({review.helpful})
+  //             </button>
 
-              {review.imported && (
-                <span className="text-xs italic">
-                  Review imported from external source
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  //             {review.imported && (
+  //               <span className="text-xs italic">
+  //                 Review imported from external source
+  //               </span>
+  //             )}
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   // Rating breakdown component
   const RatingBreakdown = ({ breakdown, totalReviews }) => {
@@ -1204,11 +1204,14 @@ export default function ProductPage({ params }) {
               </div>
 
               <div className="p-4">
-                <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                <Link 
+                  href={`/shop/products/${similarProduct.handle}`}>
+                <h3 className="font-semibold text-[#1a1a1a] hover:text-[#f10000] mb-2 line-clamp-2">
                   {similarProduct.name}
                 </h3>
+                </Link>
 
-                <div className="flex items-center gap-1 mb-2">
+                {/* <div className="flex items-center gap-1 mb-2">
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
                       <Star
@@ -1224,7 +1227,7 @@ export default function ProductPage({ params }) {
                   <span className="text-xs text-gray-600">
                     ({similarProduct.reviews})
                   </span>
-                </div>
+                </div> */}
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -1240,7 +1243,7 @@ export default function ProductPage({ params }) {
 
                   <Link
                     href={`/shop/products/${similarProduct.handle}`}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-sm text-[#f10000] hover:text-[#cd1718] font-medium"
                   >
                     View Details
                   </Link>
@@ -1441,7 +1444,7 @@ export default function ProductPage({ params }) {
                 {product.title}
               </h1>
 
-              {/* Rating */}
+              {/* Rating
               <div className="flex items-center gap-2">
                 {reviewsData ? (
                   <>
@@ -1466,7 +1469,7 @@ export default function ProductPage({ params }) {
                     </span>
                   </div>
                 )}
-              </div>
+              </div> */}
 
               {/* Price */}
               <div className="flex items-center gap-3">
@@ -1664,13 +1667,13 @@ export default function ProductPage({ params }) {
             <nav className="flex space-x-8">
               {[
                 { id: 'description', label: 'Description', icon: FileText },
-                {
-                  id: 'reviews',
-                  label: `Reviews ${
-                    reviewsData ? `(${reviewsData.totalReviews})` : ''
-                  }`,
-                  icon: MessageCircle,
-                },
+                // {
+                //   id: 'reviews',
+                //   label: `Reviews ${
+                //     reviewsData ? `(${reviewsData.totalReviews})` : ''
+                //   }`,
+                //   icon: MessageCircle,
+                // },
                 { id: 'shipping', label: 'Shipping & Returns', icon: Truck },
               ].map(({ id, label, icon: Icon }) => (
                 <button
