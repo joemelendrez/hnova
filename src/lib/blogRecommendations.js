@@ -17,16 +17,16 @@ export const PRODUCT_BLOG_MAPPING = {
   'focus-enhancement-toolkit': ['productivity', 'digital-wellness'],
   'sleep-optimization-guide': ['habit-formation', 'wellness'],
   'exercise-habit-builder': ['habit-formation', 'wellness'],
-
+  
   // Product types mapped to categories
-  journal: ['habit-formation', 'productivity'],
+  'journal': ['habit-formation', 'productivity'],
   'digital-wellness': ['digital-wellness', 'mindfulness'],
-  productivity: ['productivity', 'psychology'],
-  template: ['productivity', 'habit-formation'],
-  workbook: ['habit-formation', 'psychology'],
-  guide: ['habit-formation', 'productivity'],
-  toolkit: ['productivity', 'digital-wellness'],
-  planner: ['productivity', 'habit-formation'],
+  'productivity': ['productivity', 'psychology'],
+  'template': ['productivity', 'habit-formation'],
+  'workbook': ['habit-formation', 'psychology'],
+  'guide': ['habit-formation', 'productivity'],
+  'toolkit': ['productivity', 'digital-wellness'],
+  'planner': ['productivity', 'habit-formation'],
 };
 
 /**
@@ -41,10 +41,7 @@ export function getRecommendedCategories(product) {
   }
 
   // Check product type
-  if (
-    product.productType &&
-    PRODUCT_BLOG_MAPPING[product.productType.toLowerCase()]
-  ) {
+  if (product.productType && PRODUCT_BLOG_MAPPING[product.productType.toLowerCase()]) {
     return PRODUCT_BLOG_MAPPING[product.productType.toLowerCase()];
   }
 
@@ -62,27 +59,21 @@ export function getRecommendedCategories(product) {
   const productText = [
     product.title,
     product.description,
-    ...(product.tags || []),
-  ]
-    .join(' ')
-    .toLowerCase();
+    ...(product.tags || [])
+  ].join(' ').toLowerCase();
 
-  if (
-    productText.includes('digital') ||
-    productText.includes('screen') ||
-    productText.includes('phone')
-  ) {
+  if (productText.includes('digital') || productText.includes('screen') || productText.includes('phone')) {
     return ['digital-wellness', 'mindfulness'];
   }
-
+  
   if (productText.includes('morning') || productText.includes('routine')) {
     return ['productivity', 'habit-formation'];
   }
-
+  
   if (productText.includes('journal') || productText.includes('tracking')) {
     return ['habit-formation', 'productivity'];
   }
-
+  
   if (productText.includes('mindful') || productText.includes('meditation')) {
     return ['mindfulness', 'psychology'];
   }
@@ -97,136 +88,95 @@ export function getRecommendedCategories(product) {
 export function getContextualContent(product) {
   if (!product) {
     return {
-      title: 'Related Articles',
-      subtitle: 'Learn more about building better habits',
+      title: "Related Articles",
+      subtitle: "Learn more about building better habits"
     };
   }
 
   const productType = product.productType?.toLowerCase() || '';
   const title = product.title?.toLowerCase() || '';
-  const tags = product.tags?.map((tag) => tag.toLowerCase()) || [];
+  const tags = product.tags?.map(tag => tag.toLowerCase()) || [];
   const description = product.description?.toLowerCase() || '';
 
   // Combine all text for analysis
   const allText = [title, productType, description, ...tags].join(' ');
 
   // Journal-specific content
-  if (
-    productType.includes('journal') ||
-    title.includes('journal') ||
-    allText.includes('tracking')
-  ) {
+  if (productType.includes('journal') || title.includes('journal') || allText.includes('tracking')) {
     return {
-      title: 'Maximize Your Journaling Practice',
-      subtitle:
-        'Evidence-based techniques to get the most from your habit journal',
+      title: "Maximize Your Journaling Practice",
+      subtitle: "Evidence-based techniques to get the most from your habit journal"
     };
   }
 
   // Digital wellness content
-  if (
-    tags.includes('digital-wellness') ||
-    allText.includes('digital') ||
-    allText.includes('detox') ||
-    allText.includes('screen')
-  ) {
+  if (tags.includes('digital-wellness') || allText.includes('digital') || allText.includes('detox') || allText.includes('screen')) {
     return {
-      title: 'Digital Wellness Resources',
-      subtitle:
-        'Science-backed strategies for a healthier relationship with technology',
+      title: "Digital Wellness Resources",
+      subtitle: "Science-backed strategies for a healthier relationship with technology"
     };
   }
 
   // Productivity content
-  if (
-    productType.includes('productivity') ||
-    allText.includes('productivity') ||
-    allText.includes('planner') ||
-    allText.includes('efficiency')
-  ) {
+  if (productType.includes('productivity') || allText.includes('productivity') || allText.includes('planner') || allText.includes('efficiency')) {
     return {
-      title: 'Boost Your Productivity',
-      subtitle:
-        'Research-proven methods to optimize your daily routines and habits',
+      title: "Boost Your Productivity",
+      subtitle: "Research-proven methods to optimize your daily routines and habits"
     };
   }
 
   // Mindfulness content
-  if (
-    tags.includes('mindfulness') ||
-    allText.includes('mindfulness') ||
-    allText.includes('meditation') ||
-    allText.includes('awareness')
-  ) {
+  if (tags.includes('mindfulness') || allText.includes('mindfulness') || allText.includes('meditation') || allText.includes('awareness')) {
     return {
-      title: 'Mindful Habit Building',
-      subtitle:
-        'Integrate mindfulness practices into your daily routine for lasting change',
+      title: "Mindful Habit Building",
+      subtitle: "Integrate mindfulness practices into your daily routine for lasting change"
     };
   }
 
   // Morning routine content
   if (allText.includes('morning') || allText.includes('routine')) {
     return {
-      title: 'Perfect Your Morning Routine',
-      subtitle: 'Start your day right with these evidence-based morning habits',
+      title: "Perfect Your Morning Routine",
+      subtitle: "Start your day right with these evidence-based morning habits"
     };
   }
 
   // Evening routine content
-  if (
-    allText.includes('evening') ||
-    allText.includes('night') ||
-    allText.includes('sleep')
-  ) {
+  if (allText.includes('evening') || allText.includes('night') || allText.includes('sleep')) {
     return {
-      title: 'Evening Routine Mastery',
-      subtitle: 'Wind down effectively and prepare for better habits tomorrow',
+      title: "Evening Routine Mastery",
+      subtitle: "Wind down effectively and prepare for better habits tomorrow"
     };
   }
 
   // Habit stacking content
-  if (
-    allText.includes('stacking') ||
-    allText.includes('chain') ||
-    allText.includes('sequence')
-  ) {
+  if (allText.includes('stacking') || allText.includes('chain') || allText.includes('sequence')) {
     return {
-      title: 'Master Habit Stacking',
-      subtitle:
-        'Learn to chain habits together for exponential behavior change',
+      title: "Master Habit Stacking",
+      subtitle: "Learn to chain habits together for exponential behavior change"
     };
   }
 
   // Beginner content
-  if (
-    allText.includes('beginner') ||
-    allText.includes('start') ||
-    allText.includes('getting started')
-  ) {
+  if (allText.includes('beginner') || allText.includes('start') || allText.includes('getting started')) {
     return {
-      title: 'Getting Started with Better Habits',
-      subtitle: 'Essential foundations for successful habit formation',
+      title: "Getting Started with Better Habits",
+      subtitle: "Essential foundations for successful habit formation"
     };
   }
 
   // Advanced content
-  if (
-    allText.includes('advanced') ||
-    allText.includes('mastery') ||
-    allText.includes('expert')
-  ) {
+  if (allText.includes('advanced') || allText.includes('mastery') || allText.includes('expert')) {
     return {
-      title: 'Advanced Habit Strategies',
-      subtitle:
-        'Take your habit practice to the next level with expert techniques',
+      title: "Advanced Habit Strategies",
+      subtitle: "Take your habit practice to the next level with expert techniques"
     };
   }
 
   // Default content
   return {
-    title: 'Continue Your Habit Journey',
-    subtitle: 'Discover proven strategies for lasting behavior change',
+    title: "Continue Your Habit Journey",
+    subtitle: "Discover proven strategies for lasting behavior change"
   };
 }
 
@@ -240,145 +190,64 @@ export function extractEnhancedKeywords(product) {
     product.title,
     product.description,
     product.productType,
-    ...(product.tags || []),
-  ]
-    .filter(Boolean)
-    .join(' ')
-    .toLowerCase();
+    ...(product.tags || [])
+  ].filter(Boolean).join(' ').toLowerCase();
 
   // Comprehensive habit-related keywords with categories
   const keywordCategories = {
     // Core habit concepts (highest priority)
     habits: [
-      'habit',
-      'habits',
-      'routine',
-      'ritual',
-      'practice',
-      'formation',
-      'building',
-      'breaking',
-      'change',
-      'behavioral',
-      'behavior',
-      'consistency',
-      'discipline',
-      'willpower',
-      'motivation',
+      'habit', 'habits', 'routine', 'ritual', 'practice', 'formation', 
+      'building', 'breaking', 'change', 'behavioral', 'behavior', 
+      'consistency', 'discipline', 'willpower', 'motivation'
     ],
-
+    
     // Tools and methods (high priority)
     tools: [
-      'tracking',
-      'journal',
-      'planner',
-      'template',
-      'worksheet',
-      'guide',
-      'system',
-      'method',
-      'framework',
-      'strategy',
-      'technique',
-      'approach',
-      'process',
+      'tracking', 'journal', 'planner', 'template', 'worksheet', 
+      'guide', 'system', 'method', 'framework', 'strategy', 
+      'technique', 'approach', 'process'
     ],
-
+    
     // Time-based habits (medium priority)
     timing: [
-      'morning',
-      'evening',
-      'daily',
-      'weekly',
-      'monthly',
-      'schedule',
-      'time',
-      'routine',
-      'ritual',
-      'start',
-      'end',
-      'begin',
-      'finish',
+      'morning', 'evening', 'daily', 'weekly', 'monthly', 'schedule', 
+      'time', 'routine', 'ritual', 'start', 'end', 'begin', 'finish'
     ],
-
+    
     // Wellness categories (medium priority)
     wellness: [
-      'digital',
-      'wellness',
-      'detox',
-      'mindfulness',
-      'meditation',
-      'focus',
-      'productivity',
-      'health',
-      'fitness',
-      'exercise',
-      'sleep',
-      'nutrition',
-      'stress',
-      'anxiety',
+      'digital', 'wellness', 'detox', 'mindfulness', 'meditation', 
+      'focus', 'productivity', 'health', 'fitness', 'exercise', 
+      'sleep', 'nutrition', 'stress', 'anxiety'
     ],
-
+    
     // Psychology terms (medium priority)
     psychology: [
-      'psychology',
-      'psychological',
-      'cognitive',
-      'mental',
-      'mind',
-      'brain',
-      'neuroscience',
-      'dopamine',
-      'reward',
-      'trigger',
-      'cue',
-      'response',
-      'feedback',
-      'loop',
+      'psychology', 'psychological', 'cognitive', 'mental', 'mind', 
+      'brain', 'neuroscience', 'dopamine', 'reward', 'trigger', 
+      'cue', 'response', 'feedback', 'loop'
     ],
-
+    
     // Goals and outcomes (lower priority)
     outcomes: [
-      'goal',
-      'goals',
-      'success',
-      'achievement',
-      'improvement',
-      'transformation',
-      'change',
-      'progress',
-      'growth',
-      'development',
-      'results',
-      'outcome',
-      'benefit',
-      'advantage',
+      'goal', 'goals', 'success', 'achievement', 'improvement', 
+      'transformation', 'change', 'progress', 'growth', 'development', 
+      'results', 'outcome', 'benefit', 'advantage'
     ],
 
     // Specific habit types (context-specific)
     habitTypes: [
-      'reading',
-      'writing',
-      'exercise',
-      'meditation',
-      'journaling',
-      'planning',
-      'organizing',
-      'cleaning',
-      'cooking',
-      'learning',
-      'studying',
-      'working',
-      'focusing',
-      'breathing',
-      'stretching',
-    ],
+      'reading', 'writing', 'exercise', 'meditation', 'journaling',
+      'planning', 'organizing', 'cleaning', 'cooking', 'learning',
+      'studying', 'working', 'focusing', 'breathing', 'stretching'
+    ]
   };
 
   const foundKeywords = [];
-
+  
   Object.entries(keywordCategories).forEach(([category, keywords]) => {
-    const matches = keywords.filter((keyword) => allText.includes(keyword));
+    const matches = keywords.filter(keyword => allText.includes(keyword));
     if (matches.length > 0) {
       foundKeywords.push({ category, keywords: matches });
     }
@@ -399,14 +268,12 @@ export function scorePostRelevance(post, product) {
     post.title,
     post.excerpt,
     post.category,
-    ...(post.tags || []),
-  ]
-    .join(' ')
-    .toLowerCase();
+    ...(post.tags || [])
+  ].join(' ').toLowerCase();
 
   // Score based on keyword categories with different weights
   productKeywords.forEach(({ category, keywords }) => {
-    keywords.forEach((keyword) => {
+    keywords.forEach(keyword => {
       if (postText.includes(keyword)) {
         // Different weights for different categories
         switch (category) {
@@ -440,7 +307,7 @@ export function scorePostRelevance(post, product) {
 
   // Bonus scoring for title matches (titles are more important)
   productKeywords.forEach(({ keywords }) => {
-    keywords.forEach((keyword) => {
+    keywords.forEach(keyword => {
       if (post.title.toLowerCase().includes(keyword)) {
         score += 3; // Bonus for title matches
       }
@@ -454,18 +321,14 @@ export function scorePostRelevance(post, product) {
   }
 
   // Bonus for exact product type matches
-  if (
-    product.productType &&
-    post.title.toLowerCase().includes(product.productType.toLowerCase())
-  ) {
+  if (product.productType && post.title.toLowerCase().includes(product.productType.toLowerCase())) {
     score += 4;
   }
 
   // Penalty for very old posts (encourage fresh content)
   if (post.date) {
     const postDate = new Date(post.date);
-    const monthsOld =
-      (Date.now() - postDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
+    const monthsOld = (Date.now() - postDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
     if (monthsOld > 12) {
       score -= 1; // Small penalty for posts older than a year
     }
@@ -482,11 +345,11 @@ export function filterAndSortPosts(posts, product, maxPosts = 3) {
 
   // Score and sort posts
   const scoredPosts = posts
-    .map((post) => ({
+    .map(post => ({
       ...post,
-      relevanceScore: scorePostRelevance(post, product),
+      relevanceScore: scorePostRelevance(post, product)
     }))
-    .filter((post) => post.relevanceScore > 0) // Only include relevant posts
+    .filter(post => post.relevanceScore > 0) // Only include relevant posts
     .sort((a, b) => {
       // Primary sort: relevance score
       if (b.relevanceScore !== a.relevanceScore) {
@@ -505,110 +368,98 @@ export function filterAndSortPosts(posts, product, maxPosts = 3) {
  */
 export function getFallbackPosts(product, maxPosts = 3) {
   const fallbackCategories = getRecommendedCategories(product);
-
+  
   const baseMockPosts = [
     {
       id: 'fallback-1',
       title: 'The Science of Habit Formation',
       slug: 'science-of-habit-formation',
-      excerpt:
-        'Understand the neurological basis of how habits form and how to use this knowledge to build better routines.',
+      excerpt: 'Understand the neurological basis of how habits form and how to use this knowledge to build better routines.',
       category: 'Psychology',
       categorySlug: 'psychology',
       readTime: '8 min read',
-      image:
-        'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=250&fit=crop',
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=250&fit=crop',
       date: new Date().toISOString(),
-      relevanceScore: 5,
+      relevanceScore: 5
     },
     {
       id: 'fallback-2',
       title: 'Building Habits That Stick',
       slug: 'building-habits-that-stick',
-      excerpt:
-        'Practical strategies backed by research to create lasting behavioral changes in your daily life.',
+      excerpt: 'Practical strategies backed by research to create lasting behavioral changes in your daily life.',
       category: 'Habit Formation',
       categorySlug: 'habit-formation',
       readTime: '6 min read',
-      image:
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop',
+      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop',
       date: new Date().toISOString(),
-      relevanceScore: 5,
+      relevanceScore: 5
     },
     {
       id: 'fallback-3',
       title: 'Productivity Habits for Success',
       slug: 'productivity-habits-for-success',
-      excerpt:
-        'Discover the daily habits that high-achievers use to maximize their productivity and accomplish their goals.',
+      excerpt: 'Discover the daily habits that high-achievers use to maximize their productivity and accomplish their goals.',
       category: 'Productivity',
       categorySlug: 'productivity',
       readTime: '7 min read',
-      image:
-        'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=250&fit=crop',
+      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=250&fit=crop',
       date: new Date().toISOString(),
-      relevanceScore: 4,
+      relevanceScore: 4
     },
     {
       id: 'fallback-4',
       title: 'Digital Wellness: Reclaiming Your Time',
       slug: 'digital-wellness-reclaiming-your-time',
-      excerpt:
-        'Learn evidence-based strategies to reduce screen time and build a healthier relationship with technology.',
+      excerpt: 'Learn evidence-based strategies to reduce screen time and build a healthier relationship with technology.',
       category: 'Digital Wellness',
       categorySlug: 'digital-wellness',
       readTime: '9 min read',
-      image:
-        'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=250&fit=crop',
+      image: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=250&fit=crop',
       date: new Date().toISOString(),
-      relevanceScore: 4,
+      relevanceScore: 4
     },
     {
       id: 'fallback-5',
       title: 'Mindful Habit Formation',
       slug: 'mindful-habit-formation',
-      excerpt:
-        'Integrate mindfulness practices into your habit-building routine for greater awareness and success.',
+      excerpt: 'Integrate mindfulness practices into your habit-building routine for greater awareness and success.',
       category: 'Mindfulness',
       categorySlug: 'mindfulness',
       readTime: '5 min read',
-      image:
-        'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=250&fit=crop',
+      image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=250&fit=crop',
       date: new Date().toISOString(),
-      relevanceScore: 3,
+      relevanceScore: 3
     },
     {
       id: 'fallback-6',
       title: 'The Power of Morning Routines',
       slug: 'power-of-morning-routines',
-      excerpt:
-        'Transform your mornings and set yourself up for daily success with these evidence-based routine strategies.',
+      excerpt: 'Transform your mornings and set yourself up for daily success with these evidence-based routine strategies.',
       category: 'Productivity',
       categorySlug: 'productivity',
       readTime: '6 min read',
-      image:
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop',
+      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=250&fit=crop',
       date: new Date().toISOString(),
-      relevanceScore: 4,
-    },
+      relevanceScore: 4
+    }
   ];
 
   // Filter and sort fallback posts based on recommended categories
   const relevantFallbacks = baseMockPosts
-    .filter((post) => fallbackCategories.includes(post.categorySlug))
+    .filter(post => fallbackCategories.includes(post.categorySlug))
     .slice(0, maxPosts);
 
   // If not enough category-specific posts, fill with general ones
   if (relevantFallbacks.length < maxPosts) {
     const remaining = baseMockPosts
-      .filter((post) => !fallbackCategories.includes(post.categorySlug))
+      .filter(post => !fallbackCategories.includes(post.categorySlug))
       .slice(0, maxPosts - relevantFallbacks.length);
     relevantFallbacks.push(...remaining);
   }
 
   return {
     categories: fallbackCategories,
-    mockPosts: relevantFallbacks.slice(0, maxPosts),
+    mockPosts: relevantFallbacks.slice(0, maxPosts)
   };
 }
 
@@ -626,8 +477,8 @@ export function trackBlogRecommendation(eventType, data) {
           product_type: data.productType,
           blog_post_slug: data.postSlug,
           recommendation_position: data.position,
-          post_count: data.postCount,
-        },
+          post_count: data.postCount
+        }
       });
     }
 
@@ -636,7 +487,7 @@ export function trackBlogRecommendation(eventType, data) {
       window.fbq('trackCustom', 'BlogRecommendation', {
         event_type: eventType,
         product_handle: data.productHandle,
-        product_type: data.productType,
+        product_type: data.productType
       });
     }
 
@@ -647,7 +498,7 @@ export function trackBlogRecommendation(eventType, data) {
         product_handle: data.productHandle,
         product_type: data.productType,
         blog_post_slug: data.postSlug,
-        position: data.position,
+        position: data.position
       });
     }
 
@@ -666,7 +517,7 @@ export function getRecommendationStrategy(product) {
   const identifier = product?.id || product?.handle || '';
   const lastChar = identifier.slice(-1);
   const isEven = parseInt(lastChar) % 2 === 0;
-
+  
   return isEven ? 'keyword_based' : 'category_based';
 }
 
@@ -688,35 +539,35 @@ class BlogRecommendationCache {
   get(product, maxPosts) {
     const key = this.generateKey(product, maxPosts);
     const cached = this.cache.get(key);
-
+    
     if (cached && Date.now() - cached.timestamp < this.ttl) {
       // Move to end (LRU)
       this.cache.delete(key);
       this.cache.set(key, cached);
       return cached.data;
     }
-
+    
     // Remove expired entry
     if (cached) {
       this.cache.delete(key);
     }
-
+    
     return null;
   }
 
   set(product, maxPosts, data) {
     const key = this.generateKey(product, maxPosts);
-
+    
     // Implement LRU eviction
     if (this.cache.size >= this.maxSize) {
       // Remove oldest entry
       const firstKey = this.cache.keys().next().value;
       this.cache.delete(firstKey);
     }
-
+    
     this.cache.set(key, {
       data,
-      timestamp: Date.now(),
+      timestamp: Date.now()
     });
   }
 
@@ -743,7 +594,7 @@ class BlogRecommendationCache {
       validEntries,
       expiredEntries,
       maxSize: this.maxSize,
-      ttl: this.ttl,
+      ttl: this.ttl
     };
   }
 

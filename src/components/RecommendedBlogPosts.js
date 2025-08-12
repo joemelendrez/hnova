@@ -1,10 +1,10 @@
 // src/components/RecommendedBlogPosts.js
-//
+// 
 // Usage in your product page:
 // import RecommendedBlogPosts from '@/components/RecommendedBlogPosts';
-//
-// <RecommendedBlogPosts
-//   product={product}
+// 
+// <RecommendedBlogPosts 
+//   product={product} 
 //   maxPosts={3}
 //   title="Related Articles"
 //   subtitle="Learn more about building better habits"
@@ -16,27 +16,23 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { BookOpen, Clock, ArrowRight, Loader } from 'lucide-react';
-import {
-  getAllPosts,
-  getPostsByCategory,
-  formatPostData,
-} from '@/lib/wordpress';
-import {
-  getRecommendedCategories,
-  getContextualContent,
+import { getAllPosts, getPostsByCategory, formatPostData } from '@/lib/wordpress';
+import { 
+  getRecommendedCategories, 
+  getContextualContent, 
   filterAndSortPosts,
   getFallbackPosts,
   trackBlogRecommendation,
-  blogRecommendationCache,
+  blogRecommendationCache
 } from '@/lib/blogRecommendations';
 
-const RecommendedBlogPosts = ({
-  product,
-  maxPosts = 3,
+const RecommendedBlogPosts = ({ 
+  product, 
+  maxPosts = 3, 
   title,
   subtitle,
   showCTA = true,
-  className = '',
+  className = ""
 }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,13 +63,11 @@ const RecommendedBlogPosts = ({
         // Strategy 1: Get posts from recommended categories
         for (const category of recommendedCategories) {
           if (recommendedPosts.length >= maxPosts * 2) break; // Get more than needed for filtering
-
+          
           try {
             const categoryData = await getPostsByCategory(category, 10);
             if (categoryData?.edges) {
-              const categoryPosts = categoryData.edges.map((edge) =>
-                formatPostData(edge.node)
-              );
+              const categoryPosts = categoryData.edges.map(edge => formatPostData(edge.node));
               recommendedPosts = [...recommendedPosts, ...categoryPosts];
             }
           } catch (categoryError) {
@@ -86,9 +80,7 @@ const RecommendedBlogPosts = ({
           try {
             const recentData = await getAllPosts(maxPosts * 2);
             if (recentData?.edges) {
-              const recentPosts = recentData.edges.map((edge) =>
-                formatPostData(edge.node)
-              );
+              const recentPosts = recentData.edges.map(edge => formatPostData(edge.node));
               recommendedPosts = [...recommendedPosts, ...recentPosts];
             }
           } catch (recentError) {
@@ -97,26 +89,42 @@ const RecommendedBlogPosts = ({
         }
 
         // Filter, score, and sort posts by relevance
-        const filteredPosts = filterAndSortPosts(
-          recommendedPosts,
-          product,
-          maxPosts
-        );
+        const filteredPosts = filterAndSortPosts(recommendedPosts, product, maxPosts);
 
-        // If still not enough posts, use fallback
+        // If still not enough posts, fill with recent unscored posts from WordPress
         if (filteredPosts.length < maxPosts) {
-          const fallback = getFallbackPosts(
-            product,
-            maxPosts - filteredPosts.length
-          );
-          filteredPosts.push(...fallback.mockPosts);
+          const remainingNeeded = maxPosts - filteredPosts.length;
+          
+          // Get additional recent posts that weren't already included
+          const existingPostIds = new Set(filteredPosts.map(post => post.id));
+          const additionalPosts = recommendedPosts
+            .filter(post => !existingPostIds.has(post.id))
+            .slice(0, remainingNeeded);
+          
+          // If still not enough, get more recent posts
+          if (additionalPosts.length < remainingNeeded) {
+            try {
+              const moreRecentData = await getAllPosts(remainingNeeded * 2);
+              if (moreRecentData?.edges) {
+                const moreRecentPosts = moreRecentData.edges
+                  .map(edge => formatPostData(edge.node))
+                  .filter(post => !existingPostIds.has(post.id))
+                  .slice(0, remainingNeeded - additionalPosts.length);
+                
+                additionalPosts.push(...moreRecentPosts);
+              }
+            } catch (moreRecentError) {
+              console.warn('Error fetching additional recent posts:', moreRecentError);
+            }
+          }
+          
+          filteredPosts.push(...additionalPosts);
         }
 
-        // Remove duplicates and limit
+        // Remove duplicates and limit to maxPosts
         const uniquePosts = filteredPosts
-          .filter(
-            (post, index, self) =>
-              index === self.findIndex((p) => p.id === post.id)
+          .filter((post, index, self) => 
+            index === self.findIndex(p => p.id === post.id)
           )
           .slice(0, maxPosts);
 
@@ -128,15 +136,26 @@ const RecommendedBlogPosts = ({
         trackBlogRecommendation('recommendations_displayed', {
           productHandle: product?.handle,
           productType: product?.productType,
-          postCount: uniquePosts.length,
+          postCount: uniquePosts.length
         });
+
       } catch (err) {
         console.error('Error fetching recommended posts:', err);
         setError(err.message);
-
-        // Use fallback posts
-        const fallback = getFallbackPosts(product, maxPosts);
-        setPosts(fallback.mockPosts);
+        
+        // Use recent posts as fallback instead of mock posts
+        try {
+          const fallbackData = await getAllPosts(maxPosts);
+          if (fallbackData?.edges) {
+            const fallbackPosts = fallbackData.edges.map(edge => formatPostData(edge.node));
+            setPosts(fallbackPosts.slice(0, maxPosts));
+          } else {
+            setPosts([]);
+          }
+        } catch (fallbackError) {
+          console.error('Error fetching fallback posts:', fallbackError);
+          setPosts([]);
+        }
       } finally {
         setLoading(false);
       }
@@ -151,20 +170,20 @@ const RecommendedBlogPosts = ({
       productHandle: product?.handle,
       productType: product?.productType,
       postSlug: post.slug,
-      position: index + 1,
+      position: index + 1
     });
   };
 
   // Decode HTML entities for display
   const decodeHtmlEntities = (text) => {
     if (!text) return '';
-
+    
     if (typeof window !== 'undefined') {
       const textArea = document.createElement('textarea');
       textArea.innerHTML = text;
       return textArea.value;
     }
-
+    
     return text
       .replace(/&#8217;/g, "'")
       .replace(/&#8220;/g, '"')
@@ -183,13 +202,10 @@ const RecommendedBlogPosts = ({
             <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4 animate-pulse"></div>
             <div className="h-4 bg-gray-200 rounded w-96 mx-auto animate-pulse"></div>
           </div>
-
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[...Array(maxPosts)].map((_, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse"
-              >
+              <div key={index} className="bg-white rounded-xl shadow-lg overflow-hidden animate-pulse">
                 <div className="h-48 bg-gray-200"></div>
                 <div className="p-6 space-y-4">
                   <div className="h-4 bg-gray-200 rounded w-20"></div>
@@ -241,8 +257,8 @@ const RecommendedBlogPosts = ({
               transition={{ duration: 0.6, delay: index * 0.1 }}
               className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group h-full flex flex-col"
             >
-              <Link
-                href={`/blog/${post.slug}`}
+              <Link 
+                href={`/blog/${post.slug}`} 
                 className="h-full flex flex-col"
                 onClick={() => handlePostClick(post, index)}
               >
@@ -255,7 +271,7 @@ const RecommendedBlogPosts = ({
                       e.target.src = '/images/blog/default.jpg';
                     }}
                   />
-
+                  
                   {/* Category Badge */}
                   {post.category && (
                     <div className="absolute top-4 left-4">
@@ -266,14 +282,13 @@ const RecommendedBlogPosts = ({
                   )}
 
                   {/* Relevance Score Badge (for debugging - remove in production) */}
-                  {process.env.NODE_ENV === 'development' &&
-                    post.relevanceScore && (
-                      <div className="absolute top-4 right-4">
-                        <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs">
-                          Score: {post.relevanceScore}
-                        </span>
-                      </div>
-                    )}
+                  {process.env.NODE_ENV === 'development' && post.relevanceScore && (
+                    <div className="absolute top-4 right-4">
+                      <span className="bg-blue-500 text-white px-2 py-1 rounded text-xs">
+                        Score: {post.relevanceScore}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="p-6 flex-1 flex flex-col">
@@ -286,7 +301,7 @@ const RecommendedBlogPosts = ({
                   )}
 
                   {/* Title */}
-                  <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-[#F10000] transition-colors line-clamp-2 flex-shrink-0">
+                  <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 group-hover:text-gray-700 transition-colors line-clamp-2 flex-shrink-0">
                     {decodeHtmlEntities(post.title)}
                   </h3>
 
@@ -296,7 +311,7 @@ const RecommendedBlogPosts = ({
                   </p>
 
                   {/* Read More Link - This will stick to bottom */}
-                  <div className="flex items-center text-[#1a1a1a] font-medium group-hover:text-[#F10000] transition-colors flex-shrink-0 mt-auto">
+                  <div className="flex items-center text-[#1a1a1a] font-medium group-hover:text-gray-700 transition-colors flex-shrink-0 mt-auto">
                     <BookOpen className="h-4 w-4 mr-2" />
                     <span>Read Article</span>
                     <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -318,13 +333,11 @@ const RecommendedBlogPosts = ({
           >
             <Link
               href="/blog"
-              className="inline-flex items-center px-8 py-4 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-[#F10000] transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
-              onClick={() =>
-                trackBlogRecommendation('view_all_clicked', {
-                  productHandle: product?.handle,
-                  productType: product?.productType,
-                })
-              }
+              className="inline-flex items-center px-8 py-4 bg-[#1a1a1a] text-white font-semibold rounded-lg hover:bg-gray-800 transition-all duration-200 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+              onClick={() => trackBlogRecommendation('view_all_clicked', {
+                productHandle: product?.handle,
+                productType: product?.productType
+              })}
             >
               <BookOpen className="mr-3 h-5 w-5" />
               Explore All Articles
